@@ -1,7 +1,7 @@
 ﻿using System;
 using Microsoft.Xna.Framework;
 
-namespace ExNihilo.Util
+namespace ExNihilo.Util.XNA
 {
     public class ColorScale
     {

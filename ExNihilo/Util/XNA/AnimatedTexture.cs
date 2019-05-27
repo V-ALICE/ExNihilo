@@ -1,7 +1,7 @@
 ﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 
-namespace ExNihilo.Util
+namespace ExNihilo.Util.XNA
 {
     public class AnimatedTexture
     {

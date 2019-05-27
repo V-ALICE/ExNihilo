@@ -3,9 +3,9 @@ using System.Windows.Forms;
 using Microsoft.Xna.Framework.Input;
 using Keys = Microsoft.Xna.Framework.Input.Keys;
 
-namespace ExNihilo.Util
+namespace ExNihilo.Util.XNA
 {
-    public static class FullKeyboard
+    public static class Keyboard
     {
         private static readonly Dictionary<Keys, char> DefaultKeyboard = new Dictionary<Keys, char>
         {
@@ -48,7 +48,7 @@ namespace ExNihilo.Util
 
         public static string GetText()
         {
-            var list = Keyboard.GetState();
+            var list = Microsoft.Xna.Framework.Input.Keyboard.GetState();
             var text = "";
             foreach (var key in list.GetPressedKeys())
             {
