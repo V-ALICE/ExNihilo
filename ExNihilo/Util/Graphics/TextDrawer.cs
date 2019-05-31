@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 
-namespace ExNihilo.Util.XNA
+namespace ExNihilo.Util.Graphics
 {
     public static class TextDrawer
     {
@@ -20,16 +20,16 @@ namespace ExNihilo.Util.XNA
         };
 
         public static int AlphaWidth, AlphaHeight, AlphaSpacer; //In pixels
-        private static Dictionary<char, Texture2D> CharTextures;
+        private static Dictionary<char, Texture2D> _charTextures;
 
         public static void Initialize(GraphicsDevice device, Texture2D alphabet)
         {
             ConfigureTextSize(2);
-            CharTextures = new Dictionary<char, Texture2D>();
+            _charTextures = new Dictionary<char, Texture2D>();
             foreach (var chr in Char)
             {
                 var letter = new Rectangle(AlphaWidth * chr.Value, 0, AlphaWidth, AlphaHeight);
-                CharTextures.Add(chr.Key, TextureUtilities.GetSubTexture(device, alphabet, letter));
+                _charTextures.Add(chr.Key, TextureUtilities.GetSubTexture(device, alphabet, letter));
             }
         }
 
@@ -44,11 +44,11 @@ namespace ExNihilo.Util.XNA
         {
             try
             {
-                return CharTextures[let.ToString().ToUpper()[0]];
+                return _charTextures[let.ToString().ToUpper()[0]];
             }
             catch (KeyNotFoundException)
             {
-                return CharTextures[' '];
+                return _charTextures[' '];
             }
         }       
 

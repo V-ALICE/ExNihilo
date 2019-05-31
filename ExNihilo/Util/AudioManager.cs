@@ -3,44 +3,48 @@ using Microsoft.Xna.Framework.Audio;
 using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Media;
 
-namespace ExNihilo.Util.XNA
+namespace ExNihilo.Util
 {
-    public class AudioManager
+    public static class AudioManager
     {
-        private readonly Dictionary<string, SoundEffect> _sounds;
-        private readonly Dictionary<string, List<SoundEffectInstance>> _soundLimiter;
-        private readonly Dictionary<string, Song> _songs;
-        private string currentSong;
-        private const int MaxSoundInstances = 2;
-        private bool paused;
+        private static readonly Dictionary<string, SoundEffect> Effects = new Dictionary<string, SoundEffect>
+        {
 
-        public float EffectVolume { private get; set; }
-        public float MusicVolume
+        };
+        private static readonly Dictionary<string, Song> Songs = new Dictionary<string, Song>
+        {
+
+        };
+        private static Dictionary<string, List<SoundEffectInstance>> _soundLimiter;
+        private static string _currentSong;
+        private const int MaxSoundInstances = 2;
+        private static bool _paused;
+
+        public static float EffectVolume { get; set; }
+        public static float MusicVolume
         {
             private get => MediaPlayer.Volume;
             set => MediaPlayer.Volume = value;
         }
 
-        public AudioManager(ContentManager content, Dictionary<string, Song> songs, Dictionary<string, SoundEffect> effects)
+        public static void Initialize(ContentManager content)
         {
-            _songs = songs;
-            _sounds = effects;
             _soundLimiter = new Dictionary<string, List<SoundEffectInstance>>();
-            foreach (var word in _sounds.Keys)
+            foreach (var word in Effects.Keys)
             {
                 _soundLimiter.Add(word, new List<SoundEffectInstance>(MaxSoundInstances));
             }
             EffectVolume = MusicVolume = 0.75f;
         }
 
-        public void Pause()
+        public static void Pause()
         {
-            paused = !paused;
-            if (paused) MediaPlayer.Pause();
+            _paused = !_paused;
+            if (_paused) MediaPlayer.Pause();
             else MediaPlayer.Resume();
         }
 
-        public void PlayEffect(string key)
+        public static void PlayEffect(string key)
         {
             if (_soundLimiter[key].Count >= MaxSoundInstances)
             {
@@ -48,27 +52,27 @@ namespace ExNihilo.Util.XNA
                 _soundLimiter[key][0].Dispose();
                 _soundLimiter[key].RemoveAt(0);
             }
-            var g = _sounds[key].CreateInstance();
+            var g = Effects[key].CreateInstance();
             g.Volume = EffectVolume;
             _soundLimiter[key].Add(g);
             g.Play();
         }
 
-        public void PlaySong(string key, bool repeating)
+        public static void PlaySong(string key, bool repeating)
         {
-            if (paused) return;
-            if (currentSong != key)
+            if (_paused) return;
+            if (_currentSong != key)
             {
                 MediaPlayer.Stop();
-                currentSong = key;
-                MediaPlayer.Play(_songs[key]);
+                _currentSong = key;
+                MediaPlayer.Play(Songs[key]);
                 MediaPlayer.IsRepeating = repeating;
             }
         }
 
-        public void KillCurrentSong()
+        public static void KillCurrentSong()
         {
-            currentSong = "";
+            _currentSong = "";
             MediaPlayer.Stop();
         }
     }

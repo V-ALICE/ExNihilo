@@ -7,10 +7,10 @@ namespace ExNihilo.Util
     {
         //Timers that are being tracked are added to the bus. All active timers on the bus are updated per time step
         private static readonly List<Timer> TimeBus = new List<Timer>();
-        //Timers that are no longer needed by their requester have their seats on the bus sold back for the next requester
+        //Timers that are no longer needed by their Geter have their seats on the bus sold back for the next Geter
         private static readonly List<int> TimersForSale = new List<int>();
 
-        public static int RequestTimer(bool systemTimer, double maxTimeSec=-1)
+        public static int NewTimer(bool systemTimer, double maxTimeSec=-1)
         {
             var newTimer = new Timer(maxTimeSec, systemTimer);
             if (TimersForSale.Count > 0)
@@ -25,85 +25,88 @@ namespace ExNihilo.Util
         }
 
         //Gets the current time for the given timer
-        public static double RequestCurrentTime(int ID)
+        public static double GetCurrentTime(int id, bool flush=false)
         {
-            ExceptionCheck.AssertCondition(ID < TimeBus.Count, "ID=" + ID + " TimeBus.Count=" + TimeBus.Count);
-            return TimeBus[ID].TimerCurrent;
+            ExceptionCheck.AssertCondition(id < TimeBus.Count, "ID=" + id + " TimeBus.Count=" + TimeBus.Count);
+            var tmp = TimeBus[id].TimerCurrent;
+            if (flush) TimeBus[id].FlushTime();
+            return tmp;
         }
 
         //Gets the percentage done for the given timer. This is only applicable for one cycle and non-applicable for stopwatches 
-        public static double RequestPercentageDone(int ID)
+        public static double GetPercentageDone(int id)
         {
-            ExceptionCheck.AssertCondition(ID < TimeBus.Count, "ID=" + ID + " TimeBus.Count=" + TimeBus.Count);
-            var time = TimeBus[ID].TimerCurrent / TimeBus[ID].TimerMaxSec;
+            ExceptionCheck.AssertCondition(id < TimeBus.Count, "ID=" + id + " TimeBus.Count=" + TimeBus.Count);
+            var time = TimeBus[id].TimerCurrent / TimeBus[id].TimerMaxSec;
             if (time > 1) return 1;
             if (time < 0) return 0;
             return time;
         }
 
         //Gets the amount of times the given timer has achieved its time goal. Resets the counter back to zero by default
-        public static int RequestNumberOfFires(int ID, bool reset=true)
+        public static int GetNumberOfFires(int id, bool flush=true)
         {
-            ExceptionCheck.AssertCondition(ID < TimeBus.Count, "ID=" + ID + " TimeBus.Count=" + TimeBus.Count);
-            var count = TimeBus[ID].FireCount;
-            if (reset) TimeBus[ID].FireCount = 0;
+            ExceptionCheck.AssertCondition(id < TimeBus.Count, "ID=" + id + " TimeBus.Count=" + TimeBus.Count);
+            var count = TimeBus[id].FireCount;
+            if (flush) TimeBus[id].FlushTimer();
             return count;
         }
 
         //Checks if there's been at least one fire but only decreases the count by one rather than a full reset
-        public static bool RequestAFire(int ID)
+        public static bool GetAFire(int id)
         {
-            ExceptionCheck.AssertCondition(ID < TimeBus.Count, "ID=" + ID + " TimeBus.Count=" + TimeBus.Count);
-            if (TimeBus[ID].FireCount <= 0) return false;
-            TimeBus[ID].FireCount--;
+            ExceptionCheck.AssertCondition(id < TimeBus.Count, "ID=" + id + " TimeBus.Count=" + TimeBus.Count);
+            if (TimeBus[id].FireCount <= 0) return false;
+            TimeBus[id].FireCount--;
             return true;
         }
 
         //Checks if the given timer is on
-        public static bool RequestStatus(int ID)
+        public static bool GetStatus(int id)
         {
-            ExceptionCheck.AssertCondition(ID < TimeBus.Count, "ID=" + ID + " TimeBus.Count=" + TimeBus.Count);
-            return TimeBus[ID].On;
+            ExceptionCheck.AssertCondition(id < TimeBus.Count, "ID=" + id + " TimeBus.Count=" + TimeBus.Count);
+            return TimeBus[id].On;
         }
 
         //Gets the last frame time of the given timer
-        public static double RequestLastTickTime(int ID)
+        public static double GetLastTickTime(int id)
         {
-            ExceptionCheck.AssertCondition(ID < TimeBus.Count, "ID=" + ID + " TimeBus.Count=" + TimeBus.Count);
-            return TimeBus[ID].On ? TimeBus[ID].LastTickTime : 0;
+            ExceptionCheck.AssertCondition(id < TimeBus.Count, "ID=" + id + " TimeBus.Count=" + TimeBus.Count);
+            return TimeBus[id].On ? TimeBus[id].LastTickTime : 0;
         }
 
         //Turns off the given timers
-        public static void TurnOffTimer(params int[] IDs)
+        public static void TurnOffTimer(params int[] ids)
         {
-            foreach (var ID in IDs)
+            foreach (var id in ids)
             {
-                ExceptionCheck.AssertCondition(ID < TimeBus.Count, "ID=" + ID + " TimeBus.Count=" + TimeBus.Count);
-                TimeBus[ID].On = false;
+                ExceptionCheck.AssertCondition(id < TimeBus.Count, "ID=" + id + " TimeBus.Count=" + TimeBus.Count);
+                TimeBus[id].On = false;
             }
         }
         //Turns on the given timers
-        public static void TurnOnTimer(params int[] IDs)
+        public static void TurnOnTimer(params int[] ids)
         {
-            foreach (var ID in IDs)
+            foreach (var id in ids)
             {
-                ExceptionCheck.AssertCondition(ID < TimeBus.Count, "ID=" + ID + " TimeBus.Count=" + TimeBus.Count);
-                TimeBus[ID].On = true;
+                ExceptionCheck.AssertCondition(id < TimeBus.Count, "ID=" + id + " TimeBus.Count=" + TimeBus.Count);
+                TimeBus[id].On = true;
             }
         }
 
-        //Sets the time goal for a given timer (rather than having to request a new one)
-        public static void RecycleTimer(int ID, double newMaxTime)
+        //Sets the time goal for a given timer (rather than having to Get a new one)
+        public static void RecycleTimer(int id, double newMaxTime)
         {
-            ExceptionCheck.AssertCondition(ID < TimeBus.Count, "ID=" + ID + " TimeBus.Count=" + TimeBus.Count);
-            TimeBus[ID] = new Timer(newMaxTime, TimeBus[ID].System);
+            ExceptionCheck.AssertCondition(id < TimeBus.Count, "ID=" + id + " TimeBus.Count=" + TimeBus.Count);
+            TimeBus[id] = new Timer(newMaxTime, TimeBus[id].System);
         }
 
         //Resets a given timer (time and fire count). This does not affect if the timer is on or off
-        public static void ResetTimer(int ID)
+        public static void ResetTimer(int id)
         {
-            ExceptionCheck.AssertCondition(ID < TimeBus.Count, "ID=" + ID + " TimeBus.Count=" + TimeBus.Count);
-            TimeBus[ID].ClearTime();
+            ExceptionCheck.AssertCondition(id < TimeBus.Count, "ID=" + id + " TimeBus.Count=" + TimeBus.Count);
+            TimeBus[id].FlushTimer();
+            TimeBus[id].TimerCurrent = 0;
         }
 
         //Update all timers on the bus
@@ -117,10 +120,10 @@ namespace ExNihilo.Util
         }
 
         //Mark given timers as no longer in use so they can be redistributed 
-        public static void SellTimer(params int[] ID)
+        public static void SellTimer(params int[] ids)
         {
-            TurnOffTimer(ID);
-            TimersForSale.AddRange(ID);
+            TurnOffTimer(ids);
+            TimersForSale.AddRange(ids);
         }
 
         //Toggle all the non-system timers on or off. Useful for pausing things
@@ -149,10 +152,15 @@ namespace ExNihilo.Util
             System = systemTimer;
         }
 
-        public void ClearTime()
+        public void FlushTime()
         {
-            TimerCurrent = 0;
+            TimerCurrent %= TimerMaxSec;
+        }
+
+        public void FlushTimer()
+        {
             FireCount = 0;
+            FlushTime();
         }
 
         public void Update(GameTime gameTime)
@@ -163,7 +171,6 @@ namespace ExNihilo.Util
             if (TimerMaxSec > 0 && TimerCurrent >= TimerMaxSec)
             {
                 FireCount += (int)(TimerCurrent / TimerMaxSec);
-                TimerCurrent %= TimerMaxSec;
             }
         }
     }

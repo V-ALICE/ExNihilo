@@ -7,7 +7,7 @@ using Rectangle = Microsoft.Xna.Framework.Rectangle;
 using FormRectangle = System.Drawing.Rectangle; 
 using Color = Microsoft.Xna.Framework.Color; 
 
-namespace ExNihilo.Util.XNA
+namespace ExNihilo.Util.Graphics
 {
     public static class TextureUtilities
     {

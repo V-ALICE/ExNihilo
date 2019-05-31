@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
-using System.Diagnostics;
 using ExNihilo.Input.Controllers;
+using ExNihilo.Sectors;
 using ExNihilo.Util;
 using Microsoft.Xna.Framework.Input;
 
@@ -9,106 +9,56 @@ namespace ExNihilo.Input.Commands
     public class CommandHandler
     {
         private readonly List<IController> _controllers;
-        public enum Mode
-        {
-            None, Gameplay, Menu, TitleMenu
-        }
-        private readonly Dictionary<Mode, List<KeyBlock>> _bucket = new Dictionary<Mode, List<KeyBlock>>
-        {
-            {Mode.Gameplay, new List<KeyBlock>()},
-            {Mode.Menu, new List<KeyBlock>()},
-            {Mode.None, new List<KeyBlock>()},
-            {Mode.TitleMenu, new List<KeyBlock>()}
-        };
-        private Mode _currentMode;
-        private readonly int timerID;
+        private readonly List<KeyBlock> _bucket;
+        private readonly int _timerID;
 
-        public CommandHandler()
+        public CommandHandler(GameContainer game)
         {
-            timerID = UniversalTime.RequestTimer(true);
-            UniversalTime.TurnOnTimer(timerID);
+            _timerID = UniversalTime.NewTimer(true);
+            UniversalTime.TurnOnTimer(_timerID);
             _controllers = new List<IController> { new KeyboardControl(this), new ControllerControl(this) };
-            _currentMode = Mode.TitleMenu;
+            _bucket = new List<KeyBlock>
+            {
+                new KeyBlock(new ToggleTitleMenu(game), false, Keys.Escape, Buttons.Back),
+                new KeyBlock(new ToggleDebugUI(game), false, Keys.F1),
+                new KeyBlock(new ToggleFullScreen(game), false, Keys.F2),
+                new KeyBlock(new OpenConsole(game), false, Keys.T, Keys.OemQuestion)
+            };
+        }
+        public CommandHandler(Sector sector)
+        {
+            _timerID = UniversalTime.NewTimer(true);
+            UniversalTime.TurnOnTimer(_timerID);
+            _controllers = new List<IController> { new KeyboardControl(this), new ControllerControl(this) };
+            _bucket = new List<KeyBlock>();
+            Initialize(sector);
         }
 
-        public void Initialize(GameContainer game)
+        private void Initialize(Sector game)
         {
-            var block = new KeyBlock(new PauseGame(game), false, Keys.Tab, Buttons.Start);
-            _bucket[Mode.Gameplay].Add(block);
-            _bucket[Mode.Menu].Add(block);
-            _bucket[Mode.TitleMenu].Add(block);
+            if (_bucket.Count > 0) return;
 
-            block = new KeyBlock(new MainMenu(game), false, Keys.Escape, Buttons.Back);
-            _bucket[Mode.Gameplay].Add(block);
-            _bucket[Mode.TitleMenu].Add(block);
+            if (game is UnderworldSector sector)
+            {
+                _bucket.Add(new KeyBlock(new InteractWithWorld(sector), false, Keys.E, Keys.Enter, Buttons.A));
+                /*
+                _bucket.Add(new KeyBlock(new TurnLeft(game.OwnPlayer), new UnTurnLeft(game.OwnPlayer), false, Keys.Left, Keys.A, Buttons.DPadLeft, Buttons.LeftThumbstickLeft));
+                _bucket.Add(new KeyBlock(new TurnUp(game.OwnPlayer), new UnTurnUp(game.OwnPlayer), false, Keys.Up, Keys.W, Buttons.DPadUp, Buttons.LeftThumbstickUp));
+                _bucket.Add(new KeyBlock(new TurnDown(game.OwnPlayer), new UnTurnDown(game.OwnPlayer), false, Keys.Down, Keys.S, Buttons.DPadDown, Buttons.LeftThumbstickDown));
+                _bucket.Add(new KeyBlock(new TurnRight(game.OwnPlayer), new UnTurnRight(game.OwnPlayer), false, Keys.Right, Keys.D, Buttons.DPadRight, Buttons.LeftThumbstickRight));
+                _bucket.Add(new KeyBlock(new DoubleSpeed(game.OwnPlayer), new UnDoubleSpeed(game.OwnPlayer), false, Keys.LeftShift, Buttons.X, Buttons.Y));
+                */
+            }
+            else
+            {
+                _bucket.Add(new KeyBlock(new MenuUp(game), true, Keys.Up, Keys.W, Buttons.DPadUp, Buttons.LeftThumbstickUp));
+                _bucket.Add(new KeyBlock(new MenuDown(game), true, Keys.Down, Keys.S, Buttons.DPadDown, Buttons.LeftThumbstickDown));
+                _bucket.Add(new KeyBlock(new MenuLeft(game), true, Keys.Left, Keys.A, Buttons.DPadLeft, Buttons.LeftThumbstickLeft));
+                _bucket.Add(new KeyBlock(new MenuRight(game), true, Keys.Right, Keys.D, Buttons.DPadRight, Buttons.LeftThumbstickRight));
+                _bucket.Add(new KeyBlock(new MenuSelect(game), false, Keys.Enter, Buttons.A));
+                _bucket.Add(new KeyBlock(new ToggleMenu(game), false, Keys.Tab, Buttons.Start));
+            }
 
-            block = new KeyBlock(new ForceDebug(game), false, Keys.D0);
-            _bucket[Mode.Gameplay].Add(block);
-            _bucket[Mode.Menu].Add(block);
-
-            block = new KeyBlock(new ToggleDebugUI(game), false, Keys.F1);
-            _bucket[Mode.Gameplay].Add(block);
-            _bucket[Mode.Menu].Add(block);
-            _bucket[Mode.TitleMenu].Add(block);
-
-            block = new KeyBlock(new ExportMap(game), false, Keys.F2);
-            _bucket[Mode.Gameplay].Add(block);
-
-            block = new KeyBlock(new FullScreen(game), false, Keys.F3);
-            _bucket[Mode.Gameplay].Add(block);
-            _bucket[Mode.Menu].Add(block);
-            _bucket[Mode.TitleMenu].Add(block);
-
-            block = new KeyBlock(new MenuUp(game), true, Keys.Up, Keys.W, Buttons.DPadUp, Buttons.LeftThumbstickUp);
-            _bucket[Mode.Menu].Add(block);
-            _bucket[Mode.TitleMenu].Add(block);
-
-            block = new KeyBlock(new MenuDown(game), true, Keys.Down, Keys.S, Buttons.DPadDown, Buttons.LeftThumbstickDown);
-            _bucket[Mode.Menu].Add(block);
-            _bucket[Mode.TitleMenu].Add(block);
-
-            block = new KeyBlock(new MenuLeft(game), true, Keys.Left, Keys.A, Buttons.DPadLeft, Buttons.LeftThumbstickLeft);
-            _bucket[Mode.Menu].Add(block);
-            _bucket[Mode.TitleMenu].Add(block);
-
-            block = new KeyBlock(new MenuRight(game), true, Keys.Right, Keys.D, Buttons.DPadRight, Buttons.LeftThumbstickRight);
-            _bucket[Mode.Menu].Add(block);
-            _bucket[Mode.TitleMenu].Add(block);
-
-            block = new KeyBlock(new Select(game), false, Keys.Enter, Buttons.A);
-            _bucket[Mode.Menu].Add(block);
-            _bucket[Mode.TitleMenu].Add(block);
-
-            block = new KeyBlock(new SwapMenu(game), false, Keys.LeftShift, Keys.RightShift, Buttons.RightShoulder, Buttons.LeftShoulder);
-            _bucket[Mode.Menu].Add(block);
-
-            block = new KeyBlock(new Interact(game), false, Keys.E, Keys.Enter, Buttons.A);
-            _bucket[Mode.Gameplay].Add(block);
-
-            block = new KeyBlock(new ToggleChat(game), false, Keys.T, Keys.OemQuestion);
-            _bucket[Mode.Gameplay].Add(block);
-            _bucket[Mode.Menu].Add(block);
-            _bucket[Mode.TitleMenu].Add(block);
-
-            /*block = new KeyBlock(new TurnLeft(game.OwnPlayer), new UnTurnLeft(game.OwnPlayer), false, 
-                Keys.Left, Keys.A, Buttons.DPadLeft, Buttons.LeftThumbstickLeft);
-            _bucket[Mode.Gameplay].Add(block);
-
-            block = new KeyBlock(new TurnUp(game.OwnPlayer), new UnTurnUp(game.OwnPlayer), false, 
-                Keys.Up, Keys.W, Buttons.DPadUp, Buttons.LeftThumbstickUp);
-            _bucket[Mode.Gameplay].Add(block);
-
-            block = new KeyBlock(new TurnDown(game.OwnPlayer), new UnTurnDown(game.OwnPlayer), false, 
-                Keys.Down, Keys.S, Buttons.DPadDown, Buttons.LeftThumbstickDown);
-            _bucket[Mode.Gameplay].Add(block);
-
-            block = new KeyBlock(new TurnRight(game.OwnPlayer), new UnTurnRight(game.OwnPlayer), false, 
-                Keys.Right, Keys.D, Buttons.DPadRight, Buttons.LeftThumbstickRight);
-            _bucket[Mode.Gameplay].Add(block);
-
-            block = new KeyBlock(new DoubleSpeed(game.OwnPlayer), new UnDoubleSpeed(game.OwnPlayer), false,
-                Keys.LeftShift, Buttons.X, Buttons.Y);
-            _bucket[Mode.Gameplay].Add(block);*/
         }
 
         public void UpdateInput()
@@ -117,18 +67,18 @@ namespace ExNihilo.Input.Commands
             {
                 controller.UpdateInput();
             }
-            foreach (var block in _bucket[_currentMode])
+            foreach (var block in _bucket)
             {
                 if (block.IsActive)
                 {
-                    block.Fire(UniversalTime.RequestLastTickTime(timerID));
+                    block.Fire(UniversalTime.GetLastTickTime(_timerID));
                 }
             }
         }
 
         public void ClearInput()
         {
-            foreach (var block in _bucket[_currentMode])
+            foreach (var block in _bucket)
             {
                 if (block.IsActive)
                 {
@@ -136,18 +86,10 @@ namespace ExNihilo.Input.Commands
                 }
             }
         }
-        public void ChangeMode(Mode mode)
-        {
-            if (_bucket.ContainsKey(mode))
-            {             
-                ClearInput();
-                _currentMode = mode;
-            }
-        }
 
         public void HandleCommand(object something, bool hook)
         {
-            foreach (var block in _bucket[_currentMode])
+            foreach (var block in _bucket)
             {
                 if (block.Contains(something))
                 {

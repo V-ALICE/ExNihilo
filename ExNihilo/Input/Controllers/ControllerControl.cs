@@ -7,10 +7,10 @@ namespace ExNihilo.Input.Controllers
 {
     internal class ControllerControl : IController
     {
-        private GamePadState PreviousControllerState { get; set; }
-        public CommandHandler Handler { get; set; }
+        private GamePadState _previousControllerState;
+        private readonly CommandHandler _handler;
         //Only go through the keys that actually perform some action. Requires the list to be kept up to date
-        private readonly List<Buttons> PossibleButtons = new List<Buttons>
+        private static readonly List<Buttons> PossibleButtons = new List<Buttons>
         {
             Buttons.LeftThumbstickUp, Buttons.LeftThumbstickDown,                   //Cardinal movement
             Buttons.LeftThumbstickRight, Buttons.LeftThumbstickLeft,                //Cardinal movement
@@ -23,8 +23,8 @@ namespace ExNihilo.Input.Controllers
 
         public ControllerControl(CommandHandler handle)
         {
-            PreviousControllerState = GamePad.GetState(PlayerIndex.One);
-            Handler = handle;
+            _previousControllerState = GamePad.GetState(PlayerIndex.One);
+            _handler = handle;
         }
 
         public void UpdateInput()
@@ -34,17 +34,17 @@ namespace ExNihilo.Input.Controllers
             {
                 foreach (var button in PossibleButtons)
                 {
-                    if (currentControllerState.IsButtonDown(button) && !PreviousControllerState.IsButtonDown(button))
+                    if (currentControllerState.IsButtonDown(button) && !_previousControllerState.IsButtonDown(button))
                     {
-                        Handler.HandleCommand(button, true);
+                        _handler.HandleCommand(button, true);
                     }
-                    else if (!currentControllerState.IsButtonDown(button) && PreviousControllerState.IsButtonDown(button))
+                    else if (!currentControllerState.IsButtonDown(button) && _previousControllerState.IsButtonDown(button))
                     {
-                        Handler.HandleCommand(button, false);
+                        _handler.HandleCommand(button, false);
                     }
                 }
             }
-            PreviousControllerState = currentControllerState;
+            _previousControllerState = currentControllerState;
         }
     }
 }

@@ -2,7 +2,7 @@
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 
-namespace ExNihilo.Util.XNA
+namespace ExNihilo.Util.Graphics
 {
     public static class LineDrawer
     {

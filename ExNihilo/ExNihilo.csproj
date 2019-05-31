@@ -66,6 +66,12 @@
   </PropertyGroup>
   <PropertyGroup />
   <ItemGroup>
+    <Compile Include="Input\Commands\SuperCommands.cs" />
+    <Compile Include="Input\Commands\MenuCommands.cs" />
+    <Compile Include="Sectors\Sector.cs" />
+    <Compile Include="Sectors\UnderworldSector.cs" />
+    <Compile Include="Sectors\OuterworldSector.cs" />
+    <Compile Include="Sectors\TitleSector.cs" />
     <Compile Include="GameContainer.cs" />
     <Compile Include="Input\Commands\CommandHandler.cs" />
     <Compile Include="Input\Commands\CommandHolder.cs" />
@@ -77,17 +83,17 @@
     <Compile Include="Input\Controllers\KeyboardControl.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Util\XNA\AnimatedTexture.cs" />
-    <Compile Include="Util\XNA\AudioManager.cs" />
-    <Compile Include="Util\XNA\ColorScale.cs" />
+    <Compile Include="Util\Graphics\AnimatedTexture.cs" />
+    <Compile Include="Util\AudioManager.cs" />
+    <Compile Include="Util\Graphics\ColorScale.cs" />
     <Compile Include="Util\Coordinate.cs" />
     <Compile Include="Util\Crypter.cs" />
     <Compile Include="Util\dMath.cs" />
     <Compile Include="Util\ExceptionCheck.cs" />
-    <Compile Include="Util\XNA\Keyboard.cs" />
-    <Compile Include="Util\XNA\TextureUtilities.cs" />
-    <Compile Include="Util\XNA\LineDrawer.cs" />
-    <Compile Include="Util\XNA\TextDrawer.cs" />
+    <Compile Include="Util\TypingKeyboard.cs" />
+    <Compile Include="Util\Graphics\TextureUtilities.cs" />
+    <Compile Include="Util\Graphics\LineDrawer.cs" />
+    <Compile Include="Util\Graphics\TextDrawer.cs" />
     <Compile Include="Util\UniversalTime.cs" />
     <Compile Include="Util\Utilities.cs" />
   </ItemGroup>

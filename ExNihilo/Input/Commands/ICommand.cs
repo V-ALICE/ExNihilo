@@ -1,14 +1,36 @@
-﻿namespace ExNihilo.Input.Commands
+﻿using ExNihilo.Sectors;
+
+namespace ExNihilo.Input.Commands
 {
     public interface ICommand
     {
         void Activate();
     }
 
+    public abstract class SuperCommand : ICommand
+    {
+        protected readonly GameContainer Receiver;
+        protected SuperCommand(GameContainer receiver)
+        {
+            Receiver = receiver;
+        }
+        public abstract void Activate();
+    }
+
+    public abstract class MenuCommand : ICommand
+    {
+        protected readonly Sector Receiver;
+        protected MenuCommand(Sector receiver)
+        {
+            Receiver = receiver;
+        }
+        public abstract void Activate();
+    }
+
     public abstract class GameCommand : ICommand
     {
-        protected GameContainer Receiver { get; private set; }
-        protected GameCommand(GameContainer receiver)
+        protected readonly UnderworldSector Receiver;
+        protected GameCommand(UnderworldSector receiver)
         {
             Receiver = receiver;
         }

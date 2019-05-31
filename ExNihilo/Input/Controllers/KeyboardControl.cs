@@ -6,25 +6,25 @@ namespace ExNihilo.Input.Controllers
 {
     public class KeyboardControl : IController
     {
-        private KeyboardState PreviousKeyboardState;
-        public CommandHandler Handler { get; set; }
+        private KeyboardState _previousKeyboardState;
+        private readonly CommandHandler _handler;
         //Only go through the keys that actually perform some action. Requires the list to be kept up to date
-        private readonly List<Keys> PossibleKeys = new List<Keys>
+        private static readonly List<Keys> PossibleKeys = new List<Keys>
         {
             Keys.W, Keys.A, Keys.S, Keys.D,             //Cardinal movement
             Keys.Up, Keys.Down, Keys.Left, Keys.Right,  //Cardinal movement
             Keys.Escape, Keys.Tab,                      //Menus
             Keys.LeftShift, Keys.RightShift,            //Inventory menu (and running)
             Keys.Enter, Keys.E,                         //Interaction
-            Keys.D0, Keys.F1, Keys.F2, Keys.F3,         //Debug
+            Keys.F1, Keys.F2,                           //Debug and fullscreen
             Keys.T, Keys.OemQuestion,                   //Chat
         };
         
 
         public KeyboardControl(CommandHandler handle)
         {
-            PreviousKeyboardState = Keyboard.GetState();
-            Handler = handle;
+            _previousKeyboardState = Keyboard.GetState();
+            _handler = handle;
         }
 
         public void UpdateInput()
@@ -32,16 +32,16 @@ namespace ExNihilo.Input.Controllers
             var currentKeyboardState = Keyboard.GetState();
             foreach (var key in PossibleKeys)
             {
-                if (currentKeyboardState.IsKeyDown(key) && !PreviousKeyboardState.IsKeyDown(key))
+                if (currentKeyboardState.IsKeyDown(key) && !_previousKeyboardState.IsKeyDown(key))
                 {
-                    Handler.HandleCommand(key, true);
+                    _handler.HandleCommand(key, true);
                 }
-                else if (PreviousKeyboardState.IsKeyDown(key) && !currentKeyboardState.IsKeyDown(key))
+                else if (_previousKeyboardState.IsKeyDown(key) && !currentKeyboardState.IsKeyDown(key))
                 {
-                    Handler.HandleCommand(key, false);
+                    _handler.HandleCommand(key, false);
                 }
             }
-            PreviousKeyboardState = currentKeyboardState;
+            _previousKeyboardState = currentKeyboardState;
         }
     }
 }
