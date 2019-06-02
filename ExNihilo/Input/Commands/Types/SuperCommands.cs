@@ -1,4 +1,4 @@
-﻿namespace ExNihilo.Input.Commands
+﻿namespace ExNihilo.Input.Commands.Types
 {
 
     public class ToggleDebugUI : SuperCommand
@@ -36,7 +36,7 @@
             Receiver.ToggleFullScreen();
         }
     }
-    
+
     public class OpenConsole : SuperCommand
     {
         public OpenConsole(GameContainer game) : base(game)
@@ -45,7 +45,19 @@
 
         public override void Activate()
         {
-            //Receiver.ToggleChat();
+            Receiver.OpenConsole();
+        }
+    }
+
+    public class OpenConsoleForCommand : SuperCommand
+    {
+        public OpenConsoleForCommand(GameContainer game) : base(game)
+        {
+        }
+
+        public override void Activate()
+        {
+            Receiver.OpenConsole("/");
         }
     }
 

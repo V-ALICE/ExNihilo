@@ -1,6 +1,8 @@
 ﻿using System.Collections.Generic;
+using ExNihilo.Input.Commands.Types;
 using ExNihilo.Input.Controllers;
 using ExNihilo.Sectors;
+using ExNihilo.Systems;
 using ExNihilo.Util;
 using Microsoft.Xna.Framework.Input;
 
@@ -8,33 +10,42 @@ namespace ExNihilo.Input.Commands
 {
     public class CommandHandler
     {
+
         private readonly List<IController> _controllers;
         private readonly List<KeyBlock> _bucket;
         private readonly int _timerID;
 
-        public CommandHandler(GameContainer game)
-        {
-            _timerID = UniversalTime.NewTimer(true);
-            UniversalTime.TurnOnTimer(_timerID);
-            _controllers = new List<IController> { new KeyboardControl(this), new ControllerControl(this) };
-            _bucket = new List<KeyBlock>
-            {
-                new KeyBlock(new ToggleTitleMenu(game), false, Keys.Escape, Buttons.Back),
-                new KeyBlock(new ToggleDebugUI(game), false, Keys.F1),
-                new KeyBlock(new ToggleFullScreen(game), false, Keys.F2),
-                new KeyBlock(new OpenConsole(game), false, Keys.T, Keys.OemQuestion)
-            };
-        }
-        public CommandHandler(Sector sector)
+        public CommandHandler()
         {
             _timerID = UniversalTime.NewTimer(true);
             UniversalTime.TurnOnTimer(_timerID);
             _controllers = new List<IController> { new KeyboardControl(this), new ControllerControl(this) };
             _bucket = new List<KeyBlock>();
-            Initialize(sector);
         }
 
-        private void Initialize(Sector game)
+        public void Initialize(GameContainer game)
+        {
+            if (_bucket.Count > 0) return;
+
+            _bucket.Add(new KeyBlock(new ToggleTitleMenu(game), false, Keys.Escape, Buttons.Back));
+            _bucket.Add(new KeyBlock(new ToggleDebugUI(game), false, Keys.F1));
+            _bucket.Add(new KeyBlock(new ToggleFullScreen(game), false, Keys.F2));
+            _bucket.Add(new KeyBlock(new Uncommand(), new OpenConsole(game), false, Keys.T));
+            _bucket.Add(new KeyBlock(new Uncommand(), new OpenConsoleForCommand(game), false, Keys.OemQuestion));
+        }
+
+        public void Initialize(ConsoleHandler console)
+        {
+            if (_bucket.Count > 0) return;
+
+            _bucket.Add(new KeyBlock(new BackOutConsole(console), false, Keys.Escape));
+            _bucket.Add(new KeyBlock(new PushConsole(console), false, Keys.Enter));
+            _bucket.Add(new KeyBlock(new RememberLastMessage(console), false, Keys.Up));
+            _bucket.Add(new KeyBlock(new ForgetCurrentMessage(console), false, Keys.Down));
+            _bucket.Add(new KeyBlock(new BackspaceMessage(console), new UnBackspaceMessage(console), false, Keys.Back));
+        }
+
+        public void Initialize(Sector game)
         {
             if (_bucket.Count > 0) return;
 

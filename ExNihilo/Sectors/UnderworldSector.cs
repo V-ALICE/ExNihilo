@@ -15,8 +15,10 @@ namespace ExNihilo.Sectors
         ********************************************************************/
         public override void Initialize()
         {
-            handler = new CommandHandler(this);
-            _menuHandler = new CommandHandler(this);
+            handler = new CommandHandler();
+            handler.Initialize(this);
+            _menuHandler = new CommandHandler();
+            _menuHandler.Initialize(this);
         }
 
         public override void LoadContent()

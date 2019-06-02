@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using ExNihilo.Input.Commands.Types;
 
 namespace ExNihilo.Input.Commands
 {

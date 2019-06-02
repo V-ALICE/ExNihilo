@@ -15,9 +15,9 @@ namespace ExNihilo.Input.Controllers
             Keys.Up, Keys.Down, Keys.Left, Keys.Right,  //Cardinal movement
             Keys.Escape, Keys.Tab,                      //Menus
             Keys.LeftShift, Keys.RightShift,            //Inventory menu (and running)
-            Keys.Enter, Keys.E,                         //Interaction
+            Keys.Enter, Keys.E,                         //Interaction and selection
             Keys.F1, Keys.F2,                           //Debug and fullscreen
-            Keys.T, Keys.OemQuestion,                   //Chat
+            Keys.T, Keys.OemQuestion, Keys.Back         //Chat
         };
         
 

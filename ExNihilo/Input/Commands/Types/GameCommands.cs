@@ -1,9 +1,9 @@
 ﻿using ExNihilo.Sectors;
 
-namespace ExNihilo.Input.Commands
+namespace ExNihilo.Input.Commands.Types
 {
 
-    public class InteractWithWorld : GameCommand
+    public class InteractWithWorld : GameplayCommand
     {
         public InteractWithWorld(UnderworldSector game) : base(game)
         {

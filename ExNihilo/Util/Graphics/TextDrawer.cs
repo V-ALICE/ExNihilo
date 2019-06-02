@@ -19,12 +19,13 @@ namespace ExNihilo.Util.Graphics
             {'<', 56}, {'>', 57}, {'\\', 58}
         };
 
-        public static int AlphaWidth, AlphaHeight, AlphaSpacer; //In pixels
+        public static int AlphaWidth, AlphaHeight, AlphaSpacer, LineSpacer; //In pixels
+        public static int CurrentMultiplier;
         private static Dictionary<char, Texture2D> _charTextures;
 
         public static void Initialize(GraphicsDevice device, Texture2D alphabet)
         {
-            ConfigureTextSize(2);
+            ConfigureTextSize(1);
             _charTextures = new Dictionary<char, Texture2D>();
             foreach (var chr in Char)
             {
@@ -35,9 +36,11 @@ namespace ExNihilo.Util.Graphics
 
         public static void ConfigureTextSize(int multiplier)
         {
-            AlphaWidth = 3 * multiplier;
-            AlphaHeight = 5 * multiplier;
-            AlphaSpacer = multiplier;
+            CurrentMultiplier = multiplier;
+            AlphaWidth = 6 * multiplier;
+            AlphaHeight = 10 * multiplier;
+            AlphaSpacer = 2 * multiplier;
+            LineSpacer = 4 * multiplier;
         }
 
         public static Texture2D GetLetter(char let)
@@ -55,6 +58,7 @@ namespace ExNihilo.Util.Graphics
         public static Vector2 DrawDumbText(SpriteBatch spriteBatch, Vector2 pos, string text, int multiplier, Color c)
         {
             var aPos = Utilities.Copy(pos);
+            multiplier *= CurrentMultiplier;
             foreach (var t in text)
             {
                 spriteBatch.Draw(GetLetter(t), aPos, null, c, 0, Vector2.Zero, multiplier, SpriteEffects.None, 0);
@@ -70,13 +74,14 @@ namespace ExNihilo.Util.Graphics
             //assumes line has already been split correctly, including buffers
             var aPos = Utilities.Copy(pos);
             var oldX = aPos.X;
+            multiplier *= CurrentMultiplier;
             var c = colors.Length > 0 ? colors[0] : Color.Black;
             for (var i = 0; i < smartText.Length; i++)
             {
                 var t = smartText[i];
                 if (t == '\n') //newline
                 {
-                    aPos.Y = (int)Math.Round(aPos.Y + multiplier * (AlphaHeight + 2 * AlphaSpacer));
+                    aPos.Y = (int)Math.Round(aPos.Y + multiplier * (AlphaHeight + LineSpacer));
                     aPos.X = oldX;
                     continue;
                 }
@@ -112,7 +117,7 @@ namespace ExNihilo.Util.Graphics
                             break;
                         case 'n': //insert half newline skip (can be done mid line as well)
                             i++; //consume n
-                            aPos.Y = (int) Math.Round(aPos.Y + 0.5f * multiplier * (AlphaHeight + 2 * AlphaSpacer));
+                            aPos.Y = (int) Math.Round(aPos.Y + 0.5f * multiplier * (AlphaHeight + LineSpacer));
                             break;
                     }
                     continue; //don't need to draw anything right after a format change

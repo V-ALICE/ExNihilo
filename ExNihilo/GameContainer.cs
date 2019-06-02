@@ -4,6 +4,7 @@ using System.Threading;
 using System.Windows.Forms;
 using ExNihilo.Input.Commands;
 using ExNihilo.Sectors;
+using ExNihilo.Systems;
 using ExNihilo.Util;
 using ExNihilo.Util.Graphics;
 using Microsoft.Xna.Framework;
@@ -19,6 +20,8 @@ namespace ExNihilo
             Unloading, LoadingInit, Loading2Under, Loading2Outer, 
         }
 
+        public static Coordinate WindowSize;
+
         private SectorID _activeSectorID;
         private Sector ActiveSector => _sectorDirectory[_activeSectorID];
         private FormWindowState _currentForm;
@@ -28,8 +31,10 @@ namespace ExNihilo
         private Dictionary<SectorID, Sector> _sectorDirectory;
         private Form _form;
         private CommandHandler _handler;
+        private ConsoleHandler _console;
 
         protected bool showDebugInfo, formTouched;
+        protected bool consoleActive => _console.Active;
         protected int systemClockID;
         protected SpriteBatch spriteBatch;
         protected Thread loadingThread;
@@ -37,11 +42,24 @@ namespace ExNihilo
         public GameContainer()
         {
             _graphics = new GraphicsDeviceManager(this) { SynchronizeWithVerticalRetrace = true };
+            WindowSize = new Coordinate(_graphics.PreferredBackBufferWidth, _graphics.PreferredBackBufferHeight);
         }
 
 /********************************************************************
 ------->Window functions
 ********************************************************************/
+        private void CheckForWindowUpdate()
+        {
+            if (Window.ClientBounds.Width != WindowSize.X || Window.ClientBounds.Height != WindowSize.Y)
+            {
+                _graphics.PreferredBackBufferWidth = MathHelper.Clamp(Window.ClientBounds.Width, 700, 3840);
+                _graphics.PreferredBackBufferHeight = MathHelper.Clamp(Window.ClientBounds.Height, 500, 2160);
+                _graphics.ApplyChanges();
+                WindowSize = new Coordinate(Window.ClientBounds.Width, Window.ClientBounds.Height);
+
+                _console.ResizeUI(GraphicsDevice);
+            }
+        }
         private void f_FormClosing(object sender, FormClosingEventArgs e)
         {
             e.Cancel = true;
@@ -57,12 +75,12 @@ namespace ExNihilo
             if (_currentForm != _form.WindowState)
             {
                 _currentForm = _form.WindowState;
-                //TODO: resize UI here
+                CheckForWindowUpdate();
             }
         }
         private void f_ResizeEnd(object sender, EventArgs e)
         {
-            //TODO: resize UI here
+            CheckForWindowUpdate();
             formTouched = false;
         }
 
@@ -86,8 +104,9 @@ namespace ExNihilo
 ********************************************************************/
         protected override void Initialize()
         {
-            _activeSectorID = SectorID.Underworld; //Sector.LoadingInit;
-            _handler = new CommandHandler(this);
+            _activeSectorID = SectorID.LoadingInit;
+            _handler = new CommandHandler();
+            _handler.Initialize(this);
             systemClockID = UniversalTime.NewTimer(true);
             _frameTimeID = UniversalTime.NewTimer(true, 1.5);
             UniversalTime.TurnOnTimer(systemClockID, _frameTimeID);
@@ -106,6 +125,8 @@ namespace ExNihilo
             foreach (var sector in _sectorDirectory.Values) sector.Initialize();
 
             base.Initialize();
+            CheckForWindowUpdate();
+            _console = new ConsoleHandler(GraphicsDevice);
         }
 
         protected override void LoadContent()
@@ -142,7 +163,8 @@ namespace ExNihilo
         protected override void Update(GameTime gameTime)
         {
             UniversalTime.Update(gameTime);
-            _handler.UpdateInput();
+            _console.Update();
+            if (!consoleActive) _handler.UpdateInput();
 
             switch (_activeSectorID)
             {
@@ -170,9 +192,8 @@ namespace ExNihilo
 
         protected override void Draw(GameTime gameTime)
         {
-            GraphicsDevice.Clear(Color.Black);
+            GraphicsDevice.Clear(Color.DarkBlue);
             spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend, SamplerState.PointClamp);
-            UpdateFPS();
 
             switch (_activeSectorID)
             {
@@ -191,7 +212,10 @@ namespace ExNihilo
                     break;
             }
 
+            UpdateFPS(); //FPS numbers are calculated based on drawn frames
+            _console.Draw(spriteBatch); //Console will handle when it should draw
             if (showDebugInfo) DrawDebugInfo();
+
             spriteBatch.End();
             base.Draw(gameTime);
         }
@@ -216,6 +240,11 @@ namespace ExNihilo
         public void ToggleShowDebugInfo()
         {
             showDebugInfo = !showDebugInfo;
+        }
+
+        public void OpenConsole(string initMessage="")
+        {
+            _console.OpenConsole(initMessage);
         }
 
         protected virtual void ExitGame()

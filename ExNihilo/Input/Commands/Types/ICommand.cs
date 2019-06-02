@@ -1,6 +1,7 @@
 ﻿using ExNihilo.Sectors;
+using ExNihilo.Systems;
 
-namespace ExNihilo.Input.Commands
+namespace ExNihilo.Input.Commands.Types
 {
     public interface ICommand
     {
@@ -17,6 +18,16 @@ namespace ExNihilo.Input.Commands
         public abstract void Activate();
     }
 
+    public abstract class ConsoleCommand : ICommand
+    {
+        protected readonly ConsoleHandler Receiver;
+        protected ConsoleCommand(ConsoleHandler receiver)
+        {
+            Receiver = receiver;
+        }
+        public abstract void Activate();
+    }
+
     public abstract class MenuCommand : ICommand
     {
         protected readonly Sector Receiver;
@@ -27,10 +38,10 @@ namespace ExNihilo.Input.Commands
         public abstract void Activate();
     }
 
-    public abstract class GameCommand : ICommand
+    public abstract class GameplayCommand : ICommand
     {
         protected readonly UnderworldSector Receiver;
-        protected GameCommand(UnderworldSector receiver)
+        protected GameplayCommand(UnderworldSector receiver)
         {
             Receiver = receiver;
         }
