@@ -1,9 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using ExNihilo.Input.Commands;
+using ExNihilo.UI;
 using ExNihilo.Util;
 using ExNihilo.Util.Graphics;
 using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
 
 namespace ExNihilo.Systems
@@ -160,21 +162,24 @@ namespace ExNihilo.Systems
 
         public bool Active;
 
-        public ConsoleHandler(GraphicsDevice graphics)
+        public ConsoleHandler()
         {
             _handler = new CommandHandler();
             _handler.Initialize(this);
-            ResizeUI(graphics);
             _backspaceTimerID = UniversalTime.NewTimer(true);
             _console = new ConsoleBox(_maxLineCount, _maxCharacterCount);
             _lastMessage = "";
         }
 
-        public void ResizeUI(GraphicsDevice graphics)
+        public void LoadContent(GraphicsDevice graphics, ContentManager content)
+        {
+        }
+
+        public void OnResize(GraphicsDevice graphics, Coordinate window)
         {
             //Values
-            int height = GameContainer.WindowSize.Y / 4;
-            int width = GameContainer.WindowSize.X / 2;
+            int height = window.Y / 4;
+            int width = window.X / 2;
             _maxCharacterCount = width / (TextDrawer.AlphaWidth + TextDrawer.AlphaSpacer);
             _maxLineCount = height / (TextDrawer.AlphaHeight + TextDrawer.LineSpacer) - 1;
             _console?.Resize(_maxLineCount, _maxCharacterCount);
@@ -185,9 +190,9 @@ namespace ExNihilo.Systems
             _backdrop = TextureUtilities.CreateSingleColorTexture(graphics, width + border, height + border, new Color(0, 0, 0, 0.75f));
 
             //UI positions
-            _backdropPos = new Vector2(0, GameContainer.WindowSize.Y - _backdrop.Height);
-            _activeMessagePosition = new Vector2(TextDrawer.AlphaSpacer, GameContainer.WindowSize.Y - TextDrawer.LineSpacer - TextDrawer.AlphaHeight);
-            _oldMessagePosition = new Vector2(TextDrawer.AlphaSpacer, GameContainer.WindowSize.Y - _backdrop.Height + TextDrawer.LineSpacer);
+            _backdropPos = new Vector2(0, window.Y - _backdrop.Height);
+            _activeMessagePosition = new Vector2(TextDrawer.AlphaSpacer, window.Y - TextDrawer.LineSpacer - TextDrawer.AlphaHeight);
+            _oldMessagePosition = new Vector2(TextDrawer.AlphaSpacer, window.Y - _backdrop.Height + TextDrawer.LineSpacer);
         }
 
         public void Update()

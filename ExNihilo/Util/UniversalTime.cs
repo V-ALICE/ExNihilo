@@ -27,7 +27,7 @@ namespace ExNihilo.Util
         //Gets the current time for the given timer
         public static double GetCurrentTime(int id, bool flush=false)
         {
-            ExceptionCheck.AssertCondition(id < TimeBus.Count, "ID=" + id + " TimeBus.Count=" + TimeBus.Count);
+            ExceptionCheck.AssertCondition(id < TimeBus.Count);
             var tmp = TimeBus[id].TimerCurrent;
             if (flush) TimeBus[id].FlushTime();
             return tmp;
@@ -36,7 +36,7 @@ namespace ExNihilo.Util
         //Gets the percentage done for the given timer. This is only applicable for one cycle and non-applicable for stopwatches 
         public static double GetPercentageDone(int id)
         {
-            ExceptionCheck.AssertCondition(id < TimeBus.Count, "ID=" + id + " TimeBus.Count=" + TimeBus.Count);
+            ExceptionCheck.AssertCondition(id < TimeBus.Count);
             var time = TimeBus[id].TimerCurrent / TimeBus[id].TimerMaxSec;
             if (time > 1) return 1;
             if (time < 0) return 0;
@@ -46,7 +46,7 @@ namespace ExNihilo.Util
         //Gets the amount of times the given timer has achieved its time goal. Resets the counter back to zero by default
         public static int GetNumberOfFires(int id, bool flush=true)
         {
-            ExceptionCheck.AssertCondition(id < TimeBus.Count, "ID=" + id + " TimeBus.Count=" + TimeBus.Count);
+            ExceptionCheck.AssertCondition(id < TimeBus.Count);
             var count = TimeBus[id].FireCount;
             if (flush) TimeBus[id].FlushTimer();
             return count;
@@ -55,7 +55,7 @@ namespace ExNihilo.Util
         //Checks if there's been at least one fire but only decreases the count by one rather than a full reset
         public static bool GetAFire(int id)
         {
-            ExceptionCheck.AssertCondition(id < TimeBus.Count, "ID=" + id + " TimeBus.Count=" + TimeBus.Count);
+            ExceptionCheck.AssertCondition(id < TimeBus.Count);
             if (TimeBus[id].FireCount <= 0) return false;
             TimeBus[id].FireCount--;
             return true;
@@ -64,14 +64,14 @@ namespace ExNihilo.Util
         //Checks if the given timer is on
         public static bool GetStatus(int id)
         {
-            ExceptionCheck.AssertCondition(id < TimeBus.Count, "ID=" + id + " TimeBus.Count=" + TimeBus.Count);
+            ExceptionCheck.AssertCondition(id < TimeBus.Count);
             return TimeBus[id].On;
         }
 
         //Gets the last frame time of the given timer
         public static double GetLastTickTime(int id)
         {
-            ExceptionCheck.AssertCondition(id < TimeBus.Count, "ID=" + id + " TimeBus.Count=" + TimeBus.Count);
+            ExceptionCheck.AssertCondition(id < TimeBus.Count);
             return TimeBus[id].On ? TimeBus[id].LastTickTime : 0;
         }
 
@@ -80,7 +80,7 @@ namespace ExNihilo.Util
         {
             foreach (var id in ids)
             {
-                ExceptionCheck.AssertCondition(id < TimeBus.Count, "ID=" + id + " TimeBus.Count=" + TimeBus.Count);
+                ExceptionCheck.AssertCondition(id < TimeBus.Count);
                 TimeBus[id].On = false;
             }
         }
@@ -89,7 +89,7 @@ namespace ExNihilo.Util
         {
             foreach (var id in ids)
             {
-                ExceptionCheck.AssertCondition(id < TimeBus.Count, "ID=" + id + " TimeBus.Count=" + TimeBus.Count);
+                ExceptionCheck.AssertCondition(id < TimeBus.Count);
                 TimeBus[id].On = true;
             }
         }
@@ -97,14 +97,14 @@ namespace ExNihilo.Util
         //Sets the time goal for a given timer (rather than having to Get a new one)
         public static void RecycleTimer(int id, double newMaxTime)
         {
-            ExceptionCheck.AssertCondition(id < TimeBus.Count, "ID=" + id + " TimeBus.Count=" + TimeBus.Count);
+            ExceptionCheck.AssertCondition(id < TimeBus.Count);
             TimeBus[id] = new Timer(newMaxTime, TimeBus[id].System);
         }
 
         //Resets a given timer (time and fire count). This does not affect if the timer is on or off
         public static void ResetTimer(int id)
         {
-            ExceptionCheck.AssertCondition(id < TimeBus.Count, "ID=" + id + " TimeBus.Count=" + TimeBus.Count);
+            ExceptionCheck.AssertCondition(id < TimeBus.Count);
             TimeBus[id].FlushTimer();
             TimeBus[id].TimerCurrent = 0;
         }

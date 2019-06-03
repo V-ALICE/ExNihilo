@@ -14,8 +14,8 @@ namespace ExNihilo.Util.Graphics
 
         public AnimatedTexture(Texture2D texture, int frameCount, int framesPerSec)
         {
-            ExceptionCheck.AssertCondition(framesPerSec > 0, "framesPerSec="+framesPerSec);
-            ExceptionCheck.AssertCondition(frameCount > 0, "frameCount=" + frameCount);
+            ExceptionCheck.AssertCondition(framesPerSec > 0);
+            ExceptionCheck.AssertCondition(frameCount > 0);
 
             FrameCount = frameCount;
             _textureStrip = texture;
@@ -39,7 +39,7 @@ namespace ExNihilo.Util.Graphics
 
         public void AdjustFPS(int newFPS)
         {
-            ExceptionCheck.AssertCondition(newFPS > 0, "newFPS=" + newFPS);
+            ExceptionCheck.AssertCondition(newFPS > 0);
             UniversalTime.RecycleTimer(_timerID, 1d / newFPS);
         }
 
