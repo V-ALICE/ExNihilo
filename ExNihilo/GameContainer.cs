@@ -1,17 +1,17 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Threading;
+using System.Drawing;
 using System.Windows.Forms;
 using ExNihilo.Input.Commands;
 using ExNihilo.Input.Controllers;
 using ExNihilo.Sectors;
 using ExNihilo.Systems;
-using ExNihilo.UI;
 using ExNihilo.UI.Bases;
 using ExNihilo.Util;
 using ExNihilo.Util.Graphics;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using Color = Microsoft.Xna.Framework.Color;
 
 namespace ExNihilo
 {
@@ -29,23 +29,22 @@ namespace ExNihilo
         private int _frameTimeID;
         private int _currentFrameCount, _currentFrameRate;
         private readonly GraphicsDeviceManager _graphics;
-        private Coordinate WindowSize;
+        private Coordinate _windowSize;
         private Dictionary<SectorID, Sector> _sectorDirectory;
         private Form _form;
         private MouseController _mouse;
         private CommandHandler _handler;
         private ConsoleHandler _console;
 
-        protected bool showDebugInfo, formTouched;
-        protected bool consoleActive => _console.Active;
-        protected int systemClockID;
-        protected SpriteBatch spriteBatch;
-        protected Thread loadingThread;
+        protected bool ShowDebugInfo, FormTouched;
+        protected bool ConsoleActive => _console.Active;
+        protected int SystemClockID;
+        protected SpriteBatch SpriteBatch;
 
         public GameContainer()
         {
             _graphics = new GraphicsDeviceManager(this) { SynchronizeWithVerticalRetrace = true };
-            WindowSize = new Coordinate(_graphics.PreferredBackBufferWidth, _graphics.PreferredBackBufferHeight);
+            _windowSize = new Coordinate(_graphics.PreferredBackBufferWidth, _graphics.PreferredBackBufferHeight);
         }
 
 /********************************************************************
@@ -53,15 +52,15 @@ namespace ExNihilo
 ********************************************************************/
         private void CheckForWindowUpdate()
         {
-            if (Window.ClientBounds.Width != WindowSize.X || Window.ClientBounds.Height != WindowSize.Y)
+            if (Window.ClientBounds.Width != _windowSize.X || Window.ClientBounds.Height != _windowSize.Y)
             {
-                _graphics.PreferredBackBufferWidth = MathHelper.Clamp(Window.ClientBounds.Width, 700, 3840);
-                _graphics.PreferredBackBufferHeight = MathHelper.Clamp(Window.ClientBounds.Height, 500, 2160);
+                _graphics.PreferredBackBufferWidth = Window.ClientBounds.Width;
+                _graphics.PreferredBackBufferHeight = Window.ClientBounds.Height;
                 _graphics.ApplyChanges();
-                WindowSize = new Coordinate(Window.ClientBounds.Width, Window.ClientBounds.Height);
+                _windowSize = new Coordinate(Window.ClientBounds.Width, Window.ClientBounds.Height);
 
-                _console.OnResize(GraphicsDevice, WindowSize, Vector2.Zero);
-                foreach (var sector in _sectorDirectory.Values) sector.OnResize(GraphicsDevice, WindowSize, Vector2.Zero);
+                _console.OnResize(GraphicsDevice, _windowSize, Vector2.Zero);
+                foreach (var sector in _sectorDirectory.Values) sector.OnResize(GraphicsDevice, _windowSize, Vector2.Zero);
             }
         }
         private void f_FormClosing(object sender, FormClosingEventArgs e)
@@ -72,7 +71,7 @@ namespace ExNihilo
         }
         private void f_ResizeBegin(object sender, EventArgs e)
         {
-            formTouched = true;
+            FormTouched = true;
         }
         private void f_Resize(object sender, EventArgs e)
         {
@@ -85,7 +84,7 @@ namespace ExNihilo
         private void f_ResizeEnd(object sender, EventArgs e)
         {
             CheckForWindowUpdate();
-            formTouched = false;
+            FormTouched = false;
         }
 
         public void ToggleFullScreen()
@@ -113,14 +112,16 @@ namespace ExNihilo
             _console = new ConsoleHandler();
             _handler = new CommandHandler();
             _handler.Initialize(this);
-            systemClockID = UniversalTime.NewTimer(true);
+            SystemClockID = UniversalTime.NewTimer(true);
             _frameTimeID = UniversalTime.NewTimer(true, 1.5);
-            UniversalTime.TurnOnTimer(systemClockID, _frameTimeID);
+            UniversalTime.TurnOnTimer(SystemClockID, _frameTimeID);
 
             IsMouseVisible = true;
             Window.AllowUserResizing = true;
             _currentForm = FormWindowState.Normal;
             _form = (Form)Control.FromHandle(Window.Handle);
+            _form.MaximumSize = new Size(3840, 2160);
+            _form.MinimumSize = new Size(700, 500);
             _form.WindowState = FormWindowState.Maximized;
 
             _sectorDirectory = new Dictionary<SectorID, Sector>
@@ -148,7 +149,7 @@ namespace ExNihilo
             }
 
             Content.RootDirectory = "Content";
-            spriteBatch = new SpriteBatch(GraphicsDevice);
+            SpriteBatch = new SpriteBatch(GraphicsDevice);
             UILibrary.LoadLibrary(GraphicsDevice, Content);
 
             TextDrawer.Initialize(GraphicsDevice, Content.Load<Texture2D>("UI/FONT"));
@@ -189,7 +190,7 @@ namespace ExNihilo
                 case SectorID.MainMenu:
                 case SectorID.Outerworld:
                 case SectorID.Underworld:
-                    if (!consoleActive)
+                    if (!ConsoleActive)
                     {
                         _handler.UpdateInput();
                         UpdateMouse();
@@ -210,20 +211,20 @@ namespace ExNihilo
 
         protected virtual void DrawDebugInfo()
         {
-            TextDrawer.DrawDumbText(spriteBatch, Vector2.One, _currentFrameRate + " FPS", 1, Color.White);
+            TextDrawer.DrawDumbText(SpriteBatch, Vector2.One, _currentFrameRate + " FPS", 1, Color.White);
         }
 
         protected override void Draw(GameTime gameTime)
         {
             GraphicsDevice.Clear(Color.DarkBlue);
-            spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend, SamplerState.PointClamp);
+            SpriteBatch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend, SamplerState.PointClamp);
 
             switch (_activeSectorID)
             {
                 case SectorID.MainMenu:
                 case SectorID.Outerworld:
                 case SectorID.Underworld:
-                    ActiveSector.Draw(spriteBatch, showDebugInfo);
+                    ActiveSector.Draw(SpriteBatch, ShowDebugInfo);
                     break;
                 case SectorID.LoadingInit:
                     break;
@@ -236,10 +237,10 @@ namespace ExNihilo
             }
 
             UpdateFPS(); //FPS numbers are calculated based on drawn frames
-            _console.Draw(spriteBatch); //Console will handle when it should draw
-            if (showDebugInfo) DrawDebugInfo();
+            _console.Draw(SpriteBatch); //Console will handle when it should draw
+            if (ShowDebugInfo) DrawDebugInfo();
 
-            spriteBatch.End();
+            SpriteBatch.End();
             base.Draw(gameTime);
         }
 
@@ -250,7 +251,7 @@ namespace ExNihilo
         {
             if (newSector > SectorID.LoadingInit) //Transitioning to loading
             {
-                if (_activeSectorID >= SectorID.LoadingInit || loadingThread.IsAlive)
+                if (_activeSectorID >= SectorID.LoadingInit)
                 {
                     return -1; //wait
                 }
@@ -262,7 +263,7 @@ namespace ExNihilo
 
         public void ToggleShowDebugInfo()
         {
-            showDebugInfo = !showDebugInfo;
+            ShowDebugInfo = !ShowDebugInfo;
         }
 
         public void OpenConsole(string initMessage="")
@@ -272,8 +273,6 @@ namespace ExNihilo
 
         protected virtual void ExitGame()
         {
-            loadingThread?.Abort();
-            loadingThread?.Join();
             AudioManager.KillCurrentSong();
             foreach (var sector in _sectorDirectory.Values) sector.OnExit();
             Exit();

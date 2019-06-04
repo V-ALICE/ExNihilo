@@ -9,7 +9,7 @@ namespace ExNihilo.Util
     {
         // ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890 -?!.,'"()[]%/;:+=_|<>\
         // No @#$^&*{}~`
-        private static readonly Dictionary<Keys, char> DefaultKeyboard = new Dictionary<Keys, char>
+        private static readonly Dictionary<Keys, char> _defaultKeyboard = new Dictionary<Keys, char>
         {
             {Keys.A, 'a'}, {Keys.B, 'b'}, {Keys.C, 'c'}, {Keys.D, 'd'}, {Keys.E, 'e'}, {Keys.F, 'f'}, {Keys.G, 'g'},
             {Keys.H, 'h'}, {Keys.I, 'i'}, {Keys.J, 'j'}, {Keys.K, 'k'}, {Keys.L, 'l'}, {Keys.M, 'm'}, {Keys.N, 'n'},
@@ -22,7 +22,7 @@ namespace ExNihilo.Util
             {Keys.OemQuestion, '/'}, {Keys.Space, ' '}
         };
 
-        private static readonly Dictionary<Keys, char> ShiftedKeyboard = new Dictionary<Keys, char>
+        private static readonly Dictionary<Keys, char> _shiftedKeyboard = new Dictionary<Keys, char>
         {
             {Keys.A, 'A'}, {Keys.B, 'B'}, {Keys.C, 'C'}, {Keys.D, 'D'}, {Keys.E, 'E'}, {Keys.F, 'F'}, {Keys.G, 'G'},
             {Keys.H, 'H'}, {Keys.I, 'I'}, {Keys.J, 'J'}, {Keys.K, 'K'}, {Keys.L, 'L'}, {Keys.M, 'M'}, {Keys.N, 'N'},
@@ -35,7 +35,7 @@ namespace ExNihilo.Util
             {Keys.OemQuestion, '?'}, {Keys.Space, ' '}
         };
 
-        private static readonly Dictionary<Keys, char> CapsLockKeyboard = new Dictionary<Keys, char>
+        private static readonly Dictionary<Keys, char> _capsLockKeyboard = new Dictionary<Keys, char>
         {
             {Keys.A, 'A'}, {Keys.B, 'B'}, {Keys.C, 'C'}, {Keys.D, 'D'}, {Keys.E, 'E'}, {Keys.F, 'F'}, {Keys.G, 'G'},
             {Keys.H, 'H'}, {Keys.I, 'I'}, {Keys.J, 'J'}, {Keys.K, 'K'}, {Keys.L, 'L'}, {Keys.M, 'M'}, {Keys.N, 'N'},
@@ -48,7 +48,7 @@ namespace ExNihilo.Util
             {Keys.OemQuestion, '/'}, {Keys.Space, ' '}
         };
 
-        private static KeyboardState _oldState = new KeyboardState();
+        private static KeyboardState _oldState;
         public static string GetText()
         {
             var list = Keyboard.GetState();
@@ -60,15 +60,15 @@ namespace ExNihilo.Util
                 {
                     if (list.IsKeyDown(Keys.LeftShift) || list.IsKeyDown(Keys.RightShift))
                     {
-                        text += ShiftedKeyboard[key];
+                        text += _shiftedKeyboard[key];
                     }
                     else if (Control.IsKeyLocked(System.Windows.Forms.Keys.CapsLock))
                     {
-                        text += CapsLockKeyboard[key];
+                        text += _capsLockKeyboard[key];
                     }
                     else
                     {
-                        text += DefaultKeyboard[key];
+                        text += _defaultKeyboard[key];
                     }
                 }
                 catch (KeyNotFoundException) {}

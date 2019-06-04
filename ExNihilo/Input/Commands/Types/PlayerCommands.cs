@@ -1,4 +1,4 @@
-﻿namespace ExNihilo.Input.Commands
+﻿namespace ExNihilo.Input.Commands.Types
 {
     /*public class DoubleSpeed : PlayerCommand
     {

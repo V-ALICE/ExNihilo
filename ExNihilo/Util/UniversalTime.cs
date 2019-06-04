@@ -6,38 +6,38 @@ namespace ExNihilo.Util
     public static class UniversalTime
     {
         //Timers that are being tracked are added to the bus. All active timers on the bus are updated per time step
-        private static readonly List<Timer> TimeBus = new List<Timer>();
+        private static readonly List<Timer> _timeBus = new List<Timer>();
         //Timers that are no longer needed by their Geter have their seats on the bus sold back for the next Geter
-        private static readonly List<int> TimersForSale = new List<int>();
+        private static readonly List<int> _timersForSale = new List<int>();
 
         public static int NewTimer(bool systemTimer, double maxTimeSec=-1)
         {
             var newTimer = new Timer(maxTimeSec, systemTimer);
-            if (TimersForSale.Count > 0)
+            if (_timersForSale.Count > 0)
             {
-                var bought = TimersForSale[0];
-                TimersForSale.RemoveAt(0);
-                TimeBus[bought] = newTimer;
+                var bought = _timersForSale[0];
+                _timersForSale.RemoveAt(0);
+                _timeBus[bought] = newTimer;
                 return bought;
             }
-            TimeBus.Add(newTimer);
-            return TimeBus.Count - 1;
+            _timeBus.Add(newTimer);
+            return _timeBus.Count - 1;
         }
 
         //Gets the current time for the given timer
         public static double GetCurrentTime(int id, bool flush=false)
         {
-            ExceptionCheck.AssertCondition(id < TimeBus.Count);
-            var tmp = TimeBus[id].TimerCurrent;
-            if (flush) TimeBus[id].FlushTime();
+            ExceptionCheck.AssertCondition(id < _timeBus.Count);
+            var tmp = _timeBus[id].TimerCurrent;
+            if (flush) _timeBus[id].FlushTime();
             return tmp;
         }
 
         //Gets the percentage done for the given timer. This is only applicable for one cycle and non-applicable for stopwatches 
         public static double GetPercentageDone(int id)
         {
-            ExceptionCheck.AssertCondition(id < TimeBus.Count);
-            var time = TimeBus[id].TimerCurrent / TimeBus[id].TimerMaxSec;
+            ExceptionCheck.AssertCondition(id < _timeBus.Count);
+            var time = _timeBus[id].TimerCurrent / _timeBus[id].TimerMaxSec;
             if (time > 1) return 1;
             if (time < 0) return 0;
             return time;
@@ -46,33 +46,33 @@ namespace ExNihilo.Util
         //Gets the amount of times the given timer has achieved its time goal. Resets the counter back to zero by default
         public static int GetNumberOfFires(int id, bool flush=true)
         {
-            ExceptionCheck.AssertCondition(id < TimeBus.Count);
-            var count = TimeBus[id].FireCount;
-            if (flush) TimeBus[id].FlushTimer();
+            ExceptionCheck.AssertCondition(id < _timeBus.Count);
+            var count = _timeBus[id].FireCount;
+            if (flush) _timeBus[id].FlushTimer();
             return count;
         }
 
         //Checks if there's been at least one fire but only decreases the count by one rather than a full reset
         public static bool GetAFire(int id)
         {
-            ExceptionCheck.AssertCondition(id < TimeBus.Count);
-            if (TimeBus[id].FireCount <= 0) return false;
-            TimeBus[id].FireCount--;
+            ExceptionCheck.AssertCondition(id < _timeBus.Count);
+            if (_timeBus[id].FireCount <= 0) return false;
+            _timeBus[id].FireCount--;
             return true;
         }
 
         //Checks if the given timer is on
         public static bool GetStatus(int id)
         {
-            ExceptionCheck.AssertCondition(id < TimeBus.Count);
-            return TimeBus[id].On;
+            ExceptionCheck.AssertCondition(id < _timeBus.Count);
+            return _timeBus[id].On;
         }
 
         //Gets the last frame time of the given timer
         public static double GetLastTickTime(int id)
         {
-            ExceptionCheck.AssertCondition(id < TimeBus.Count);
-            return TimeBus[id].On ? TimeBus[id].LastTickTime : 0;
+            ExceptionCheck.AssertCondition(id < _timeBus.Count);
+            return _timeBus[id].On ? _timeBus[id].LastTickTime : 0;
         }
 
         //Turns off the given timers
@@ -80,8 +80,8 @@ namespace ExNihilo.Util
         {
             foreach (var id in ids)
             {
-                ExceptionCheck.AssertCondition(id < TimeBus.Count);
-                TimeBus[id].On = false;
+                ExceptionCheck.AssertCondition(id < _timeBus.Count);
+                _timeBus[id].On = false;
             }
         }
         //Turns on the given timers
@@ -89,33 +89,33 @@ namespace ExNihilo.Util
         {
             foreach (var id in ids)
             {
-                ExceptionCheck.AssertCondition(id < TimeBus.Count);
-                TimeBus[id].On = true;
+                ExceptionCheck.AssertCondition(id < _timeBus.Count);
+                _timeBus[id].On = true;
             }
         }
 
         //Sets the time goal for a given timer (rather than having to Get a new one)
         public static void RecycleTimer(int id, double newMaxTime)
         {
-            ExceptionCheck.AssertCondition(id < TimeBus.Count);
-            TimeBus[id] = new Timer(newMaxTime, TimeBus[id].System);
+            ExceptionCheck.AssertCondition(id < _timeBus.Count);
+            _timeBus[id] = new Timer(newMaxTime, _timeBus[id].System);
         }
 
         //Resets a given timer (time and fire count). This does not affect if the timer is on or off
         public static void ResetTimer(int id)
         {
-            ExceptionCheck.AssertCondition(id < TimeBus.Count);
-            TimeBus[id].FlushTimer();
-            TimeBus[id].TimerCurrent = 0;
+            ExceptionCheck.AssertCondition(id < _timeBus.Count);
+            _timeBus[id].FlushTimer();
+            _timeBus[id].TimerCurrent = 0;
         }
 
         //Update all timers on the bus
         public static void Update(GameTime gameTime)
         {
             //Sometimes timers get added in async, so it's easier just to do this rather than add a lock
-            for (var i = 0; i < TimeBus.Count; i++)
+            for (var i = 0; i < _timeBus.Count; i++)
             {
-                TimeBus[i].Update(gameTime);
+                _timeBus[i].Update(gameTime);
             }
         }
 
@@ -123,14 +123,14 @@ namespace ExNihilo.Util
         public static void SellTimer(params int[] ids)
         {
             TurnOffTimer(ids);
-            TimersForSale.AddRange(ids);
+            _timersForSale.AddRange(ids);
         }
 
         //Toggle all the non-system timers on or off. Useful for pausing things
         public static void ToggleAllNonSystemTimers(bool on)
         {
             //Warning: This may have unexpected behavior
-            foreach (var t in TimeBus)
+            foreach (var t in _timeBus)
                 if (!t.System) t.On = on;
         }
     }

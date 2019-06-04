@@ -17,7 +17,7 @@ namespace ExNihilo.Util
         };
         private static Dictionary<string, List<SoundEffectInstance>> _soundLimiter;
         private static string _currentSong;
-        private const int MaxSoundInstances = 2;
+        private const int _maxSoundInstances = 2;
         private static bool _paused;
 
         public static float EffectVolume { get; set; }
@@ -32,7 +32,7 @@ namespace ExNihilo.Util
             _soundLimiter = new Dictionary<string, List<SoundEffectInstance>>();
             foreach (var word in Effects.Keys)
             {
-                _soundLimiter.Add(word, new List<SoundEffectInstance>(MaxSoundInstances));
+                _soundLimiter.Add(word, new List<SoundEffectInstance>(_maxSoundInstances));
             }
             EffectVolume = MusicVolume = 0.75f;
         }
@@ -46,7 +46,7 @@ namespace ExNihilo.Util
 
         public static void PlayEffect(string key)
         {
-            if (_soundLimiter[key].Count >= MaxSoundInstances)
+            if (_soundLimiter[key].Count >= _maxSoundInstances)
             {
                 _soundLimiter[key][0].Stop();
                 _soundLimiter[key][0].Dispose();

@@ -9,7 +9,7 @@ namespace ExNihilo.Util.Graphics
         private bool _halted;
         private readonly byte _upper, _lower;
         private Color _first, _next;
-        private static readonly Random Rand = new Random();
+        private static readonly Random _rand = new Random();
         private readonly int _timerID;
 
         public ColorScale(float lerpTime, byte lowerBound, byte upperBound)
@@ -18,7 +18,7 @@ namespace ExNihilo.Util.Graphics
             _upper = upperBound;
             _lower = lowerBound;
             _first = new Color(_upper, _upper, _upper);
-            _next = new Color((byte)Rand.Next(_lower, _upper), (byte)Rand.Next(_lower, _upper), (byte)Rand.Next(_lower, _upper));
+            _next = new Color((byte)_rand.Next(_lower, _upper), (byte)_rand.Next(_lower, _upper), (byte)_rand.Next(_lower, _upper));
             _timerID = UniversalTime.NewTimer(false, lerpTime);
             UniversalTime.TurnOnTimer(_timerID);
         }
@@ -43,7 +43,7 @@ namespace ExNihilo.Util.Graphics
                 if (_random)
                 {
                     _first = _next;
-                    _next = new Color((byte) Rand.Next(_lower, _upper), (byte) Rand.Next(_lower, _upper), (byte) Rand.Next(_lower, _upper));
+                    _next = new Color((byte) _rand.Next(_lower, _upper), (byte) _rand.Next(_lower, _upper), (byte) _rand.Next(_lower, _upper));
                 }
                 else if (!_singular)
                 {

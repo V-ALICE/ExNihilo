@@ -12,8 +12,8 @@ namespace ExNihilo.Input.Commands
         private readonly bool _nonRepeatable;
         private bool _repeating, _firstStrike;
 
-        public const double InputDelayCounter = 0.05;
-        public const double RepeatDelayCounter = 0.35;
+        private const double _inputDelayCounter = 0.05;
+        private const double _repeatDelayCounter = 0.35;
         public bool IsActive { get; private set; }
 
         public KeyBlock(ICommand cmd, bool repeatable, params object[] keys)//one time per press
@@ -31,7 +31,7 @@ namespace ExNihilo.Input.Commands
             _uncommand = uncmd;
             IsActive = false;
             _nonRepeatable = !repeatable;
-            _timeSinceLastFire = InputDelayCounter;
+            _timeSinceLastFire = _inputDelayCounter;
         }
 
         public void Fire(double seconds)
@@ -44,12 +44,12 @@ namespace ExNihilo.Input.Commands
                 _command.Activate();
                 _firstStrike = false;
             }
-            if (_repeating && _timeSinceLastFire >= InputDelayCounter)
+            if (_repeating && _timeSinceLastFire >= _inputDelayCounter)
             {
-                _timeSinceLastFire -= InputDelayCounter;
+                _timeSinceLastFire -= _inputDelayCounter;
                 _command.Activate();
             }
-            else if (_timeSinceLastFire >= RepeatDelayCounter)
+            else if (_timeSinceLastFire >= _repeatDelayCounter)
             {
                 _timeSinceLastFire = 0;
                 _repeating = true;
@@ -66,7 +66,7 @@ namespace ExNihilo.Input.Commands
         public void Deactivate()
         {
             if (!IsActive) return;
-            _timeSinceLastFire = InputDelayCounter;
+            _timeSinceLastFire = _inputDelayCounter;
             IsActive = _repeating = false;
             _uncommand.Activate();
         }

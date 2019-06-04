@@ -61,6 +61,18 @@ namespace ExNihilo.Util
         {
             return new Vector2(b.X + a.X, b.Y + a.Y);
         }
+        public static Vector2 operator +(Vector2 a, Coordinate b)
+        {
+            return new Vector2(b.X + a.X, b.Y + a.Y);
+        }
+        public static Vector2 operator -(Vector2 a, Coordinate b)
+        {
+            return new Vector2(a.X-b.X, a.Y-b.Y);
+        }
+        public static Vector2 operator -(Coordinate a, Vector2 b)
+        {
+            return new Vector2(a.X - b.X, a.Y - b.Y);
+        }
         public static Vector2 operator *(Coordinate a, Vector2 b)
         {
             return new Vector2(a.X * b.X, a.Y * b.Y);

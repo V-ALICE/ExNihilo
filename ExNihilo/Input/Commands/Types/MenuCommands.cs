@@ -2,18 +2,7 @@
 
 namespace ExNihilo.Input.Commands.Types
 {
-    
-    public class ExportMap : MenuCommand
-    {
-        public ExportMap(Sector game) : base(game)
-        {
-        }
 
-        public override void Activate()
-        {
-            //TODO: make this a chat command instead
-        }
-    }
     public class ToggleMenu : MenuCommand
     {
         public ToggleMenu(Sector game) : base(game)
@@ -83,18 +72,6 @@ namespace ExNihilo.Input.Commands.Types
         public override void Activate()
         {
             //Receiver.PushMenu(G.None);
-        }
-    }
-
-    public class SwapMenu : MenuCommand
-    {
-        public SwapMenu(Sector game) : base(game)
-        {
-        }
-
-        public override void Activate()
-        {
-            //TODO: make this an element of the menu instead of a button
         }
     }
 

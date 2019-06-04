@@ -8,45 +8,45 @@ namespace ExNihilo.UI
 {
     public class UIClickable : UIElement, IClickable
     {
-        protected byte[] alpha;
-        protected Texture2D altTexture;
-        protected readonly string altTexturePath;
+        protected byte[] Alpha;
+        protected Texture2D AltTexture;
+        protected readonly string AltTexturePath;
         public bool Activated { get; protected set; }
 
         public UIClickable(string path, Vector2 relPos, string altPath = "", bool absolute = false, float multiplier = 1.0f,
             PositionType t = PositionType.Center) : base(path, relPos, multiplier, t, absolute)
         {
-            altTexturePath = altPath;
+            AltTexturePath = altPath;
         }
 
         public override void LoadContent(GraphicsDevice graphics, ContentManager content)
         {
             base.LoadContent(graphics, content);
 
-            if (altTexturePath.Length > 0) altTexture = TextureLookUp[altTexturePath];
+            if (AltTexturePath.Length > 0) AltTexture = TextureLookUp[AltTexturePath];
 
             //Get alpha spread
-            var _data = new Color[texture.Width * texture.Height];
-            texture.GetData(_data);
-            alpha = new byte[_data.Length];
-            for (int i = 0; i < _data.Length; i++) alpha[i] = _data[i].A;
+            var data = new Color[Texture.Width * Texture.Height];
+            Texture.GetData(data);
+            Alpha = new byte[data.Length];
+            for (int i = 0; i < data.Length; i++) Alpha[i] = data[i].A;
         }
 
         public override void Draw(SpriteBatch spriteBatch, Color color)
         {
-            if (!loaded) return;
-            if (Activated && altTexture != null)
-                spriteBatch.Draw(altTexture, pos, null, color, 0, Vector2.Zero, sizeMult, SpriteEffects.None, 0);
+            if (!Loaded) return;
+            if (Activated && AltTexture != null)
+                spriteBatch.Draw(AltTexture, Pos, null, color, 0, Vector2.Zero, SizeMult, SpriteEffects.None, 0);
             else
-                spriteBatch.Draw(texture, pos, null, color, 0, Vector2.Zero, sizeMult, SpriteEffects.None, 0);
+                spriteBatch.Draw(Texture, Pos, null, color, 0, Vector2.Zero, SizeMult, SpriteEffects.None, 0);
         }
 
-        public bool IsOver(Point mousePos)
+        public virtual bool IsOver(Point mousePos)
         {
-            int buttonX = (int)Math.Round((mousePos.X - pos.X) / sizeMult);
-            int buttonY = (int)Math.Round((mousePos.Y - pos.Y) / sizeMult);
-            if (buttonX < 0 || buttonY < 0 || buttonX >= baseSize.X || buttonY >= baseSize.Y) return false;
-            bool rtrn = texturePath=="null" || alpha[buttonY * texture.Width + buttonX] != 0;
+            int buttonX = (int)Math.Round((mousePos.X - Pos.X) / SizeMult);
+            int buttonY = (int)Math.Round((mousePos.Y - Pos.Y) / SizeMult);
+            if (buttonX < 0 || buttonY < 0 || buttonX >= BaseSize.X || buttonY >= BaseSize.Y) return false;
+            bool rtrn = TexturePath=="null" || Alpha[buttonY * Texture.Width + buttonX] != 0;
             return rtrn;
         }
 

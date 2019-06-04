@@ -5,14 +5,17 @@ namespace ExNihilo.Util
 {
     public static class MathD
     {
-        public static bool CheckClose(double a, double b, double tolerance = 1e-6)
+        public static bool IsClose(double a, double b, double tolerance = 1e-6)
         {
             return Math.Abs(a - b) < tolerance;
         }
-
-        public static bool CheckClose(Vector2 a, Vector2 b, double tolerance = 1e-6)
+        public static bool IsClose(float a, float b, float tolerance = 1e-6f)
         {
-            return CheckClose(a.X, b.X) && CheckClose(a.Y, b.Y);
+            return Math.Abs(a - b) < tolerance;
+        }
+        public static bool IsClose(Vector2 a, Vector2 b, float tolerance = 1e-6f)
+        {
+            return IsClose(a.X, b.X) && IsClose(a.Y, b.Y);
         }
 
         public static int RoundDown(double x, double tolerance = 1e-6)

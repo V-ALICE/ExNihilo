@@ -6,10 +6,10 @@ namespace ExNihilo.Util.Graphics
 {
     public static class LineDrawer
     {
-        private const float Deg0 = -Deg180;
-        private const float Deg90 = 0;
-        private const float Deg180 = (float) (Math.PI / 2);
-        private const float Deg270 = (float) Math.PI;
+        private const float _deg0 = -_deg180;
+        private const float _deg90 = 0;
+        private const float _deg180 = (float) (Math.PI / 2);
+        private const float _deg270 = (float) Math.PI;
 
         private static Texture2D _texture;
         private static Texture2D GetTexture(SpriteBatch spriteBatch)
@@ -37,13 +37,13 @@ namespace ExNihilo.Util.Graphics
             spriteBatch.Draw(GetTexture(spriteBatch), point, null, color, angle, origin, scale, SpriteEffects.None, 0);
         }
 
-        public static void DrawSquare(SpriteBatch spriteBatch, Vector2 point, int X, int Y, Color color, float thickness = 1f)
+        public static void DrawSquare(SpriteBatch spriteBatch, Vector2 point, int x, int y, Color color, float thickness = 1f)
         {
-            DrawLine(spriteBatch, point, X, Deg90, color, thickness);
-            DrawLine(spriteBatch, point, Y, Deg180, color, thickness);
-            var opposite = point + new Vector2(X, Y);
-            DrawLine(spriteBatch, opposite, X, Deg270, color, thickness);
-            DrawLine(spriteBatch, opposite, Y, Deg0, color, thickness);
+            DrawLine(spriteBatch, point, x, _deg90, color, thickness);
+            DrawLine(spriteBatch, point, y, _deg180, color, thickness);
+            var opposite = point + new Vector2(x, y);
+            DrawLine(spriteBatch, opposite, x, _deg270, color, thickness);
+            DrawLine(spriteBatch, opposite, y, _deg0, color, thickness);
         }
     }
 }

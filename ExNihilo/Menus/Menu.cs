@@ -1,5 +1,4 @@
-﻿using ExNihilo.UI;
-using ExNihilo.UI.Bases;
+﻿using ExNihilo.UI.Bases;
 using ExNihilo.Util;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content;

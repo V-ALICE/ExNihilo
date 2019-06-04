@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using ExNihilo.Input.Commands;
-using ExNihilo.UI;
 using ExNihilo.UI.Bases;
 using ExNihilo.Util;
 using ExNihilo.Util.Graphics;
@@ -14,10 +13,10 @@ namespace ExNihilo.Systems
     public class Message
     {
         private readonly float _maxLiveTime; //in seconds
-        private string _starter;
+        private readonly string _starter;
         private double _liveTime;
 
-        public readonly string text;
+        public readonly string Text;
         public string SplitMessage;
         public bool Dead;
         public readonly bool Command;
@@ -27,7 +26,7 @@ namespace ExNihilo.Systems
         {
             Command = command;
             _maxLiveTime = timeToLive;
-            text = message;
+            Text = message;
             _starter = header;
         }
 
@@ -42,7 +41,7 @@ namespace ExNihilo.Systems
         }
         public void SmartSplit(int maxLength)
         {
-            var fullText = text.Trim();
+            var fullText = Text.Trim();
             SplitMessage = "";
             LineCount = 0;
             var lengthOfCompare = maxLength - _starter.Length;
@@ -88,56 +87,56 @@ namespace ExNihilo.Systems
 
     public class ConsoleBox
     {
-        private const int MemoryMax = 25;      //Lines to keep in memory
-        private const float LineLiveTime = 10; //Time to display a message (in seconds)
+        private const int _memoryMax = 25;      //Lines to keep in memory
+        private const float _lineLiveTime = 10; //Time to display a message (in seconds)
         private int _maxLines, _maxLineLength; //Lines to display and characters per line
         private readonly int _timerID;
-        private readonly List<Message> messages;
+        private readonly List<Message> _messages;
 
         public ConsoleBox(int lines, int characters)
         {
             _maxLines = lines;
             _maxLineLength = characters;
-            messages = new List<Message>();
+            _messages = new List<Message>();
             _timerID = UniversalTime.NewTimer(true);
             UniversalTime.TurnOnTimer(_timerID);
         }
 
         public void ClearMemory()
         {
-            messages.Clear();
+            _messages.Clear();
         }
 
         public void AddMessage(string starter, string text, bool command=false)
         {
-            var tmp = new Message(text, LineLiveTime, starter, command);
+            var tmp = new Message(text, _lineLiveTime, starter, command);
             tmp.SmartSplit(_maxLineLength);
-            messages.Add(tmp);
-            while (messages.Count > MemoryMax) messages.RemoveAt(0);
+            _messages.Add(tmp);
+            while (_messages.Count > _memoryMax) _messages.RemoveAt(0);
         }
 
         public void Update()
         {
             var tick = UniversalTime.GetLastTickTime(_timerID);
-            foreach (var m in messages) m.Tick(tick);
+            foreach (var m in _messages) m.Tick(tick);
         }
 
         public void Resize(int lines, int characters)
         {
             _maxLines = lines;
             _maxLineLength = characters;
-            foreach (var m in messages) m.SmartSplit(_maxLineLength);
+            foreach (var m in _messages) m.SmartSplit(_maxLineLength);
         }
 
         public List<Message> GetAllMessages()
         {
             //return up to _maxLines lines in oldest to newest order
             var list = new List<Message>();
-            var len = messages.Count - 1;
+            var len = _messages.Count - 1;
             var count = 0;
             while (len >= 0)
             {
-                var line = messages[len--];
+                var line = _messages[len--];
                 if (count + line.LineCount > _maxLines) break;
                 list.Insert(0, line);
                 count += line.LineCount;
@@ -157,7 +156,7 @@ namespace ExNihilo.Systems
         private int _maxCharacterCount, _maxLineCount;
 
         private readonly int _backspaceTimerID;
-        private const float backspaceDelay = 0.05f, backspaceDelayExtended = 0.35f;
+        private const float _backspaceDelay = 0.05f, _backspaceDelayExtended = 0.35f;
         private bool _backspace, _firstBackspace;
         private string _lastMessage;
 
@@ -206,13 +205,13 @@ namespace ExNihilo.Systems
 
             if (_backspace)
             {
-                if (_firstBackspace && UniversalTime.GetCurrentTime(_backspaceTimerID) > backspaceDelayExtended)
+                if (_firstBackspace && UniversalTime.GetCurrentTime(_backspaceTimerID) > _backspaceDelayExtended)
                 {
                     //pressing backspace for significant time (0.35 sec) to engage auto
                     _firstBackspace = false;
                     UniversalTime.ResetTimer(_backspaceTimerID);
                 }
-                else if (!_firstBackspace && UniversalTime.GetCurrentTime(_backspaceTimerID) > backspaceDelay)
+                else if (!_firstBackspace && UniversalTime.GetCurrentTime(_backspaceTimerID) > _backspaceDelay)
                 {
                     //auto is engaged and enough time has passed to go again
                     UniversalTime.ResetTimer(_backspaceTimerID);

@@ -20,8 +20,8 @@ namespace ExNihilo.Sectors
 
         public override void Initialize()
         {
-            handler = new CommandHandler();
-            handler.Initialize(this);
+            Handler = new CommandHandler();
+            Handler.Initialize(this);
             _menuHandler = new CommandHandler();
             _menuHandler.Initialize(this);
         }
@@ -32,7 +32,7 @@ namespace ExNihilo.Sectors
 
         public override void Update()
         {
-            handler.UpdateInput();
+            Handler.UpdateInput();
             //_menuHandler.UpdateInput();
         }
 
@@ -50,6 +50,7 @@ namespace ExNihilo.Sectors
         ********************************************************************/
         public override void OnExit()
         {
+            base.OnExit();
         }
 
         public override void OnMoveMouse(Point point)

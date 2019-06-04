@@ -17,69 +17,65 @@ namespace ExNihilo.UI
             Center,
         }
 
-        protected PositionType type;
-        protected Texture2D texture;
-        protected Vector2 pos;
-        protected Coordinate baseSize;
-        protected readonly Vector2 posRel;
-        protected readonly float sizeMult;
-        protected readonly string texturePath;
-        protected readonly bool absoluteOffset;
-        protected bool loaded;
+        protected PositionType Type;
+        protected Texture2D Texture;
+        protected Vector2 Pos;
+        protected Coordinate BaseSize;
+        protected Vector2 PosRel, TextureOffset;
+        protected readonly float SizeMult;
+        protected readonly string TexturePath;
+        protected readonly bool AbsoluteOffset;
+        protected bool Loaded;
 
         public UIElement(string path, Vector2 relPos, float multiplier, PositionType t, bool absolute)
         {
             ExceptionCheck.AssertCondition(absolute || (relPos.X >= 0 && relPos.X <= 1.0 && relPos.Y >= 0 && relPos.Y <= 1.0));
-            texturePath = path;
-            posRel = Utilities.Copy(relPos);
-            sizeMult = multiplier;
-            type = t;
-            absoluteOffset = absolute;
+            TexturePath = path;
+            PosRel = Utilities.Copy(relPos);
+            SizeMult = multiplier;
+            Type = t;
+            AbsoluteOffset = absolute;
         }
 
         public virtual void LoadContent(GraphicsDevice graphics, ContentManager content)
         {
-            loaded = true;
-            texture = TextureLookUp[texturePath];
-            if (baseSize is null) baseSize = new Coordinate(texture.Width, texture.Height);
+            Loaded = true;
+            Texture = TextureLookUp[TexturePath];
+            if (BaseSize is null) BaseSize = new Coordinate(Texture.Width, Texture.Height);
+            TextureOffset = GetOffset();
         }
 
-        public virtual void OnResize(GraphicsDevice graphics, Coordinate window, Vector2 origin)
+        protected Vector2 GetOffset()
         {
-            if (!loaded) return;
-            var offset = new Vector2();
-            switch (type)
+            switch (Type)
             {
                 case PositionType.TopLeft:
-                    offset = new Vector2(0, 0);
-                    break;
+                    return new Vector2(0, 0);
                 case PositionType.TopRight:
-                    offset = new Vector2(baseSize.X, 0);
-                    break;
+                    return new Vector2(BaseSize.X, 0);
                 case PositionType.BottomLeft:
-                    offset = new Vector2(0, baseSize.Y);
-                    break;
+                    return new Vector2(0, BaseSize.Y);
                 case PositionType.BottomRight:
-                    offset = new Vector2(baseSize.X, baseSize.Y);
-                    break;
+                    return new Vector2(BaseSize.X, BaseSize.Y);
                 case PositionType.CenterTop:
-                    offset = new Vector2(baseSize.X / 2, 0);
-                    break;
+                    return new Vector2(BaseSize.X / 2, 0);
                 case PositionType.CenterBottom:
-                    offset = new Vector2(baseSize.X / 2, baseSize.Y);
-                    break;
+                    return new Vector2(BaseSize.X / 2, BaseSize.Y);
                 case PositionType.CenterLeft:
-                    offset = new Vector2(0, baseSize.Y/2);
-                    break;
+                    return new Vector2(0, BaseSize.Y / 2);
                 case PositionType.CenterRight:
-                    offset = new Vector2(baseSize.X, baseSize.Y / 2);
-                    break;
+                    return new Vector2(BaseSize.X, BaseSize.Y / 2);
                 case PositionType.Center:
-                    offset = new Vector2(baseSize.X / 2, baseSize.Y / 2);
-                    break;
+                    return new Vector2(BaseSize.X / 2, BaseSize.Y / 2);
             }
 
-            pos = absoluteOffset ? origin + posRel - offset : origin + window * posRel - offset;
+            return new Vector2();
+        }
+        public virtual void OnResize(GraphicsDevice graphics, Coordinate window, Vector2 origin)
+        {
+            if (!Loaded) return;
+
+            Pos = AbsoluteOffset ? origin + PosRel - TextureOffset : origin + window * PosRel - TextureOffset;
         }
 
         public virtual void Draw(SpriteBatch spriteBatch)
@@ -88,8 +84,8 @@ namespace ExNihilo.UI
         }
         public virtual void Draw(SpriteBatch spriteBatch, Color color)
         {
-            if (!loaded) return;
-            spriteBatch.Draw(texture, pos, null, color, 0, Vector2.Zero, sizeMult, SpriteEffects.None, 0);
+            if (!Loaded) return;
+            spriteBatch.Draw(Texture, Pos, null, color, 0, Vector2.Zero, SizeMult, SpriteEffects.None, 0);
         }
     }
 }

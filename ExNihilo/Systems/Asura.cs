@@ -5,9 +5,9 @@ namespace ExNihilo.Systems
     public static class Asura
     {
         private static bool _cheatyMode;
-        private static GameContainer game;
-        private static OuterworldSector world;
-        private static UnderworldSector theVoid;
+        private static GameContainer _game;
+        private static OuterworldSector _theTown;
+        private static UnderworldSector _theVoid;
 
         private static void PostHelp(ConsoleHandler g, string com)
         {
@@ -17,6 +17,10 @@ namespace ExNihilo.Systems
                     g.ForceMessage("<Help>",
                         "\n/help           -> Display all available commands" +
                         "\n/help [command] -> Display info about given command");
+                    break;
+                case "exportmap":
+                    g.ForceMessage("<ExportMap>",
+                        "\n/exportmap -> Save the current level as a PNG file");
                     break;
                 case "kick":
                     g.ForceMessage("<Kick>", 
@@ -135,13 +139,13 @@ namespace ExNihilo.Systems
             if (_cheatyMode)
             {
                 g.ForceMessage("<Possible commands>",
-                    "help, kick, op, deop, tgm, tai, noclip, restore, clearinv, stairs, die, revive, " +
+                    "help, kick, op, deop, exportmap, tgm, tai, noclip, restore, clearinv, stairs, die, revive, " +
                     "giveitem, giveequip, givegold, giveexp, giveskill, levelup, setspeed, spawnmob, spawnnpc, gotofloor");
             }
             else
             {
                 g.ForceMessage("<Possible commands>", 
-                    "help, op, deop");
+                    "help, op, deop, exportmap");
             }
         }
 
@@ -158,6 +162,10 @@ namespace ExNihilo.Systems
             else if (command.Equals("deop"))
             {
                 _cheatyMode = false;
+            }
+            else if (command.Equals("exportmap"))
+            {
+                //ExportMap(g);
             }
             else if (!_cheatyMode)
             {
@@ -279,9 +287,9 @@ namespace ExNihilo.Systems
 
         public static void Ascend(GameContainer g, UnderworldSector u, OuterworldSector o)
         {
-            game = g;
-            world = o;
-            theVoid = u;
+            _game = g;
+            _theTown = o;
+            _theVoid = u;
         }
     }
 }

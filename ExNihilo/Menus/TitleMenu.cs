@@ -1,5 +1,4 @@
-﻿using System.Collections.Generic;
-using ExNihilo.UI;
+﻿using ExNihilo.UI;
 using ExNihilo.Util;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content;
@@ -12,14 +11,14 @@ namespace ExNihilo.Menus
         private readonly UIPanel _test;
         public TitleMenu()
         {
-            _test = new UIPanel(new Vector2(0.5f, 0.5f), Vector2.One);
-            _test.AddElement(new UIPanel(new Vector2(0,0), new Vector2(0.49f, 0.49f), false, UIElement.PositionType.TopLeft));
-            _test.AddElement(new UIPanel(new Vector2(0,1), new Vector2(0.49f, 0.49f), false, UIElement.PositionType.BottomLeft));
-            _test.AddElement(new UIPanel(new Vector2(1,0), new Vector2(0.49f, 0.49f), false, UIElement.PositionType.TopRight));
-            _test.AddElement(new UIPanel(new Vector2(1,1), new Vector2(0.49f, 0.49f), false, UIElement.PositionType.BottomRight));
-            _test.AddElement(new UIPanel(new Vector2(0.5f,0.5f), new Vector2(0.49f, 0.49f)));
+            var horizontal = new UIPanel(new Vector2(0.5f, 0.5f), new Vector2(0.75f, 0f), false, UIElement.PositionType.CenterTop);
+            horizontal.AddElements(new UIMovable("UI/BigButtonUp", new Vector2(0f, 0.5f), true, "UI/BigButtonDown"));
+            var vertical = new UIPanel(new Vector2(0.5f, 0.5f), new Vector2(0f, 0.75f), false, UIElement.PositionType.CenterLeft);
+            vertical.AddElements(new UIMovable("UI/BigButtonUp", new Vector2(0.5f, 0f), true, "UI/BigButtonDown"));
 
-            _test.AddElement(new UIClickable("UI/BigButtonUp", new Vector2(0.5f, 0.5f), "UI/BigButtonDown"));
+            _test = new UIPanel(new Vector2(0.5f, 0.5f), new Vector2(0.75f, 0.75f));
+            _test.AddElements(new UIMovable("UI/BigButtonUp", new Vector2(0.5f, 0.5f), true, "UI/BigButtonDown"));
+            _test.AddElements(horizontal, vertical);
         }
 
         public override void Enter()

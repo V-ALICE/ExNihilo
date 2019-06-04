@@ -9,7 +9,7 @@ namespace ExNihilo.Input.Controllers
         private KeyboardState _previousKeyboardState;
         private readonly CommandHandler _handler;
         //Only go through the keys that actually perform some action. Requires the list to be kept up to date
-        private static readonly List<Keys> PossibleKeys = new List<Keys>
+        private static readonly List<Keys> _possibleKeys = new List<Keys>
         {
             Keys.W, Keys.A, Keys.S, Keys.D,             //Cardinal movement
             Keys.Up, Keys.Down, Keys.Left, Keys.Right,  //Cardinal movement
@@ -30,7 +30,7 @@ namespace ExNihilo.Input.Controllers
         public void UpdateInput()
         {
             var currentKeyboardState = Keyboard.GetState();
-            foreach (var key in PossibleKeys)
+            foreach (var key in _possibleKeys)
             {
                 if (currentKeyboardState.IsKeyDown(key) && !_previousKeyboardState.IsKeyDown(key))
                 {

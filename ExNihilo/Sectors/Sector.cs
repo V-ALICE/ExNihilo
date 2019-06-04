@@ -10,8 +10,8 @@ namespace ExNihilo.Sectors
 {
     public abstract class Sector : IUI, IClickable
     {
-        protected CommandHandler handler;
-        protected Thread loadingThread;
+        protected CommandHandler Handler;
+        protected Thread LoadingThread;
 
         public abstract void OnResize(GraphicsDevice graphicsDevice, Coordinate window, Vector2 origin);
         public abstract void Initialize();
@@ -23,7 +23,12 @@ namespace ExNihilo.Sectors
         {
             Draw(spriteBatch, false);
         }
-        public abstract void OnExit();
+
+        public virtual void OnExit()
+        {
+            LoadingThread?.Abort();
+            LoadingThread?.Join();
+        }
 
         public abstract void OnMoveMouse(Point point);
         public abstract void OnLeftClick(Point point);
