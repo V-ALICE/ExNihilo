@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+﻿using ExNihilo.UI.Bases;
 using ExNihilo.Util;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content;
@@ -6,7 +6,7 @@ using Microsoft.Xna.Framework.Graphics;
 
 namespace ExNihilo.UI
 {
-    public class UIElement : IUI
+    public class UIElement : UILibrary, IUI
     {
         public enum PositionType
         {
@@ -14,68 +14,72 @@ namespace ExNihilo.UI
             BottomLeft, BottomRight,
             CenterTop, CenterBottom,
             CenterLeft, CenterRight,
-            Center
+            Center,
         }
-
-        protected static Dictionary<string, Texture2D> TextureLookUp = new Dictionary<string, Texture2D>(); //TODO: this doesn't really work with sheets, only single textures
 
         protected PositionType type;
         protected Texture2D texture;
         protected Vector2 pos;
+        protected Coordinate baseSize;
         protected readonly Vector2 posRel;
         protected readonly float sizeMult;
         protected readonly string texturePath;
+        protected readonly bool absoluteOffset;
         protected bool loaded;
 
-        public UIElement(string path, Vector2 relPos, float multiplier, PositionType t)
+        public UIElement(string path, Vector2 relPos, float multiplier, PositionType t, bool absolute)
         {
-            ExceptionCheck.AssertCondition(relPos.X >= 0 && relPos.X <= 1.0 && relPos.Y >= 0 && relPos.Y <= 1.0);
+            ExceptionCheck.AssertCondition(absolute || (relPos.X >= 0 && relPos.X <= 1.0 && relPos.Y >= 0 && relPos.Y <= 1.0));
             texturePath = path;
             posRel = Utilities.Copy(relPos);
             sizeMult = multiplier;
             type = t;
+            absoluteOffset = absolute;
         }
 
         public virtual void LoadContent(GraphicsDevice graphics, ContentManager content)
         {
             loaded = true;
-            texture = content.Load<Texture2D>(texturePath);
-            
+            texture = TextureLookUp[texturePath];
+            if (baseSize is null) baseSize = new Coordinate(texture.Width, texture.Height);
         }
 
-        public virtual void OnResize(GraphicsDevice graphics, Coordinate window)
+        public virtual void OnResize(GraphicsDevice graphics, Coordinate window, Vector2 origin)
         {
             if (!loaded) return;
+            var offset = new Vector2();
             switch (type)
             {
                 case PositionType.TopLeft:
-                    pos = new Vector2(posRel.X * window.X, posRel.Y * window.Y);
+                    offset = new Vector2(0, 0);
                     break;
                 case PositionType.TopRight:
-                    pos = new Vector2(posRel.X * window.X - texture.Width, posRel.Y * window.Y);
+                    offset = new Vector2(baseSize.X, 0);
                     break;
                 case PositionType.BottomLeft:
-                    pos = new Vector2(posRel.X * window.X, posRel.Y * window.Y - texture.Height);
+                    offset = new Vector2(0, baseSize.Y);
                     break;
                 case PositionType.BottomRight:
-                    pos = new Vector2(posRel.X * window.X - texture.Width, posRel.Y * window.Y - texture.Height);
+                    offset = new Vector2(baseSize.X, baseSize.Y);
                     break;
                 case PositionType.CenterTop:
-                    pos = new Vector2(posRel.X * window.X - texture.Width / 2, posRel.Y * window.Y);
+                    offset = new Vector2(baseSize.X / 2, 0);
                     break;
                 case PositionType.CenterBottom:
-                    pos = new Vector2(posRel.X * window.X - texture.Width / 2, posRel.Y * window.Y - texture.Height);
+                    offset = new Vector2(baseSize.X / 2, baseSize.Y);
                     break;
                 case PositionType.CenterLeft:
-                    pos = new Vector2(posRel.X * window.X, posRel.Y * window.Y - texture.Height / 2);
+                    offset = new Vector2(0, baseSize.Y/2);
                     break;
                 case PositionType.CenterRight:
-                    pos = new Vector2(posRel.X * window.X - texture.Width, posRel.Y * window.Y - texture.Height / 2);
+                    offset = new Vector2(baseSize.X, baseSize.Y / 2);
                     break;
                 case PositionType.Center:
-                    pos = new Vector2(posRel.X * window.X - texture.Width / 2, posRel.Y * window.Y - texture.Height / 2);
+                    offset = new Vector2(baseSize.X / 2, baseSize.Y / 2);
                     break;
             }
+
+            pos = absoluteOffset ? origin + posRel - offset : origin + window * posRel - offset;
         }
 
         public virtual void Draw(SpriteBatch spriteBatch)

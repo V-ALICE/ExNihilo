@@ -9,15 +9,17 @@ namespace ExNihilo.Menus
 {
     public class TitleMenu : Menu
     {
-        private readonly List<InteractiveUIElement> _test;
+        private readonly UIPanel _test;
         public TitleMenu()
         {
-            _test = new List<InteractiveUIElement>
-            {
-                new InteractiveUIElement("UI/BigButton", new Vector2(0.5f, 0.25f), "UI/SmallButtonPressed"),
-                new InteractiveUIElement("UI/BigButton", new Vector2(0.5f, 0.5f), "UI/SmallButtonPressed"),
-                new InteractiveUIElement("UI/BigButton", new Vector2(0.5f, 0.75f), "UI/SmallButtonPressed")
-            };
+            _test = new UIPanel(new Vector2(0.5f, 0.5f), Vector2.One);
+            _test.AddElement(new UIPanel(new Vector2(0,0), new Vector2(0.49f, 0.49f), false, UIElement.PositionType.TopLeft));
+            _test.AddElement(new UIPanel(new Vector2(0,1), new Vector2(0.49f, 0.49f), false, UIElement.PositionType.BottomLeft));
+            _test.AddElement(new UIPanel(new Vector2(1,0), new Vector2(0.49f, 0.49f), false, UIElement.PositionType.TopRight));
+            _test.AddElement(new UIPanel(new Vector2(1,1), new Vector2(0.49f, 0.49f), false, UIElement.PositionType.BottomRight));
+            _test.AddElement(new UIPanel(new Vector2(0.5f,0.5f), new Vector2(0.49f, 0.49f)));
+
+            _test.AddElement(new UIClickable("UI/BigButtonUp", new Vector2(0.5f, 0.5f), "UI/BigButtonDown"));
         }
 
         public override void Enter()
@@ -62,32 +64,32 @@ namespace ExNihilo.Menus
 
         public override void LoadContent(GraphicsDevice graphics, ContentManager content)
         {
-            foreach (var button in _test) button.LoadContent(graphics, content);
+            _test.LoadContent(graphics, content);
         }
 
-        public override void OnResize(GraphicsDevice graphics, Coordinate window)
+        public override void OnResize(GraphicsDevice graphics, Coordinate window, Vector2 origin)
         {
-            foreach (var button in _test) button.OnResize(graphics, window);
+            _test.OnResize(graphics, window, origin);
         }
 
         public override void Draw(SpriteBatch spriteBatch)
         {
-            foreach (var button in _test) button.Draw(spriteBatch);
+            _test.Draw(spriteBatch);
         }
 
         public override void OnMoveMouse(Point point)
         {
-            foreach (var button in _test) button.OnMoveMouse(point);
+            _test.OnMoveMouse(point);
         }
 
         public override void OnLeftClick(Point point)
         {
-            foreach (var button in _test) button.OnLeftClick(point);
+            _test.OnLeftClick(point);
         }
 
         public override void OnLeftRelease()
         {
-            foreach (var button in _test) button.OnLeftRelease();
+            _test.OnLeftRelease();
         }
     }
 }

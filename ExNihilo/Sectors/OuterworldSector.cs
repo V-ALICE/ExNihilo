@@ -12,7 +12,7 @@ namespace ExNihilo.Sectors
         /********************************************************************
         ------->Game loop
         ********************************************************************/
-        public override void OnResize(GraphicsDevice graphicsDevice, Coordinate window)
+        public override void OnResize(GraphicsDevice graphicsDevice, Coordinate window, Vector2 origin)
         {
             
         }

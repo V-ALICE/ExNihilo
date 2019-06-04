@@ -1,6 +1,6 @@
 ﻿using System.Threading;
 using ExNihilo.Input.Commands;
-using ExNihilo.UI;
+using ExNihilo.UI.Bases;
 using ExNihilo.Util;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content;
@@ -13,7 +13,7 @@ namespace ExNihilo.Sectors
         protected CommandHandler handler;
         protected Thread loadingThread;
 
-        public abstract void OnResize(GraphicsDevice graphicsDevice, Coordinate window);
+        public abstract void OnResize(GraphicsDevice graphicsDevice, Coordinate window, Vector2 origin);
         public abstract void Initialize();
         public abstract void LoadContent(GraphicsDevice graphicsDevice, ContentManager content);
         public abstract void Update();

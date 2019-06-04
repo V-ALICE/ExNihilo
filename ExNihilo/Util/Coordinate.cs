@@ -6,27 +6,6 @@ namespace ExNihilo.Util
     //Basically an integral Vector2
     public class Coordinate
     {
-        protected bool Equals(Coordinate other)
-        {
-            return X == other.X && Y == other.Y;
-        }
-
-        public override bool Equals(object obj)
-        {
-            if (ReferenceEquals(null, obj)) return false;
-            if (ReferenceEquals(this, obj)) return true;
-            if (obj.GetType() != GetType()) return false;
-            return Equals((Coordinate) obj);
-        }
-
-        public override int GetHashCode()
-        {
-            unchecked
-            {
-                return (X * 397) ^ Y;
-            }
-        }
-
         public int X { get; set; }
         public int Y { get; set; }
 
@@ -63,7 +42,7 @@ namespace ExNihilo.Util
             return new Coordinate(X + 1, Y);
         }
 
-        public bool IsEquivalentTo(Coordinate check)
+        public bool Equals(Coordinate check)
         {
             return X == check.X && Y == check.Y;
         }
@@ -82,16 +61,20 @@ namespace ExNihilo.Util
         {
             return new Vector2(b.X + a.X, b.Y + a.Y);
         }
-        public static bool operator == (Coordinate a, Coordinate b)
+        public static Vector2 operator *(Coordinate a, Vector2 b)
         {
-            if (a == null || b == null) return false;
-            return a.X == b.X && a.Y == b.Y;
+            return new Vector2(a.X * b.X, a.Y * b.Y);
         }
-        public static bool operator !=(Coordinate a, Coordinate b)
-        {
-            if (a == null || b == null) return true;
-            return a.X != b.X || a.Y != b.Y;
-        }
+        //public static bool operator == (Coordinate a, Coordinate b)
+        //{
+        //    if (a == null || b == null) return false;
+        //    return a.X == b.X && a.Y == b.Y;
+        //}
+        //public static bool operator !=(Coordinate a, Coordinate b)
+        //{
+        //    if (a == null || b == null) return true;
+        //    return a.X != b.X || a.Y != b.Y;
+        //}
 
         public bool IsRadial(Coordinate coord, int radius)
         {

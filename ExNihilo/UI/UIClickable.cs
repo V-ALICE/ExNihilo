@@ -1,35 +1,29 @@
 ﻿using System;
-using ExNihilo.Input.Controllers;
+using ExNihilo.UI.Bases;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
 
 namespace ExNihilo.UI
 {
-    public class InteractiveUIElement : UIElement, IClickable
+    public class UIClickable : UIElement, IClickable
     {
         protected byte[] alpha;
-        protected Color altColor;
         protected Texture2D altTexture;
         protected readonly string altTexturePath;
-        protected bool activated;
+        public bool Activated { get; protected set; }
 
-        public InteractiveUIElement(string path, Vector2 relPos, string altPath="", float multiplier = 1.0f, PositionType t = PositionType.Center) : base(path, relPos, multiplier, t)
+        public UIClickable(string path, Vector2 relPos, string altPath = "", bool absolute = false, float multiplier = 1.0f,
+            PositionType t = PositionType.Center) : base(path, relPos, multiplier, t, absolute)
         {
             altTexturePath = altPath;
-            altColor = Color.White;
-        }
-        public InteractiveUIElement(string path, Vector2 relPos, Color colorAlt, float multiplier = 1.0f, PositionType t = PositionType.Center) : base(path, relPos, multiplier, t)
-        {
-            altColor = colorAlt;
-            altTexturePath = "";
         }
 
         public override void LoadContent(GraphicsDevice graphics, ContentManager content)
         {
             base.LoadContent(graphics, content);
 
-            if (altTexturePath.Length > 0) altTexture = content.Load<Texture2D>(altTexturePath);
+            if (altTexturePath.Length > 0) altTexture = TextureLookUp[altTexturePath];
 
             //Get alpha spread
             var _data = new Color[texture.Width * texture.Height];
@@ -41,10 +35,8 @@ namespace ExNihilo.UI
         public override void Draw(SpriteBatch spriteBatch, Color color)
         {
             if (!loaded) return;
-            if (activated && altTexture != null)
+            if (Activated && altTexture != null)
                 spriteBatch.Draw(altTexture, pos, null, color, 0, Vector2.Zero, sizeMult, SpriteEffects.None, 0);
-            else if (activated)
-                spriteBatch.Draw(texture, pos, null, altColor, 0, Vector2.Zero, sizeMult, SpriteEffects.None, 0);
             else
                 spriteBatch.Draw(texture, pos, null, color, 0, Vector2.Zero, sizeMult, SpriteEffects.None, 0);
         }
@@ -53,24 +45,24 @@ namespace ExNihilo.UI
         {
             int buttonX = (int)Math.Round((mousePos.X - pos.X) / sizeMult);
             int buttonY = (int)Math.Round((mousePos.Y - pos.Y) / sizeMult);
-            if (buttonX < 0 || buttonY < 0 || buttonX >= texture.Width || buttonY >= texture.Height) return false;
-            bool rtrn = alpha[buttonY * texture.Width + buttonX] != 0;
+            if (buttonX < 0 || buttonY < 0 || buttonX >= baseSize.X || buttonY >= baseSize.Y) return false;
+            bool rtrn = texturePath=="null" || alpha[buttonY * texture.Width + buttonX] != 0;
             return rtrn;
         }
 
-        public void OnMoveMouse(Point point)
+        public virtual void OnMoveMouse(Point point)
         {
-            if (activated) activated = IsOver(point);
+           // if (activated) activated = IsOver(point);
         }
 
-        public void OnLeftClick(Point point)
+        public virtual void OnLeftClick(Point point)
         {
-            activated = IsOver(point);
+            Activated = IsOver(point);
         }
 
-        public void OnLeftRelease()
+        public virtual void OnLeftRelease()
         {
-            activated = false;
+            Activated = false;
         }
     }
 }

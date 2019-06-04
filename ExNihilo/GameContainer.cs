@@ -7,6 +7,7 @@ using ExNihilo.Input.Controllers;
 using ExNihilo.Sectors;
 using ExNihilo.Systems;
 using ExNihilo.UI;
+using ExNihilo.UI.Bases;
 using ExNihilo.Util;
 using ExNihilo.Util.Graphics;
 using Microsoft.Xna.Framework;
@@ -59,8 +60,8 @@ namespace ExNihilo
                 _graphics.ApplyChanges();
                 WindowSize = new Coordinate(Window.ClientBounds.Width, Window.ClientBounds.Height);
 
-                _console.OnResize(GraphicsDevice, WindowSize);
-                foreach (var sector in _sectorDirectory.Values) sector.OnResize(GraphicsDevice, WindowSize);
+                _console.OnResize(GraphicsDevice, WindowSize, Vector2.Zero);
+                foreach (var sector in _sectorDirectory.Values) sector.OnResize(GraphicsDevice, WindowSize, Vector2.Zero);
             }
         }
         private void f_FormClosing(object sender, FormClosingEventArgs e)
@@ -148,6 +149,8 @@ namespace ExNihilo
 
             Content.RootDirectory = "Content";
             spriteBatch = new SpriteBatch(GraphicsDevice);
+            UILibrary.LoadLibrary(GraphicsDevice, Content);
+
             TextDrawer.Initialize(GraphicsDevice, Content.Load<Texture2D>("UI/FONT"));
             foreach (var sector in _sectorDirectory.Values) sector.LoadContent(GraphicsDevice, Content);
             _console.LoadContent(GraphicsDevice, Content);

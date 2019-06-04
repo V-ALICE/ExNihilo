@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using ExNihilo.Input.Commands;
 using ExNihilo.UI;
+using ExNihilo.UI.Bases;
 using ExNihilo.Util;
 using ExNihilo.Util.Graphics;
 using Microsoft.Xna.Framework;
@@ -175,7 +176,7 @@ namespace ExNihilo.Systems
         {
         }
 
-        public void OnResize(GraphicsDevice graphics, Coordinate window)
+        public void OnResize(GraphicsDevice graphics, Coordinate window, Vector2 origin)
         {
             //Values
             int height = window.Y / 4;

@@ -1,6 +1,6 @@
 ﻿using Microsoft.Xna.Framework;
 
-namespace ExNihilo.UI
+namespace ExNihilo.UI.Bases
 {
     public interface IClickable
     {

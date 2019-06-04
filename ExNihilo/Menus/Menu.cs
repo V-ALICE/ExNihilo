@@ -1,4 +1,5 @@
 ﻿using ExNihilo.UI;
+using ExNihilo.UI.Bases;
 using ExNihilo.Util;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content;
@@ -50,7 +51,7 @@ namespace ExNihilo.Menus
 
         public abstract void LoadContent(GraphicsDevice graphics, ContentManager content);
 
-        public abstract void OnResize(GraphicsDevice graphics, Coordinate window);
+        public abstract void OnResize(GraphicsDevice graphics, Coordinate window, Vector2 origin);
 
         public abstract void Draw(SpriteBatch spriteBatch);
 
