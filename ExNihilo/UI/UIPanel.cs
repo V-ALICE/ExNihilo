@@ -13,22 +13,26 @@ namespace ExNihilo.UI
         protected Vector2 BaseSizeRel;
         protected bool IsRelativeToWindow, VerticalLocked, HorizontalLocked;
 
-        public UIPanel(Vector2 relPos, Coordinate absoluteSize,PositionType t = PositionType.Center, bool pixelOffset = false) : 
-            base("null", relPos, "", t, 1, pixelOffset)
+        public UIPanel(Vector2 relPos, Coordinate absoluteSize,PositionType t = PositionType.Center) : base("null", relPos, "", t)
         {
             Set = new List<UIElement>();
             BaseSize = absoluteSize;
             IsRelativeToWindow = false;
         }
 
-        public UIPanel(Vector2 relPos, Vector2 relSize, PositionType t = PositionType.Center, bool pixelOffset = false) :
-            base("null", relPos, "", t, 1, pixelOffset)
+        public UIPanel(Vector2 relPos, Vector2 relSize, PositionType t = PositionType.Center) : base("null", relPos, "", t)
         {
             Set = new List<UIElement>();
             BaseSizeRel = relSize;
             if (MathD.IsClose(relSize.X, 0)) HorizontalLocked = true;
             if (MathD.IsClose(relSize.Y, 0)) VerticalLocked = true;
             IsRelativeToWindow = true;
+        }
+
+        public override void ReinterpretScale(Coordinate window)
+        {
+            //OnResize calls each element's OnResize which will handle ReinterpretScale calls
+            //No one should be calling this anyway
         }
 
         public void AddElements(params UIElement[] elements)
@@ -45,34 +49,25 @@ namespace ExNihilo.UI
         public override void Draw(SpriteBatch spriteBatch)
         {
             if (!Loaded) return;
-            base.Draw(spriteBatch, Color.White);
-            foreach (var item in Set) item.Draw(spriteBatch, Color.White);
+            base.Draw(spriteBatch);
+            foreach (var item in Set) item.Draw(spriteBatch);
 
             LineDrawer.DrawSquare(spriteBatch, Pos, BaseSize.X, BaseSize.Y, Activated ? Color.White : Color.Black, 5);
         }
 
-        public override void Draw(SpriteBatch spriteBatch, Color color)
-        {
-            if (!Loaded) return;
-            base.Draw(spriteBatch, color);
-            foreach (var item in Set) item.Draw(spriteBatch, color);
-
-            LineDrawer.DrawSquare(spriteBatch, Pos, BaseSize.X, BaseSize.Y, Activated ? Color.White : Color.Black, 5);
-        }
-
-        public override void OnResize(GraphicsDevice graphics, Coordinate window, Vector2 origin)
+        public override void OnResize(GraphicsDevice graphics, Coordinate gameWindow, Coordinate subWindow, Vector2 origin)
         {
             if (!Loaded) return;
             if (IsRelativeToWindow)
             {
-                if (VerticalLocked)   BaseSizeRel.X = MathHelper.Clamp(BaseSizeRel.X, 1f / window.X, 1.0f);
-                if (HorizontalLocked) BaseSizeRel.Y = MathHelper.Clamp(BaseSizeRel.Y, 1f / window.Y, 1.0f);
+                if (VerticalLocked)   BaseSizeRel.X = MathHelper.Clamp(BaseSizeRel.X, 1f / subWindow.X, 1.0f);
+                if (HorizontalLocked) BaseSizeRel.Y = MathHelper.Clamp(BaseSizeRel.Y, 1f / subWindow.Y, 1.0f);
 
-                BaseSize = new Coordinate(window * BaseSizeRel);
-                TextureOffset = GetOffset();
+                BaseSize = new Coordinate(subWindow * BaseSizeRel);
+                ReinterpretOffset();
             }
-            base.OnResize(graphics, window, origin);
-            foreach (var item in Set) item.OnResize(graphics, BaseSize, Pos);
+            base.OnResize(graphics, gameWindow, subWindow, origin);
+            foreach (var item in Set) item.OnResize(graphics, gameWindow, BaseSize, Pos);
         }
 
         public override void OnMoveMouse(Point point)
@@ -83,13 +78,16 @@ namespace ExNihilo.UI
             }
         }
 
-        public override void OnLeftClick(Point point)
+        public override bool OnLeftClick(Point point)
         {
-            base.OnLeftClick(point);
             foreach (var item in Set)
             {
-                if (item is UIClickable click) click.OnLeftClick(point);
+                if (item is UIClickable click)
+                {
+                    if (click.OnLeftClick(point)) return true;
+                }
             }
+            return base.OnLeftClick(point);
         }
 
         public override void OnLeftRelease()

@@ -1,4 +1,5 @@
-﻿using ExNihilo.UI.Bases;
+﻿using ExNihilo.UI;
+using ExNihilo.UI.Bases;
 using ExNihilo.Util;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content;
@@ -13,8 +14,14 @@ namespace ExNihilo.Menus
             Up, Down, Left, Right, Select
         }
 
+        protected UIPanel _menuUI;
         protected bool SubMode;
         protected int Selection, SubSelection;
+
+        protected Menu()
+        {
+            _menuUI = new UIPanel(new Vector2(0.5f, 0.5f), Vector2.One);
+        }
 
         public abstract void Enter();
         public abstract bool TryBackOut();
@@ -46,16 +53,39 @@ namespace ExNihilo.Menus
             }
         }
 
-        public abstract void Update();
+        public virtual void Update()
+        {
 
-        public abstract void LoadContent(GraphicsDevice graphics, ContentManager content);
+        }
 
-        public abstract void OnResize(GraphicsDevice graphics, Coordinate window, Vector2 origin);
+        public virtual void LoadContent(GraphicsDevice graphics, ContentManager content)
+        {
+            _menuUI.LoadContent(graphics, content);
+        }
 
-        public abstract void Draw(SpriteBatch spriteBatch);
+        public virtual void OnResize(GraphicsDevice graphics, Coordinate gameWindow, Coordinate subWindow, Vector2 origin)
+        {
+            _menuUI.OnResize(graphics, gameWindow, subWindow, origin);
+        }
 
-        public abstract void OnMoveMouse(Point point);
-        public abstract void OnLeftClick(Point point);
-        public abstract void OnLeftRelease();
+        public virtual void Draw(SpriteBatch spriteBatch)
+        {
+            _menuUI.Draw(spriteBatch);
+        }
+
+        public virtual void OnMoveMouse(Point point)
+        {
+            _menuUI.OnMoveMouse(point);
+        }
+
+        public virtual bool OnLeftClick(Point point)
+        {
+            return _menuUI.OnLeftClick(point);
+        }
+
+        public virtual void OnLeftRelease()
+        {
+            _menuUI.OnLeftRelease();
+        }
     }
 }

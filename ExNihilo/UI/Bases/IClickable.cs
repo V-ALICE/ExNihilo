@@ -5,7 +5,7 @@ namespace ExNihilo.UI.Bases
     public interface IClickable
     {
         void OnMoveMouse(Point point);
-        void OnLeftClick(Point point);
+        bool OnLeftClick(Point point);
         void OnLeftRelease();
     }
 }

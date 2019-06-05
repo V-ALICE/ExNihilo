@@ -77,16 +77,6 @@ namespace ExNihilo.Util
         {
             return new Vector2(a.X * b.X, a.Y * b.Y);
         }
-        //public static bool operator == (Coordinate a, Coordinate b)
-        //{
-        //    if (a == null || b == null) return false;
-        //    return a.X == b.X && a.Y == b.Y;
-        //}
-        //public static bool operator !=(Coordinate a, Coordinate b)
-        //{
-        //    if (a == null || b == null) return true;
-        //    return a.X != b.X || a.Y != b.Y;
-        //}
 
         public bool IsRadial(Coordinate coord, int radius)
         {

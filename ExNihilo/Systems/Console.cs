@@ -175,11 +175,11 @@ namespace ExNihilo.Systems
         {
         }
 
-        public void OnResize(GraphicsDevice graphics, Coordinate window, Vector2 origin)
+        public void OnResize(GraphicsDevice graphics, Coordinate gameWindow, Coordinate subWindow, Vector2 origin)
         {
             //Values
-            int height = window.Y / 4;
-            int width = window.X / 2;
+            int height = subWindow.Y / 4;
+            int width = subWindow.X / 2;
             _maxCharacterCount = width / (TextDrawer.AlphaWidth + TextDrawer.AlphaSpacer);
             _maxLineCount = height / (TextDrawer.AlphaHeight + TextDrawer.LineSpacer) - 1;
             _console?.Resize(_maxLineCount, _maxCharacterCount);
@@ -190,9 +190,9 @@ namespace ExNihilo.Systems
             _backdrop = TextureUtilities.CreateSingleColorTexture(graphics, width + border, height + border, new Color(0, 0, 0, 0.75f));
 
             //UI positions
-            _backdropPos = new Vector2(0, window.Y - _backdrop.Height);
-            _activeMessagePosition = new Vector2(TextDrawer.AlphaSpacer, window.Y - TextDrawer.LineSpacer - TextDrawer.AlphaHeight);
-            _oldMessagePosition = new Vector2(TextDrawer.AlphaSpacer, window.Y - _backdrop.Height + TextDrawer.LineSpacer);
+            _backdropPos = new Vector2(0, subWindow.Y - _backdrop.Height);
+            _activeMessagePosition = new Vector2(TextDrawer.AlphaSpacer, subWindow.Y - TextDrawer.LineSpacer - TextDrawer.AlphaHeight);
+            _oldMessagePosition = new Vector2(TextDrawer.AlphaSpacer, subWindow.Y - _backdrop.Height + TextDrawer.LineSpacer);
         }
 
         public void Update()

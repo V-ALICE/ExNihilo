@@ -9,12 +9,20 @@ namespace ExNihilo.UI.Bases
     public abstract class UILibrary
     {
         private static bool _initialized;
-        protected static Dictionary<string, Texture2D> TextureLookUp;
+        public static Dictionary<string, Texture2D> TextureLookUp;
+        public static ScaleRuleSet DefaultScaleRuleSet;
 
         public static void LoadLibrary(GraphicsDevice graphics, ContentManager content)
         {
             if (_initialized) return;
             _initialized = true;
+
+            DefaultScaleRuleSet = new ScaleRuleSet();
+            DefaultScaleRuleSet.AddRules
+            (
+                new ScaleRule(1, 1900, 1000),
+                new ScaleRule(2, ScaleRule.MAX_X, ScaleRule.MAX_Y)
+            );
 
             var sheet = content.Load<Texture2D>("UI/sheet");
             TextureLookUp = new Dictionary<string, Texture2D>

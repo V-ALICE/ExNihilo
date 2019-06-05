@@ -12,7 +12,7 @@ namespace ExNihilo.Sectors
         /********************************************************************
         ------->Game loop
         ********************************************************************/
-        public override void OnResize(GraphicsDevice graphicsDevice, Coordinate window, Vector2 origin)
+        public override void OnResize(GraphicsDevice graphicsDevice, Coordinate gameWindow, Coordinate subWindow, Vector2 origin)
         {
             
         }
@@ -53,9 +53,9 @@ namespace ExNihilo.Sectors
         {
         }
 
-        public override void OnLeftClick(Point point)
+        public override bool OnLeftClick(Point point)
         {
-            
+            return false;
         }
 
         public override void OnLeftRelease()

@@ -54,13 +54,13 @@ namespace ExNihilo
         {
             if (Window.ClientBounds.Width != _windowSize.X || Window.ClientBounds.Height != _windowSize.Y)
             {
-                _graphics.PreferredBackBufferWidth = Window.ClientBounds.Width;
-                _graphics.PreferredBackBufferHeight = Window.ClientBounds.Height;
+                _graphics.PreferredBackBufferWidth = MathHelper.Clamp(Window.ClientBounds.Width, ScaleRule.MIN_X, ScaleRule.MAX_X);
+                _graphics.PreferredBackBufferHeight = MathHelper.Clamp(Window.ClientBounds.Height, ScaleRule.MIN_Y, ScaleRule.MAX_Y);
                 _graphics.ApplyChanges();
                 _windowSize = new Coordinate(Window.ClientBounds.Width, Window.ClientBounds.Height);
 
-                _console.OnResize(GraphicsDevice, _windowSize, Vector2.Zero);
-                foreach (var sector in _sectorDirectory.Values) sector.OnResize(GraphicsDevice, _windowSize, Vector2.Zero);
+                _console.OnResize(GraphicsDevice, _windowSize, _windowSize, Vector2.Zero);
+                foreach (var sector in _sectorDirectory.Values) sector.OnResize(GraphicsDevice, _windowSize, _windowSize, Vector2.Zero);
             }
         }
         private void f_FormClosing(object sender, FormClosingEventArgs e)
@@ -120,8 +120,8 @@ namespace ExNihilo
             Window.AllowUserResizing = true;
             _currentForm = FormWindowState.Normal;
             _form = (Form)Control.FromHandle(Window.Handle);
-            _form.MaximumSize = new Size(3840, 2160);
-            _form.MinimumSize = new Size(700, 500);
+            _form.MaximumSize = new Size(ScaleRule.MAX_X, ScaleRule.MAX_Y);
+            _form.MinimumSize = new Size(ScaleRule.MIN_X, ScaleRule.MIN_Y);
             _form.WindowState = FormWindowState.Maximized;
 
             _sectorDirectory = new Dictionary<SectorID, Sector>

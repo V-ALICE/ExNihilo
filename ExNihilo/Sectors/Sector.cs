@@ -13,7 +13,7 @@ namespace ExNihilo.Sectors
         protected CommandHandler Handler;
         protected Thread LoadingThread;
 
-        public abstract void OnResize(GraphicsDevice graphicsDevice, Coordinate window, Vector2 origin);
+        public abstract void OnResize(GraphicsDevice graphicsDevice, Coordinate gameWindow, Coordinate subWindow, Vector2 origin);
         public abstract void Initialize();
         public abstract void LoadContent(GraphicsDevice graphicsDevice, ContentManager content);
         public abstract void Update();
@@ -31,7 +31,7 @@ namespace ExNihilo.Sectors
         }
 
         public abstract void OnMoveMouse(Point point);
-        public abstract void OnLeftClick(Point point);
+        public abstract bool OnLeftClick(Point point);
         public abstract void OnLeftRelease();
     }
 }

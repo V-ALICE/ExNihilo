@@ -13,19 +13,18 @@ namespace ExNihilo.UI
         protected Coordinate LastWindow;
         protected Vector2 LastOrigin;
 
-        public UIMovable(string path, Vector2 relPos, string altPath = "", bool ghost = false, PositionType t = PositionType.Center,
-            float multiplier = 1.0f) : base(path, relPos, altPath, t, multiplier)
+        public UIMovable(string path, Vector2 relPos, string altPath = "", bool ghost = false, PositionType t = PositionType.Center) : base(path, relPos, altPath, t)
         {
             Ghosting = ghost;
         }
 
-        public override void OnResize(GraphicsDevice graphics, Coordinate window, Vector2 origin)
+        public override void OnResize(GraphicsDevice graphics, Coordinate gameWindow, Coordinate subWindow, Vector2 origin)
         {
             if (!Loaded) return;
-            base.OnResize(graphics, window, origin);
+            base.OnResize(graphics, gameWindow, subWindow, origin);
 
             //Save these for bounds checking (so elements can't be dragged off screen and lost)
-            LastWindow = window.Copy();
+            LastWindow = subWindow.Copy();
             LastOrigin = Utilities.Copy(origin);
 
             //Make sure moved elements don't go out of bounds
@@ -35,7 +34,7 @@ namespace ExNihilo.UI
             Pos = new Vector2(newX, newY) - TextureOffset;
         }
 
-        public override void Draw(SpriteBatch spriteBatch, Color color)
+        public override void Draw(SpriteBatch spriteBatch)
         {
             if (!Loaded) return;
 
@@ -43,18 +42,18 @@ namespace ExNihilo.UI
             {
                 if (Ghosting)
                 {
-                    var ghost = new Color(color.R, color.G, color.B, color.A / 4);
-                    spriteBatch.Draw(AltTexture ?? Texture, Pos, null, color, 0, Vector2.Zero, SizeMult, SpriteEffects.None, 0);
-                    spriteBatch.Draw(Texture, Pos + ShiftedPos, null, ghost, 0, Vector2.Zero, SizeMult, SpriteEffects.None, 0);
+                    var ghost = new Color(255, 255, 255, 64);
+                    spriteBatch.Draw(AltTexture ?? Texture, Pos, null, Color.White, 0, Vector2.Zero, CurrentScale, SpriteEffects.None, 0);
+                    spriteBatch.Draw(Texture, Pos + ShiftedPos, null, ghost, 0, Vector2.Zero, CurrentScale, SpriteEffects.None, 0);
                 }
                 else
                 {
-                    spriteBatch.Draw(Texture, Pos + ShiftedPos, null, color, 0, Vector2.Zero, SizeMult, SpriteEffects.None, 0);
+                    spriteBatch.Draw(Texture, Pos + ShiftedPos, null, Color.White, 0, Vector2.Zero, CurrentScale, SpriteEffects.None, 0);
                 }
             }
             else
             {
-                spriteBatch.Draw(Texture, Pos, null, color, 0, Vector2.Zero, SizeMult, SpriteEffects.None, 0);
+                spriteBatch.Draw(Texture, Pos, null, Color.White, 0, Vector2.Zero, CurrentScale, SpriteEffects.None, 0);
             }
         }
 
@@ -69,13 +68,15 @@ namespace ExNihilo.UI
             }
         }
 
-        public override void OnLeftClick(Point point)
+        public override bool OnLeftClick(Point point)
         {
             if (IsOver(point))
             {
                 Activated = true;
                 Anchor = point;
             }
+
+            return Activated;
         }
 
         public override void OnLeftRelease()

@@ -90,6 +90,7 @@
     <Compile Include="Systems\Asura.cs" />
     <Compile Include="Systems\Console.cs" />
     <Compile Include="UI\Bases\IClickable.cs" />
+    <Compile Include="UI\Bases\IScalable.cs" />
     <Compile Include="UI\UIClickable.cs" />
     <Compile Include="UI\UIElement.cs" />
     <Compile Include="UI\Bases\UILibrary.cs" />
@@ -100,6 +101,7 @@
     <Compile Include="Util\Graphics\ColorScale.cs" />
     <Compile Include="Util\Coordinate.cs" />
     <Compile Include="Util\Crypter.cs" />
+    <Compile Include="Util\Graphics\ScaleRule.cs" />
     <Compile Include="Util\MathD.cs" />
     <Compile Include="Util\ExceptionCheck.cs" />
     <Compile Include="UI\Bases\IUI.cs" />
