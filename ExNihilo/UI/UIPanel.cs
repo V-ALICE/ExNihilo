@@ -11,23 +11,23 @@ namespace ExNihilo.UI
     {
         protected List<UIElement> Set;
         protected Vector2 BaseSizeRel;
-        protected bool IsRelativeToWindow, verticalLocked, horizontalLocked;
+        protected bool IsRelativeToWindow, VerticalLocked, HorizontalLocked;
 
-        public UIPanel(Vector2 relPos, Coordinate absoluteSize, bool absolute = false, PositionType t = PositionType.Center) : 
-            base("null", relPos, "", absolute, 1, t)
+        public UIPanel(Vector2 relPos, Coordinate absoluteSize,PositionType t = PositionType.Center, bool pixelOffset = false) : 
+            base("null", relPos, "", t, 1, pixelOffset)
         {
             Set = new List<UIElement>();
             BaseSize = absoluteSize;
             IsRelativeToWindow = false;
         }
 
-        public UIPanel(Vector2 relPos, Vector2 relSize, bool absolute = false, PositionType t = PositionType.Center) : 
-            base("null", relPos, "", absolute, 1, t)
+        public UIPanel(Vector2 relPos, Vector2 relSize, PositionType t = PositionType.Center, bool pixelOffset = false) :
+            base("null", relPos, "", t, 1, pixelOffset)
         {
             Set = new List<UIElement>();
             BaseSizeRel = relSize;
-            if (MathD.IsClose(relSize.X, 0)) horizontalLocked = true;
-            if (MathD.IsClose(relSize.Y, 0)) verticalLocked = true;
+            if (MathD.IsClose(relSize.X, 0)) HorizontalLocked = true;
+            if (MathD.IsClose(relSize.Y, 0)) VerticalLocked = true;
             IsRelativeToWindow = true;
         }
 
@@ -65,8 +65,8 @@ namespace ExNihilo.UI
             if (!Loaded) return;
             if (IsRelativeToWindow)
             {
-                if (verticalLocked)   BaseSizeRel.X = MathHelper.Clamp(BaseSizeRel.X, 1f / window.X, 1.0f);
-                if (horizontalLocked) BaseSizeRel.Y = MathHelper.Clamp(BaseSizeRel.Y, 1f / window.Y, 1.0f);
+                if (VerticalLocked)   BaseSizeRel.X = MathHelper.Clamp(BaseSizeRel.X, 1f / window.X, 1.0f);
+                if (HorizontalLocked) BaseSizeRel.Y = MathHelper.Clamp(BaseSizeRel.Y, 1f / window.Y, 1.0f);
 
                 BaseSize = new Coordinate(window * BaseSizeRel);
                 TextureOffset = GetOffset();

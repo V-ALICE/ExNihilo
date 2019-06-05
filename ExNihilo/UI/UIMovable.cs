@@ -13,8 +13,8 @@ namespace ExNihilo.UI
         protected Coordinate LastWindow;
         protected Vector2 LastOrigin;
 
-        public UIMovable(string path, Vector2 relPos, bool ghost = false, string altPath = "", 
-            float multiplier = 1, PositionType t = PositionType.Center) : base(path, relPos, altPath, false, multiplier, t)
+        public UIMovable(string path, Vector2 relPos, string altPath = "", bool ghost = false, PositionType t = PositionType.Center,
+            float multiplier = 1.0f) : base(path, relPos, altPath, t, multiplier)
         {
             Ghosting = ghost;
         }
@@ -61,7 +61,7 @@ namespace ExNihilo.UI
         public override void OnMoveMouse(Point point)
         {
             if (Activated)
-            {//TODO: resizing boots out items on 0 dimension panels
+            {
                 var opp = LastWindow + LastOrigin;
                 var newX = MathHelper.Clamp(Pos.X + TextureOffset.X + point.X - Anchor.X, LastOrigin.X, opp.X);
                 var newY = MathHelper.Clamp(Pos.Y + TextureOffset.Y + point.Y - Anchor.Y, LastOrigin.Y, opp.Y);
@@ -80,13 +80,16 @@ namespace ExNihilo.UI
 
         public override void OnLeftRelease()
         {
-            Activated = false;
-            Pos += ShiftedPos;
-            ShiftedPos = new Vector2();
+            if (Activated)
+            {
+                Activated = false;
+                Pos += ShiftedPos;
+                ShiftedPos = new Vector2();
 
-            var relX = (Pos.X - LastOrigin.X + TextureOffset.X) / LastWindow.X;
-            var relY = (Pos.Y - LastOrigin.Y + TextureOffset.Y) / LastWindow.Y;
-            PosRel = new Vector2(relX, relY);
+                var relX = LastWindow.X == 0 ? 0 : (Pos.X - LastOrigin.X + TextureOffset.X) / LastWindow.X;
+                var relY = LastWindow.Y == 0 ? 0 : (Pos.Y - LastOrigin.Y + TextureOffset.Y) / LastWindow.Y;
+                PosRel = new Vector2(relX, relY);
+            }
         }
     }
 }

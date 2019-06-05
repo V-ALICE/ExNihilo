@@ -11,13 +11,13 @@ namespace ExNihilo.Menus
         private readonly UIPanel _test;
         public TitleMenu()
         {
-            var horizontal = new UIPanel(new Vector2(0.5f, 0.5f), new Vector2(0.75f, 0f), false, UIElement.PositionType.CenterTop);
-            horizontal.AddElements(new UIMovable("UI/BigButtonUp", new Vector2(0f, 0.5f), true, "UI/BigButtonDown"));
-            var vertical = new UIPanel(new Vector2(0.5f, 0.5f), new Vector2(0f, 0.75f), false, UIElement.PositionType.CenterLeft);
-            vertical.AddElements(new UIMovable("UI/BigButtonUp", new Vector2(0.5f, 0f), true, "UI/BigButtonDown"));
+            var horizontal = new UIPanel(new Vector2(0.5f, 0.5f), new Vector2(0.75f, 0f), UIElement.PositionType.CenterTop);
+            horizontal.AddElements(new UIMovable("UI/BigButtonUp", new Vector2(0f, 0.5f), "UI/BigButtonDown", true));
+            var vertical = new UIPanel(new Vector2(0.5f, 0.5f), new Vector2(0f, 0.75f), UIElement.PositionType.CenterLeft);
+            vertical.AddElements(new UIMovable("UI/BigButtonUp", new Vector2(0.5f, 0f), "UI/BigButtonDown", true));
 
             _test = new UIPanel(new Vector2(0.5f, 0.5f), new Vector2(0.75f, 0.75f));
-            _test.AddElements(new UIMovable("UI/BigButtonUp", new Vector2(0.5f, 0.5f), true, "UI/BigButtonDown"));
+            _test.AddElements(new UIMovable("UI/BigButtonUp", new Vector2(0.5f, 0.5f), "UI/BigButtonDown"));
             _test.AddElements(horizontal, vertical);
         }
 

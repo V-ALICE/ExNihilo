@@ -11,12 +11,14 @@ namespace ExNihilo.UI
         protected byte[] Alpha;
         protected Texture2D AltTexture;
         protected readonly string AltTexturePath;
+        private readonly bool _allowMulligan;
         public bool Activated { get; protected set; }
 
-        public UIClickable(string path, Vector2 relPos, string altPath = "", bool absolute = false, float multiplier = 1.0f,
-            PositionType t = PositionType.Center) : base(path, relPos, multiplier, t, absolute)
+        public UIClickable(string path, Vector2 relPos, string altPath = "", PositionType t = PositionType.Center, float multiplier = 1.0f,
+            bool pixelOffset = false, bool mulligan = false) : base(path, relPos, t, multiplier, pixelOffset)
         {
             AltTexturePath = altPath;
+            _allowMulligan = mulligan;
         }
 
         public override void LoadContent(GraphicsDevice graphics, ContentManager content)
@@ -47,6 +49,7 @@ namespace ExNihilo.UI
             int buttonY = (int)Math.Round((mousePos.Y - Pos.Y) / SizeMult);
             if (buttonX < 0 || buttonY < 0 || buttonX >= BaseSize.X || buttonY >= BaseSize.Y) return false;
             bool rtrn = TexturePath=="null" || Alpha[buttonY * Texture.Width + buttonX] != 0;
+            if (Activated && !rtrn && _allowMulligan) Activated = false;
             return rtrn;
         }
 

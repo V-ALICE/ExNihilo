@@ -27,14 +27,14 @@ namespace ExNihilo.UI
         protected readonly bool AbsoluteOffset;
         protected bool Loaded;
 
-        public UIElement(string path, Vector2 relPos, float multiplier, PositionType t, bool absolute)
+        public UIElement(string path, Vector2 relPos, PositionType t = PositionType.Center, float multiplier = 1.0f, bool pixelOffset = false)
         {
-            ExceptionCheck.AssertCondition(absolute || (relPos.X >= 0 && relPos.X <= 1.0 && relPos.Y >= 0 && relPos.Y <= 1.0));
+            ExceptionCheck.AssertCondition(pixelOffset || (relPos.X >= 0 && relPos.X <= 1.0 && relPos.Y >= 0 && relPos.Y <= 1.0));
             TexturePath = path;
             PosRel = Utilities.Copy(relPos);
             SizeMult = multiplier;
             Type = t;
-            AbsoluteOffset = absolute;
+            AbsoluteOffset = pixelOffset;
         }
 
         public virtual void LoadContent(GraphicsDevice graphics, ContentManager content)
