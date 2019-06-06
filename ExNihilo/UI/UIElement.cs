@@ -26,7 +26,7 @@ namespace ExNihilo.UI
         protected ScaleRuleSet ScaleRules;
         protected float CurrentScale;
         protected readonly string TexturePath;
-        protected readonly bool AbsoluteOffset;
+        protected bool AbsoluteOffset;
         protected bool Loaded;
 
         public UIElement(string path, Vector2 relPos, PositionType t = PositionType.Center, bool pixelOffset = false)
@@ -46,6 +46,7 @@ namespace ExNihilo.UI
 
         public virtual void ReinterpretScale(Coordinate window)
         {
+            if (!Loaded) return;
             CurrentScale = ScaleRules.GetScale(window);
             BaseSize = new Coordinate((int)(CurrentScale * Texture.Width), (int)(CurrentScale * Texture.Height));
             ReinterpretOffset();

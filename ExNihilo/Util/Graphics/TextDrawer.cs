@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using ExNihilo.UI.Bases;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 
@@ -20,27 +21,23 @@ namespace ExNihilo.Util.Graphics
         };
 
         public static int AlphaWidth, AlphaHeight, AlphaSpacer, LineSpacer; //In pixels
-        public static int CurrentMultiplier;
         private static Dictionary<char, Texture2D> _charTextures;
+        private static readonly ScaleRuleSet _rules = UILibrary.DefaultScaleRuleSet;
 
         public static void Initialize(GraphicsDevice device, Texture2D alphabet)
         {
-            ConfigureTextSize(1);
             _charTextures = new Dictionary<char, Texture2D>();
+            var charWidth = alphabet.Width / _char.Count;
             foreach (var chr in _char)
             {
-                var letter = new Rectangle(AlphaWidth * chr.Value, 0, AlphaWidth, AlphaHeight);
+                var letter = new Rectangle(charWidth * chr.Value, 0, charWidth, alphabet.Height);
                 _charTextures.Add(chr.Key, TextureUtilities.GetSubTexture(device, alphabet, letter));
             }
-        }
 
-        public static void ConfigureTextSize(int multiplier)
-        {
-            CurrentMultiplier = multiplier;
-            AlphaWidth = 6 * multiplier;
-            AlphaHeight = 10 * multiplier;
-            AlphaSpacer = 2 * multiplier;
-            LineSpacer = 4 * multiplier;
+            AlphaWidth = _charTextures['A'].Width;
+            AlphaHeight = _charTextures['A'].Height;
+            AlphaSpacer = AlphaWidth/3;
+            LineSpacer = 2*AlphaSpacer;
         }
 
         public static Texture2D GetLetter(char let)
@@ -55,10 +52,9 @@ namespace ExNihilo.Util.Graphics
             }
         }       
 
-        public static Vector2 DrawDumbText(SpriteBatch spriteBatch, Vector2 pos, string text, int multiplier, Color c)
+        public static Vector2 DrawDumbText(SpriteBatch spriteBatch, Vector2 pos, string text, float multiplier, Color c)
         {
             var aPos = Utilities.Copy(pos);
-            multiplier *= CurrentMultiplier;
             foreach (var t in text)
             {
                 spriteBatch.Draw(GetLetter(t), aPos, null, c, 0, Vector2.Zero, multiplier, SpriteEffects.None, 0);
@@ -67,14 +63,13 @@ namespace ExNihilo.Util.Graphics
             return aPos;
         }
 
-        public static Vector2 DrawSmartText(SpriteBatch spriteBatch, Vector2 pos, string smartText, int multiplier, 
+        public static Vector2 DrawSmartText(SpriteBatch spriteBatch, Vector2 pos, string smartText, float multiplier, 
             bool reducedSpaces, params Color[] colors)
         {
             //supports up to 10 different colors at a time
             //assumes line has already been split correctly, including buffers
             var aPos = Utilities.Copy(pos);
             var oldX = aPos.X;
-            multiplier *= CurrentMultiplier;
             var c = colors.Length > 0 ? colors[0] : Color.Black;
             for (var i = 0; i < smartText.Length; i++)
             {
@@ -119,6 +114,9 @@ namespace ExNihilo.Util.Graphics
                             i++; //consume n
                             aPos.Y = (int) Math.Round(aPos.Y + 0.5f * multiplier * (AlphaHeight + LineSpacer));
                             break;
+                        default:
+                            i++;
+                            break;
                     }
                     continue; //don't need to draw anything right after a format change
                 }
@@ -127,6 +125,58 @@ namespace ExNihilo.Util.Graphics
             }
 
             return aPos; //return the would be placement of the next letter
+        }
+
+        public static Coordinate GetSmartTextSize(string smartText, float multiplier=1, bool reducedSpaces=false)
+        {
+            int currentX = 0;
+            Coordinate pixelSize = new Coordinate();
+            for (var i = 0; i < smartText.Length; i++)
+            {
+                var t = smartText[i];
+                if (t == '\n') //newline
+                {
+                    pixelSize.Y += (int)Math.Round(multiplier * (AlphaHeight + LineSpacer));
+                    pixelSize.X = Math.Max(pixelSize.X, currentX);
+                    currentX = 0;
+                    continue;
+                }
+                if (t == ' ') //space
+                {
+                    if (reducedSpaces)
+                        currentX += (int)Math.Round(multiplier * AlphaWidth);
+                    else
+                        currentX += (int)Math.Round(multiplier * (AlphaWidth + AlphaSpacer));
+                    continue;
+                }
+                if (t == '@')//smart text
+                {
+                    if (i + 1 == smartText.Length) continue; //make sure there's actually something after
+                    switch (smartText[i + 1])
+                    {
+                        case 'h': //insert half space
+                            i++; //consume h
+                            if (reducedSpaces)
+                                currentX += (int)Math.Round(0.5 * multiplier * AlphaWidth);
+                            else
+                                currentX += (int)Math.Round(0.5 * multiplier * (AlphaWidth + AlphaSpacer));
+                            break;
+                        case 'n': //insert half newline skip (can be done mid line as well)
+                            i++; //consume n
+                            pixelSize.Y += (int)Math.Round(0.5f * multiplier * (AlphaHeight + LineSpacer));
+                            break;
+                        default:
+                            i++;
+                            break;
+                    }
+                }
+                else
+                {
+                    currentX += (int)Math.Round(multiplier * (AlphaWidth + AlphaSpacer));
+                }
+            }
+
+            return pixelSize;
         }
 
     }

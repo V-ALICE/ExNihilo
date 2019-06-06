@@ -12,6 +12,7 @@ namespace ExNihilo.Menus
             newPanel.AddElements(new UIClickable("UI/BigButtonUp", new Vector2(0, 0.23f), "UI/BigButtonDown"));
             newPanel.AddElements(new UIClickable("UI/BigButtonUp", new Vector2(0, 0.46f), "UI/BigButtonDown"));
             newPanel.AddElements(new UIClickable("UI/BigButtonUp", new Vector2(0, 0.69f), "UI/BigButtonDown"));
+            //newPanel.AddElements(new UIText(new Vector2(0.5f, 0), "hello", new[] { Color.Black }));
             _menuUI.AddElements(newPanel);
         }
 
