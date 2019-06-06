@@ -10,6 +10,7 @@ namespace ExNihilo.UI.Bases
     {
         private static bool _initialized;
         public static Dictionary<string, Texture2D> TextureLookUp;
+        public static Dictionary<string, byte[]> TextureAlphaLookUp;
         public static ScaleRuleSet DefaultScaleRuleSet;
 
         public static void LoadLibrary(GraphicsDevice graphics, ContentManager content)
@@ -20,8 +21,10 @@ namespace ExNihilo.UI.Bases
             DefaultScaleRuleSet = new ScaleRuleSet();
             DefaultScaleRuleSet.AddRules
             (
-                new ScaleRule(1, 1900, 1000),
-                new ScaleRule(2, ScaleRule.MAX_X, ScaleRule.MAX_Y)
+                new ScaleRule(1, 1400, 1000),
+                new ScaleRule(2, 2100, 1500),
+                new ScaleRule(3, 2800, 2000),
+                new ScaleRule(4, ScaleRule.MAX_X, ScaleRule.MAX_Y)
             );
 
             var sheet = content.Load<Texture2D>("UI/sheet");
@@ -31,6 +34,16 @@ namespace ExNihilo.UI.Bases
                 {"UI/BigButtonUp", TextureUtilities.GetSubTexture(graphics, sheet, new Rectangle(0, 52, 240, 52))},
                 {"UI/BigButtonDown", TextureUtilities.GetSubTexture(graphics, sheet, new Rectangle(0, 0, 240, 52))}
             };
+
+            TextureAlphaLookUp = new Dictionary<string, byte[]>();
+            foreach (var texture in TextureLookUp)
+            {
+                var data = new Color[texture.Value.Width * texture.Value.Height];
+                texture.Value.GetData(data);
+                var alpha = new byte[data.Length];
+                for (int i = 0; i < data.Length; i++) alpha[i] = data[i].A;
+                TextureAlphaLookUp.Add(texture.Key, alpha);
+            }
         }
 
     }

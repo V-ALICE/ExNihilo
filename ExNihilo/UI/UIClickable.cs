@@ -8,7 +8,7 @@ namespace ExNihilo.UI
 {
     public class UIClickable : UIElement, IClickable
     {
-        protected byte[] Alpha;//TODO: make a map of these for the UILibrary
+        protected byte[] Alpha;
         protected Texture2D AltTexture;
         protected readonly string AltTexturePath;
         private readonly bool _allowMulligan;
@@ -25,13 +25,8 @@ namespace ExNihilo.UI
         {
             base.LoadContent(graphics, content);
 
+            Alpha = UILibrary.TextureAlphaLookUp[TexturePath];
             if (AltTexturePath.Length > 0) AltTexture = UILibrary.TextureLookUp[AltTexturePath];
-
-            //Get alpha spread
-            var data = new Color[Texture.Width * Texture.Height];
-            Texture.GetData(data);
-            Alpha = new byte[data.Length];
-            for (int i = 0; i < data.Length; i++) Alpha[i] = data[i].A;
         }
 
         public override void Draw(SpriteBatch spriteBatch)
@@ -55,6 +50,7 @@ namespace ExNihilo.UI
 
         public virtual void OnMoveMouse(Point point)
         {
+            //mulligans only check the size/alpha of the original texture
             if (Activated && _allowMulligan) Activated = IsOver(point);
         }
 

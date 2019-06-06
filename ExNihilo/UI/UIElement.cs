@@ -39,9 +39,9 @@ namespace ExNihilo.UI
             AbsoluteOffset = pixelOffset;
         }
 
-        public virtual void AddRules(params ScaleRule[] rules)
-        { 
-            ScaleRules.AddRules(rules);
+        public virtual void SetRules(ScaleRuleSet rules)
+        {
+            ScaleRules = rules;
         }
 
         public virtual void ReinterpretScale(Coordinate window)

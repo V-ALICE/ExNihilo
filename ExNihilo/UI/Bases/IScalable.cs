@@ -5,7 +5,7 @@ namespace ExNihilo.UI.Bases
 {
     public interface IScalable
     {
-        void AddRules(params ScaleRule[] rules);
+        void SetRules(ScaleRuleSet rules);
         void ReinterpretScale(Coordinate window);
     }
 }

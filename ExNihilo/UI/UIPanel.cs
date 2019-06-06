@@ -52,7 +52,7 @@ namespace ExNihilo.UI
             base.Draw(spriteBatch);
             foreach (var item in Set) item.Draw(spriteBatch);
 
-            LineDrawer.DrawSquare(spriteBatch, Pos, BaseSize.X, BaseSize.Y, Activated ? Color.White : Color.Black, 5);
+            //LineDrawer.DrawSquare(spriteBatch, Pos, BaseSize.X, BaseSize.Y, Activated ? Color.White : Color.Black, 5);
         }
 
         public override void OnResize(GraphicsDevice graphics, Coordinate gameWindow, Coordinate subWindow, Vector2 origin)
