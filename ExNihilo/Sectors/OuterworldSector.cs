@@ -9,10 +9,14 @@ namespace ExNihilo.Sectors
     public class OuterworldSector : Sector
     {
 
+        public OuterworldSector(GameContainer container) : base(container)
+        {
+        }
+
         /********************************************************************
         ------->Game loop
         ********************************************************************/
-        public override void OnResize(GraphicsDevice graphicsDevice, Coordinate gameWindow, Coordinate subWindow, Vector2 origin)
+        public override void OnResize(GraphicsDevice graphicsDevice, Coordinate gameWindow)
         {
             
         }

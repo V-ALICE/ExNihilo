@@ -137,7 +137,7 @@ namespace ExNihilo.Util.Graphics
                 if (t == '\n') //newline
                 {
                     pixelSize.Y += (int)Math.Round(multiplier * (AlphaHeight + LineSpacer));
-                    pixelSize.X = Math.Max(pixelSize.X, currentX);
+                    pixelSize.X = Math.Max(pixelSize.X, (int) (currentX - multiplier * AlphaSpacer));
                     currentX = 0;
                     continue;
                 }
@@ -176,6 +176,8 @@ namespace ExNihilo.Util.Graphics
                 }
             }
 
+            pixelSize.Y += (int)Math.Round(multiplier * AlphaHeight);
+            pixelSize.X = Math.Max(pixelSize.X, (int)(currentX - multiplier * AlphaSpacer));
             return pixelSize;
         }
 

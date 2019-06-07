@@ -1,6 +1,5 @@
 ﻿using System.Collections.Generic;
 using ExNihilo.Util;
-using ExNihilo.Util.Graphics;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
@@ -9,24 +8,51 @@ namespace ExNihilo.UI
 {
     public class UIPanel : UIClickable
     {
-        protected List<UIElement> Set;
+        protected Dictionary<string, UIElement> Set;
         protected Vector2 BaseSizeRel;
-        protected bool IsRelativeToWindow, VerticalLocked, HorizontalLocked;
+        protected bool IsRelativeToWindow, VerticalLocked, HorizontalLocked, King;
 
-        public UIPanel(Vector2 relPos, Coordinate absoluteSize,PositionType t = PositionType.Center) : base("null", relPos, "", t)
+        public UIPanel(string name, Vector2 relPos, Coordinate absoluteSize, UIPanel superior, PositionType anchorPoint) : 
+            base(name, "null", relPos, superior, anchorPoint)
         {
-            Set = new List<UIElement>();
-            BaseSize = absoluteSize;
+            Set = new Dictionary<string, UIElement>();
+            CurrentPixelSize = absoluteSize;
             IsRelativeToWindow = false;
         }
 
-        public UIPanel(Vector2 relPos, Vector2 relSize, PositionType t = PositionType.Center) : base("null", relPos, "", t)
+        public UIPanel(string name, Vector2 relPos, Vector2 relSize, UIPanel superior, PositionType anchorPoint) : 
+            base(name, "null", relPos, superior, anchorPoint)
         {
-            Set = new List<UIElement>();
+            Set = new Dictionary<string, UIElement>();
             BaseSizeRel = relSize;
             if (MathD.IsClose(relSize.X, 0)) HorizontalLocked = true;
             if (MathD.IsClose(relSize.Y, 0)) VerticalLocked = true;
             IsRelativeToWindow = true;
+        }
+
+        public UIPanel(string name, Coordinate pixelSize, Coordinate absoluteSize, UIElement superior, PositionType anchorPoint, 
+            PositionType superAnchorPoint) : base(name, "null", pixelSize, superior, anchorPoint, superAnchorPoint)
+        {
+            Set = new Dictionary<string, UIElement>();
+            CurrentPixelSize = absoluteSize;
+            IsRelativeToWindow = false;
+        }
+
+        public UIPanel(string name, Vector2 relPos, Coordinate absoluteSize, PositionType anchorPoint) : base(name, relPos, anchorPoint)
+        {
+            Set = new Dictionary<string, UIElement>();
+            CurrentPixelSize = absoluteSize;
+            IsRelativeToWindow = false;
+            King = true;
+        }
+        public UIPanel(string name, Vector2 relPos, Vector2 relSize, PositionType anchorPoint) : base(name, relPos, anchorPoint)
+        {
+            Set = new Dictionary<string, UIElement>();
+            BaseSizeRel = relSize;
+            if (MathD.IsClose(relSize.X, 0)) HorizontalLocked = true;
+            if (MathD.IsClose(relSize.Y, 0)) VerticalLocked = true;
+            IsRelativeToWindow = true;
+            King = true;
         }
 
         public override void ReinterpretScale(Coordinate window)
@@ -37,42 +63,72 @@ namespace ExNihilo.UI
 
         public void AddElements(params UIElement[] elements)
         {
-            Set.AddRange(elements);
+            foreach (var e in elements)
+            {
+                if (Set.ContainsKey(e.GivenName)) Set[e.GivenName] = e;
+                else Set.Add(e.GivenName, e);
+            }
         }
 
         public override void LoadContent(GraphicsDevice graphics, ContentManager content)
         {
             base.LoadContent(graphics, content);
-            foreach (var item in Set) item.LoadContent(graphics, content);
+            foreach (var item in Set.Values) item.LoadContent(graphics, content);
         }
 
         public override void Draw(SpriteBatch spriteBatch)
         {
             if (!Loaded) return;
-            base.Draw(spriteBatch);
-            foreach (var item in Set) item.Draw(spriteBatch);
+            foreach (var item in Set.Values) item.Draw(spriteBatch);
 
             //LineDrawer.DrawSquare(spriteBatch, Pos, BaseSize.X, BaseSize.Y, Activated ? Color.White : Color.Black, 5);
         }
 
-        public override void OnResize(GraphicsDevice graphics, Coordinate gameWindow, Coordinate subWindow, Vector2 origin)
+        public override void OnResize(GraphicsDevice graphics, Coordinate gameWindow)
         {
             if (!Loaded) return;
-            if (IsRelativeToWindow)
-            {
-                if (VerticalLocked)   BaseSizeRel.X = MathHelper.Clamp(BaseSizeRel.X, 1f / subWindow.X, 1.0f);
-                if (HorizontalLocked) BaseSizeRel.Y = MathHelper.Clamp(BaseSizeRel.Y, 1f / subWindow.Y, 1.0f);
 
-                BaseSize = new Coordinate(subWindow * BaseSizeRel);
-                ReinterpretOffset();
+            if (!WasResized(gameWindow))
+            {
+                if (King)
+                {
+                    if (VerticalLocked) BaseSizeRel.X = MathHelper.Clamp(BaseSizeRel.X, 1f / gameWindow.X, 1.0f);
+                    if (HorizontalLocked) BaseSizeRel.Y = MathHelper.Clamp(BaseSizeRel.Y, 1f / gameWindow.Y, 1.0f);
+
+                    CurrentPixelSize = new Coordinate(gameWindow * BaseSizeRel);
+                    TextureOffsetToOrigin = GetOffset(AnchorType, CurrentPixelSize);
+
+                    LastResizeWindow = gameWindow;
+                    if (AbsoluteOffset)
+                    {
+                        //Position of king is relative to the origin of the window in scaled pixels
+                        var scaledOffset = new Coordinate(PixelOffsetFromBase.X, PixelOffsetFromBase.Y);
+                        OriginPosition = scaledOffset - TextureOffsetToOrigin;
+                    }
+                    else
+                    {
+                        //Position of king is relative to the space of the screen
+                        OriginPosition = gameWindow * PositionRelativeToBase - TextureOffsetToOrigin;
+                    }
+                }
+                else if (IsRelativeToWindow)
+                {
+                    if (VerticalLocked) BaseSizeRel.X = MathHelper.Clamp(BaseSizeRel.X, 1f / BaseElement.CurrentPixelSize.X, 1.0f);
+                    if (HorizontalLocked) BaseSizeRel.Y = MathHelper.Clamp(BaseSizeRel.Y, 1f / BaseElement.CurrentPixelSize.Y, 1.0f);
+
+                    CurrentPixelSize = new Coordinate(BaseElement.CurrentPixelSize * BaseSizeRel);
+                    TextureOffsetToOrigin = GetOffset(AnchorType, CurrentPixelSize);
+                    base.OnResize(graphics, gameWindow);
+                }
+                else base.OnResize(graphics, gameWindow);
             }
-            base.OnResize(graphics, gameWindow, subWindow, origin);
-            foreach (var item in Set) item.OnResize(graphics, gameWindow, BaseSize, Pos);
+
+            foreach (var item in Set.Values) item.OnResize(graphics, gameWindow);
         }
 
         public override void OnMoveMouse(Point point)
         {
-            foreach (var item in Set)
+            foreach (var item in Set.Values)
             {
                 if (item is UIClickable click) click.OnMoveMouse(point);
             }
@@ -80,7 +136,7 @@ namespace ExNihilo.UI
 
         public override bool OnLeftClick(Point point)
         {
-            foreach (var item in Set)
+            foreach (var item in Set.Values)
             {
                 if (item is UIClickable click)
                 {
@@ -93,10 +149,31 @@ namespace ExNihilo.UI
         public override void OnLeftRelease()
         {
             base.OnLeftRelease();
-            foreach (var item in Set)
+            foreach (var item in Set.Values)
             {
                 if (item is UIClickable click) click.OnLeftRelease();
             }
+        }
+
+        public override void Enable(Color c)
+        {
+            foreach (var item in Set.Values)
+            {
+                if (item is UIClickable click) click.Enable(c);
+            }
+        }
+
+        public override void Disable(Color c)
+        {
+            foreach (var item in Set.Values)
+            {
+                if (item is UIClickable click) click.Disable(c);
+            }
+        }
+
+        public UIElement GetElement(string title)
+        {
+            return Set.ContainsKey(title) ? Set[title] : null;
         }
     }
 }

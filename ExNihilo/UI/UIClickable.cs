@@ -1,5 +1,6 @@
 ﻿using System;
 using ExNihilo.UI.Bases;
+using ExNihilo.Util;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
@@ -12,13 +13,37 @@ namespace ExNihilo.UI
         protected Texture2D AltTexture;
         protected readonly string AltTexturePath;
         private readonly bool _allowMulligan;
+        protected Color CurrentColor;
+        protected Action<string> Function;
+        
+        public bool Disabled { get; protected set; }
         public bool Activated { get; protected set; }
 
-        public UIClickable(string path, Vector2 relPos, string altPath = "", PositionType t = PositionType.Center, 
-            bool pixelOffset = false, bool mulligan = false) : base(path, relPos, t, pixelOffset)
+        public UIClickable(string name, string path, Vector2 relPos, UIPanel superior, PositionType anchorPoint, string altPath = "", 
+            bool mulligan = false) : base(name, path, relPos, superior, anchorPoint)
         {
             AltTexturePath = altPath;
             _allowMulligan = mulligan;
+            CurrentColor = Color.White;
+        }
+
+        public UIClickable(string name, string path, Coordinate pixelOffset, UIElement superior, PositionType anchorPoint, PositionType superAnchorPoint,
+            string altPath = "", bool mulligan = false) : base(name, path, pixelOffset, superior, anchorPoint, superAnchorPoint)
+        {
+            AltTexturePath = altPath;
+            _allowMulligan = mulligan;
+            CurrentColor = Color.White;
+        }
+
+        protected UIClickable(string name, Vector2 relPos, PositionType anchorPoint) : base(name, relPos, anchorPoint)
+        {
+            _allowMulligan = false;
+            AltTexturePath = "";
+        }
+
+        public void RegisterCallback(Action<string> action)
+        {
+            Function = action;
         }
 
         public override void LoadContent(GraphicsDevice graphics, ContentManager content)
@@ -33,16 +58,16 @@ namespace ExNihilo.UI
         {
             if (!Loaded) return;
             if (Activated && AltTexture != null)
-                spriteBatch.Draw(AltTexture, Pos, null, Color.White, 0, Vector2.Zero, CurrentScale, SpriteEffects.None, 0);
+                spriteBatch.Draw(AltTexture, OriginPosition, null, CurrentColor, 0, Vector2.Zero, CurrentScale, SpriteEffects.None, 0);
             else
-                spriteBatch.Draw(Texture, Pos, null, Color.White, 0, Vector2.Zero, CurrentScale, SpriteEffects.None, 0);
+                spriteBatch.Draw(Texture, OriginPosition, null, CurrentColor, 0, Vector2.Zero, CurrentScale, SpriteEffects.None, 0);
         }
 
         public virtual bool IsOver(Point mousePos)
         {
-            int buttonX = (int)Math.Round(mousePos.X - Pos.X);
-            int buttonY = (int)Math.Round(mousePos.Y - Pos.Y);
-            if (buttonX < 0 || buttonY < 0 || buttonX >= BaseSize.X || buttonY >= BaseSize.Y) return false;
+            int buttonX = (int)Math.Round(mousePos.X - OriginPosition.X);
+            int buttonY = (int)Math.Round(mousePos.Y - OriginPosition.Y);
+            if (buttonX < 0 || buttonY < 0 || buttonX >= CurrentPixelSize.X || buttonY >= CurrentPixelSize.Y) return false;
             var arrayPos = (int) MathHelper.Clamp((buttonY * Texture.Width + buttonX) / CurrentScale, 0, Alpha.Length-1); //TODO: figure out why this was actually breaking
             bool rtrn = TexturePath=="null" || Alpha[arrayPos] != 0;
             return rtrn;
@@ -56,13 +81,28 @@ namespace ExNihilo.UI
 
         public virtual bool OnLeftClick(Point point)
         {
+            if (Disabled) return false;
             Activated = IsOver(point);
             return Activated;
         }
 
         public virtual void OnLeftRelease()
         {
+            if (Activated) Function?.Invoke(GivenName);
             Activated = false;
+        }
+
+        public virtual void Disable(Color c)
+        {
+            Activated = false;
+            CurrentColor = c;
+            Disabled = true;
+        }
+
+        public virtual  void Enable(Color c)
+        {
+            CurrentColor = c;
+            Disabled = false;
         }
     }
 }

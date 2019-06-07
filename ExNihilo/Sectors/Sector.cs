@@ -10,10 +10,16 @@ namespace ExNihilo.Sectors
 {
     public abstract class Sector : IUI, IClickable
     {
+        protected GameContainer Container;
         protected CommandHandler Handler;
         protected Thread LoadingThread;
 
-        public abstract void OnResize(GraphicsDevice graphicsDevice, Coordinate gameWindow, Coordinate subWindow, Vector2 origin);
+        protected Sector(GameContainer container)
+        {
+            Container = container;
+        }
+
+        public abstract void OnResize(GraphicsDevice graphicsDevice, Coordinate gameWindow);
         public abstract void Initialize();
         public abstract void LoadContent(GraphicsDevice graphicsDevice, ContentManager content);
         public abstract void Update();

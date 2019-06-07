@@ -14,13 +14,15 @@ namespace ExNihilo.Menus
             Up, Down, Left, Right, Select
         }
 
+        protected GameContainer Container;
         protected UIPanel _menuUI;
         protected bool SubMode;
         protected int Selection, SubSelection;
 
-        protected Menu()
+        protected Menu(GameContainer container)
         {
-            _menuUI = new UIPanel(new Vector2(0.5f, 0.5f), Vector2.One);
+            _menuUI = new UIPanel("this.MenuKing", new Vector2(0.5f, 0.5f), Vector2.One, UIElement.PositionType.Center);
+            Container = container;
         }
 
         public abstract void Enter();
@@ -63,9 +65,9 @@ namespace ExNihilo.Menus
             _menuUI.LoadContent(graphics, content);
         }
 
-        public virtual void OnResize(GraphicsDevice graphics, Coordinate gameWindow, Coordinate subWindow, Vector2 origin)
+        public virtual void OnResize(GraphicsDevice graphics, Coordinate gameWindow)
         {
-            _menuUI.OnResize(graphics, gameWindow, subWindow, origin);
+            _menuUI.OnResize(graphics, gameWindow);
         }
 
         public virtual void Draw(SpriteBatch spriteBatch)

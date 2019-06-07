@@ -18,25 +18,55 @@ namespace ExNihilo.UI
             Center,
         }
 
-        protected PositionType Type;
+        protected PositionType AnchorType, SuperAnchorType;
         protected Texture2D Texture;
-        protected Vector2 Pos;
-        protected Coordinate BaseSize;
-        protected Vector2 PosRel, TextureOffset;
+        protected Vector2 PositionRelativeToBase, TextureOffsetToOrigin;
+        protected Coordinate PixelOffsetFromBase, LastResizeWindow;
         protected ScaleRuleSet ScaleRules;
+        protected UIElement BaseElement;
         protected float CurrentScale;
         protected readonly string TexturePath;
-        protected bool AbsoluteOffset;
-        protected bool Loaded;
+        protected bool AbsoluteOffset, Loaded;
 
-        public UIElement(string path, Vector2 relPos, PositionType t = PositionType.Center, bool pixelOffset = false)
+        public string GivenName { get; protected set; }
+        public Vector2 OriginPosition { get; protected set; }
+        public Coordinate CurrentPixelSize { get; protected set; }
+
+        public UIElement(string name, string path, Vector2 relPos, UIPanel superior, PositionType anchorPoint)
         {
-            ExceptionCheck.AssertCondition(pixelOffset || (relPos.X >= 0 && relPos.X <= 1.0 && relPos.Y >= 0 && relPos.Y <= 1.0));
+            ExceptionCheck.AssertCondition(relPos.X >= 0 && relPos.X <= 1.0 && relPos.Y >= 0 && relPos.Y <= 1.0);
             TexturePath = path;
-            PosRel = Utilities.Copy(relPos);
+            PositionRelativeToBase = Utilities.Copy(relPos);
             CurrentScale = 1;
-            Type = t;
-            AbsoluteOffset = pixelOffset;
+            AnchorType = anchorPoint;
+            AbsoluteOffset = false;
+            BaseElement = superior;
+            GivenName = name;
+        }
+
+        public UIElement(string name, string path, Coordinate pixelOffset, UIElement superior, PositionType anchorPoint, PositionType superAnchorType)
+        {
+            //Pixel offset is always relative to the top 
+            TexturePath = path;
+            PixelOffsetFromBase = pixelOffset.Copy();
+            CurrentScale = 1;
+            AnchorType = anchorPoint;
+            SuperAnchorType = superAnchorType;
+            AbsoluteOffset = true;
+            BaseElement = superior;
+            GivenName = name;
+        }
+
+        protected UIElement(string name, Vector2 relPos, PositionType anchorPoint)
+        {
+            //King element. Panel that encompasses everything else
+            ExceptionCheck.AssertCondition(relPos.X >= 0 && relPos.X <= 1.0 && relPos.Y >= 0 && relPos.Y <= 1.0);
+            TexturePath = "null";
+            PositionRelativeToBase = Utilities.Copy(relPos);
+            CurrentScale = 1;
+            AnchorType = anchorPoint;
+            AbsoluteOffset = false;
+            GivenName = name;
         }
 
         public virtual void SetRules(ScaleRuleSet rules)
@@ -48,8 +78,8 @@ namespace ExNihilo.UI
         {
             if (!Loaded) return;
             CurrentScale = ScaleRules.GetScale(window);
-            BaseSize = new Coordinate((int)(CurrentScale * Texture.Width), (int)(CurrentScale * Texture.Height));
-            ReinterpretOffset();
+            CurrentPixelSize = new Coordinate((int)(CurrentScale * Texture.Width), (int)(CurrentScale * Texture.Height));
+            TextureOffsetToOrigin = GetOffset(AnchorType, CurrentPixelSize);
         }
 
         public virtual void LoadContent(GraphicsDevice graphics, ContentManager content)
@@ -57,57 +87,89 @@ namespace ExNihilo.UI
             Loaded = true;
             ScaleRules = UILibrary.DefaultScaleRuleSet;
             Texture = UILibrary.TextureLookUp[TexturePath];
-            if (BaseSize is null) BaseSize = new Coordinate((int) (CurrentScale*Texture.Width), (int) (CurrentScale*Texture.Height));
-            ReinterpretOffset();
+            if (CurrentPixelSize is null) CurrentPixelSize = new Coordinate((int) (CurrentScale*Texture.Width), (int) (CurrentScale*Texture.Height));
+            TextureOffsetToOrigin = GetOffset(AnchorType, CurrentPixelSize);
+            LastResizeWindow = new Coordinate();
         }
 
-        protected void ReinterpretOffset()
+        protected static Vector2 GetOffset(PositionType anchorType, Coordinate pixelSize)
         {
-            switch (Type)
+            Vector2 textureOffsetToOrigin;
+            switch (anchorType)
             {
                 case PositionType.TopLeft:
-                    TextureOffset =  new Vector2(0, 0);
+                    textureOffsetToOrigin =  new Vector2(0, 0);
                     break;
                 case PositionType.TopRight:
-                    TextureOffset =  new Vector2(BaseSize.X, 0);
+                    textureOffsetToOrigin =  new Vector2(pixelSize.X, 0);
                     break;
                 case PositionType.BottomLeft:
-                    TextureOffset =  new Vector2(0, BaseSize.Y);
+                    textureOffsetToOrigin =  new Vector2(0, pixelSize.Y);
                     break;
                 case PositionType.BottomRight:
-                    TextureOffset =  new Vector2(BaseSize.X, BaseSize.Y);
+                    textureOffsetToOrigin =  new Vector2(pixelSize.X, pixelSize.Y);
                     break;
                 case PositionType.CenterTop:
-                    TextureOffset =  new Vector2(BaseSize.X / 2, 0);
+                    textureOffsetToOrigin =  new Vector2(pixelSize.X / 2, 0);
                     break;
                 case PositionType.CenterBottom:
-                    TextureOffset =  new Vector2(BaseSize.X / 2, BaseSize.Y);
+                    textureOffsetToOrigin =  new Vector2(pixelSize.X / 2, pixelSize.Y);
                     break;
                 case PositionType.CenterLeft:
-                    TextureOffset =  new Vector2(0, BaseSize.Y / 2);
+                    textureOffsetToOrigin =  new Vector2(0, pixelSize.Y / 2);
                     break;
                 case PositionType.CenterRight:
-                    TextureOffset =  new Vector2(BaseSize.X, BaseSize.Y / 2);
+                    textureOffsetToOrigin =  new Vector2(pixelSize.X, pixelSize.Y / 2);
                     break;
                 case PositionType.Center:
-                    TextureOffset =  new Vector2(BaseSize.X / 2, BaseSize.Y / 2);
+                    textureOffsetToOrigin =  new Vector2(pixelSize.X / 2, pixelSize.Y / 2);
                     break;
                 default:
-                    TextureOffset = new Vector2();
+                    textureOffsetToOrigin = new Vector2();
                     break;
             }
+
+            return textureOffsetToOrigin;
         }
-        public virtual void OnResize(GraphicsDevice graphics, Coordinate gameWindow, Coordinate subWindow, Vector2 origin)
+
+        public bool WasResized(Coordinate gameWindow)
         {
-            if (!Loaded) return;
+            return LastResizeWindow.Equals(gameWindow);
+        }
+
+        public virtual void OnResize(GraphicsDevice graphics, Coordinate gameWindow)
+        {
+            if (!Loaded || WasResized(gameWindow)) return;
+
             ReinterpretScale(gameWindow);
-            Pos = AbsoluteOffset ? origin + PosRel - TextureOffset : origin + subWindow * PosRel - TextureOffset;
+            LastResizeWindow = gameWindow;
+            if (!BaseElement.WasResized(gameWindow)) BaseElement.OnResize(graphics, gameWindow);
+
+            if (AbsoluteOffset)
+            {
+                //Position of this element is relative to the origin of its base element in scaled pixels
+                var scaledOffset = new Coordinate(
+                    (int) (BaseElement.CurrentScale * PixelOffsetFromBase.X), 
+                    (int) (BaseElement.CurrentScale * PixelOffsetFromBase.Y));
+                var superOffset = GetOffset(SuperAnchorType, BaseElement.CurrentPixelSize);
+                OriginPosition = BaseElement.OriginPosition + scaledOffset - TextureOffsetToOrigin + superOffset;
+            }
+            else  
+            {
+                //Position of this element is relative to the space of its base panel
+                OriginPosition = BaseElement.OriginPosition + BaseElement.CurrentPixelSize * PositionRelativeToBase - TextureOffsetToOrigin;
+            }
         }
 
         public virtual void Draw(SpriteBatch spriteBatch)
         {
             if (!Loaded) return;
-            spriteBatch.Draw(Texture, Pos, null, Color.White, 0, Vector2.Zero, CurrentScale, SpriteEffects.None, 0);
+            spriteBatch.Draw(Texture, OriginPosition, null, Color.White, 0, Vector2.Zero, CurrentScale, SpriteEffects.None, 0);
+        }
+        public void Draw(SpriteBatch spriteBatch, Color c)
+        {
+            if (!Loaded) return;
+            spriteBatch.Draw(Texture, OriginPosition, null, c, 0, Vector2.Zero, CurrentScale, SpriteEffects.None, 0);
         }
 
     }

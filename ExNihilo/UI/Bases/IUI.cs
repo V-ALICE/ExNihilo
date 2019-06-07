@@ -9,7 +9,7 @@ namespace ExNihilo.UI.Bases
     {
         void LoadContent(GraphicsDevice graphics, ContentManager content);
 
-        void OnResize(GraphicsDevice graphics, Coordinate gameWindow, Coordinate subWindow, Vector2 origin);
+        void OnResize(GraphicsDevice graphics, Coordinate gameWindow);
 
         void Draw(SpriteBatch spriteBatch);
     }

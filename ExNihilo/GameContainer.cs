@@ -26,24 +26,29 @@ namespace ExNihilo
         private SectorID _activeSectorID;
         private Sector ActiveSector => _sectorDirectory[_activeSectorID];
         private FormWindowState _currentForm;
+        private float _mouseScale;
         private int _frameTimeID;
         private int _currentFrameCount, _currentFrameRate;
         private readonly GraphicsDeviceManager _graphics;
         private Coordinate _windowSize;
+        private Vector2 _mouseDrawPos;
         private Dictionary<SectorID, Sector> _sectorDirectory;
         private Form _form;
+        private Texture2D _mouseTexture;
         private MouseController _mouse;
         private CommandHandler _handler;
-        private ConsoleHandler _console;
+
+        public ConsoleHandler Console { get; private set; }
 
         protected bool ShowDebugInfo, FormTouched;
-        protected bool ConsoleActive => _console.Active;
+        protected bool ConsoleActive => Console.Active;
         protected int SystemClockID;
         protected SpriteBatch SpriteBatch;
 
         public GameContainer()
         {
             _graphics = new GraphicsDeviceManager(this) { SynchronizeWithVerticalRetrace = true };
+            IsFixedTimeStep = false;
             _windowSize = new Coordinate(_graphics.PreferredBackBufferWidth, _graphics.PreferredBackBufferHeight);
         }
 
@@ -59,8 +64,9 @@ namespace ExNihilo
                 _graphics.ApplyChanges();
                 _windowSize = new Coordinate(Window.ClientBounds.Width, Window.ClientBounds.Height);
 
-                _console.OnResize(GraphicsDevice, _windowSize, _windowSize, Vector2.Zero);
-                foreach (var sector in _sectorDirectory.Values) sector.OnResize(GraphicsDevice, _windowSize, _windowSize, Vector2.Zero);
+                Console.OnResize(GraphicsDevice, _windowSize);
+                _mouseScale = UILibrary.DefaultScaleRuleSet.GetScale(_windowSize);
+                foreach (var sector in _sectorDirectory.Values) sector.OnResize(GraphicsDevice, _windowSize);
             }
         }
         private void f_FormClosing(object sender, FormClosingEventArgs e)
@@ -108,15 +114,16 @@ namespace ExNihilo
         protected override void Initialize()
         {
             _activeSectorID = SectorID.MainMenu;
+            _mouseScale = 1;
             _mouse = new MouseController();
-            _console = new ConsoleHandler();
+            Console = new ConsoleHandler();
             _handler = new CommandHandler();
             _handler.Initialize(this);
             SystemClockID = UniversalTime.NewTimer(true);
             _frameTimeID = UniversalTime.NewTimer(true, 1.5);
             UniversalTime.TurnOnTimer(SystemClockID, _frameTimeID);
 
-            IsMouseVisible = true;
+            //IsMouseVisible = true;
             Window.AllowUserResizing = true;
             _currentForm = FormWindowState.Normal;
             _form = (Form)Control.FromHandle(Window.Handle);
@@ -126,9 +133,9 @@ namespace ExNihilo
 
             _sectorDirectory = new Dictionary<SectorID, Sector>
             {
-                {SectorID.MainMenu, new TitleSector()},
-                {SectorID.Outerworld, new OuterworldSector() },
-                {SectorID.Underworld, new UnderworldSector() }
+                {SectorID.MainMenu, new TitleSector(this)},
+                {SectorID.Outerworld, new OuterworldSector(this) },
+                {SectorID.Underworld, new UnderworldSector(this) }
             };
             foreach (var sector in _sectorDirectory.Values) sector.Initialize();
 
@@ -154,7 +161,9 @@ namespace ExNihilo
 
             TextDrawer.Initialize(GraphicsDevice, Content.Load<Texture2D>("UI/FONT"));
             foreach (var sector in _sectorDirectory.Values) sector.LoadContent(GraphicsDevice, Content);
-            _console.LoadContent(GraphicsDevice, Content);
+            Console.LoadContent(GraphicsDevice, Content);
+
+            _mouseTexture = Content.Load<Texture2D>("UI/Poker");
 
             base.LoadContent();
         }
@@ -173,7 +182,11 @@ namespace ExNihilo
         private void UpdateMouse()
         {
             var tmp = _mouse.UpdateInput();
-            if (tmp.PositionChange) ActiveSector.OnMoveMouse(tmp.MousePosition);
+            if (tmp.PositionChange)
+            {
+                _mouseDrawPos = tmp.MousePosition.ToVector2();
+                ActiveSector.OnMoveMouse(tmp.MousePosition);
+            }
 
             if (!tmp.StateChange) return;
             if (tmp.LeftDown) ActiveSector.OnLeftClick(tmp.MousePosition);
@@ -183,7 +196,7 @@ namespace ExNihilo
         protected override void Update(GameTime gameTime)
         {
             UniversalTime.Update(gameTime);
-            _console.Update();
+            Console.Update();
 
             switch (_activeSectorID)
             {
@@ -237,7 +250,8 @@ namespace ExNihilo
             }
 
             UpdateFPS(); //FPS numbers are calculated based on drawn frames
-            _console.Draw(SpriteBatch); //Console will handle when it should draw
+            Console.Draw(SpriteBatch); //Console will handle when it should draw
+            SpriteBatch.Draw(_mouseTexture, _mouseDrawPos, null, Color.White, 0, Vector2.Zero, _mouseScale, SpriteEffects.None, 0);
             if (ShowDebugInfo) DrawDebugInfo();
 
             SpriteBatch.End();
@@ -268,7 +282,7 @@ namespace ExNihilo
 
         public void OpenConsole(string initMessage="")
         {
-            _console.OpenConsole(initMessage);
+            Console.OpenConsole(initMessage);
         }
 
         protected virtual void ExitGame()

@@ -11,19 +11,24 @@ namespace ExNihilo.Sectors
     {
         private TitleMenu _title;
 
+        public TitleSector(GameContainer container) : base(container)
+        {
+        }
+
         /********************************************************************
         ------->Game loop
         ********************************************************************/
-        public override void OnResize(GraphicsDevice graphicsDevice, Coordinate gameWindow, Coordinate subWindow, Vector2 origin)
+
+        public override void OnResize(GraphicsDevice graphicsDevice, Coordinate gameWindow)
         {
-            _title.OnResize(graphicsDevice, gameWindow, subWindow, origin);
+            _title.OnResize(graphicsDevice, gameWindow);
         }
 
         public override void Initialize()
         {
             Handler = new CommandHandler();
             Handler.Initialize(this);
-            _title = new TitleMenu();
+            _title = new TitleMenu(Container);
         }
 
         public override void LoadContent(GraphicsDevice graphicsDevice, ContentManager content)
