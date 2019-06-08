@@ -95,7 +95,7 @@ namespace ExNihilo.UI
                     : (OriginPosition.Y - BaseElement.OriginPosition.Y + TextureOffsetToOrigin.Y) / BaseElement.CurrentPixelSize.Y;
                 PositionRelativeToBase = new Vector2(relX, relY);
 
-                Function?.Invoke(new UICallbackPackage(GivenName, 0, point, OriginPosition));
+                Function?.Invoke(new UICallbackPackage(GivenName, point, OriginPosition));
             }
         }
     }

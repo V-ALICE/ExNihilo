@@ -1,5 +1,4 @@
-﻿using System;
-using ExNihilo.UI;
+﻿using ExNihilo.UI;
 using ExNihilo.UI.Bases;
 using ExNihilo.Util;
 using ExNihilo.Util.Graphics;
@@ -37,9 +36,23 @@ namespace ExNihilo.Menus
             _type = CurrentMenu.Title;
         }
 
+        private void ApplyMusicVolume(UICallbackPackage package)
+        {
+            AudioManager.MusicVolume = package.value[0];
+        }
+
+        private void ApplyEffectVolume(UICallbackPackage package)
+        {
+            AudioManager.EffectVolume = package.value[0];
+        }
+
 /********************************************************************
 ------->Loading Menu Callbacks
 ********************************************************************/
+        private void SelectLoad(UICallbackPackage package)
+        {
+            DoThing(package.caller, package.value[0]);
+        }
 
 /********************************************************************
 ------->Menu Functions
@@ -53,9 +66,9 @@ namespace ExNihilo.Menus
         private CurrentMenu _type;
         private readonly UIPanel _titleUI, _optionsUI, _loadUI;
 
-        private void DoThing(UICallbackPackage package)
+        private void DoThing(string caller, float value)
         {
-            Container.Console.ForceMessage("", "<" + package.caller + " pressed with value "+package.value+">");
+            Container.Console.ForceMessage("", "<" + caller + " pressed with value " + value + ">");
         }
 
         public TitleMenu(GameContainer container) : base(container)
@@ -67,11 +80,16 @@ namespace ExNihilo.Menus
             // Title Menu setup
             var titlePanel = new UIPanel("TitleButtonPanel", new Vector2(0.5f, 1), new Vector2(0, 0.5f), UIElement.PositionType.CenterBottom);
             var playButton = new UIClickable("PlayButton", "UI/BigButton", new Vector2(0, 0), titlePanel, UIElement.PositionType.CenterTop, "UI/BigButtonDown");
-            var optionsButton = new UIClickable("OptionsButton", "UI/BigButton", new Coordinate(0, 10), playButton, UIElement.PositionType.CenterTop, UIElement.PositionType.CenterBottom, "UI/BigButtonDown");
-            var exitButton = new UIClickable("ExitButton", "UI/BigButton", new Coordinate(0, 10), optionsButton, UIElement.PositionType.CenterTop, UIElement.PositionType.CenterBottom, "UI/BigButtonDown");
-            var playButtonText = new UIText("TitleButtonText", new Coordinate(), "Play Game", new ColorScale[0], playButton, UIElement.PositionType.Center, UIElement.PositionType.Center);
-            var optionsButtonText = new UIText("OptionsButtonText", new Coordinate(), "Options", new ColorScale[0], optionsButton, UIElement.PositionType.Center, UIElement.PositionType.Center);
-            var exitButtonText = new UIText("ExitButtonText", new Coordinate(), "Exit", new ColorScale[0], exitButton, UIElement.PositionType.Center, UIElement.PositionType.Center);
+            var optionsButton = new UIClickable("OptionsButton", "UI/BigButton", new Coordinate(0, 10), playButton, UIElement.PositionType.CenterTop,
+                UIElement.PositionType.CenterBottom, "UI/BigButtonDown");
+            var exitButton = new UIClickable("ExitButton", "UI/BigButton", new Coordinate(0, 10), optionsButton, UIElement.PositionType.CenterTop,
+                UIElement.PositionType.CenterBottom, "UI/BigButtonDown");
+            var playButtonText = new UIText("TitleButtonText", new Coordinate(), "Play Game", new ColorScale[] {Color.Black}, playButton,
+                UIElement.PositionType.Center, UIElement.PositionType.Center);
+            var optionsButtonText = new UIText("OptionsButtonText", new Coordinate(), "Options", new ColorScale[] {Color.Black}, optionsButton,
+                UIElement.PositionType.Center, UIElement.PositionType.Center);
+            var exitButtonText = new UIText("ExitButtonText", new Coordinate(), "Exit", new ColorScale[] {Color.Black}, exitButton,
+                UIElement.PositionType.Center, UIElement.PositionType.Center);
             var titleDisplay = new UIElement("Title", "UI/Title", new Vector2(0.5f, 0.25f), _titleUI, UIElement.PositionType.Center);
 
             playButton.RegisterCallback(SwapToLoad);
@@ -84,18 +102,28 @@ namespace ExNihilo.Menus
             _titleUI.AddElements(titleDisplay, titlePanel);
 
             // Option Menu setup
-            var backButton = new UIClickable("BackButton", "UI/SmallButton", new Coordinate(10, -10), _optionsUI, UIElement.PositionType.BottomLeft, UIElement.PositionType.BottomLeft, "UI/SmallButtonDown");
-            var backButtonText = new UIText("BackButtonText", new Coordinate(), "Back", new ColorScale[0], backButton, UIElement.PositionType.Center, UIElement.PositionType.Center);
-            var fillBar1 = new UIElement("FillBar1", "UI/SmallFillBar", new Vector2(0.45f, 0.2f), _optionsUI, UIElement.PositionType.TopRight);
-            var fillBar2 = new UIElement("FillBar2", "UI/SmallFillBar", new Vector2(0.55f, 0.2f), _optionsUI, UIElement.PositionType.TopLeft);
-            var bar1Fill = new UIExtendable("bar1Fill", "UI/BarFillRed", new Coordinate(18, 6), fillBar1, UIElement.PositionType.TopLeft, UIElement.PositionType.TopLeft, new Coordinate(240, 28), true, false);
-            var bar2Fill = new UIExtendable("bar2Fill", "UI/BarFillBlue", new Coordinate(18, 6), fillBar2, UIElement.PositionType.TopLeft, UIElement.PositionType.TopLeft, new Coordinate(240, 28), true, false);
+            var backButton = new UIClickable("BackButton", "UI/SmallButton", new Coordinate(10, -10), _optionsUI, UIElement.PositionType.BottomLeft,
+                UIElement.PositionType.BottomLeft, "UI/SmallButtonDown");
+            var backButtonText = new UIText("BackButtonText", new Coordinate(), "Back", new ColorScale[] {Color.Black}, backButton,
+                UIElement.PositionType.Center, UIElement.PositionType.Center);
+            var effectVolumeBar = new UIElement("EffectVolumeBar", "UI/SmallFillBar", new Vector2(0.45f, 0.2f), _optionsUI, UIElement.PositionType.TopRight);
+            var musicVolumeBar = new UIElement("MusicVolumeBar", "UI/SmallFillBar", new Vector2(0.55f, 0.2f), _optionsUI, UIElement.PositionType.TopLeft);
+            var effectVolumeBarFill = new UIExtendable("EffectVolumeBarFill", "UI/BarFillRed", new Coordinate(18, 6), effectVolumeBar,
+                UIElement.PositionType.TopLeft, UIElement.PositionType.TopLeft, new Coordinate(240, 28), true, false);
+            var musicVolumeBarFill = new UIExtendable("MusicVolumeBarFill", "UI/BarFillBlue", new Coordinate(18, 6), musicVolumeBar,
+                UIElement.PositionType.TopLeft, UIElement.PositionType.TopLeft, new Coordinate(240, 28), true, false);
+            var effectVolumeBarText = new UIText("EffectVolumeBarText", new Coordinate(2, -4), "Effect Volume", new ColorScale[] {Color.White},
+                effectVolumeBarFill, UIElement.PositionType.BottomLeft, UIElement.PositionType.TopLeft);
+            var musicVolumeBarText = new UIText("MusicVolumeBarText", new Coordinate(2, -4), "Music Volume", new ColorScale[] { Color.White },
+                musicVolumeBarFill, UIElement.PositionType.BottomLeft, UIElement.PositionType.TopLeft);
 
             backButton.RegisterCallback(SwapToTitle);
-            bar1Fill.RegisterCallback(DoThing);
-            bar2Fill.RegisterCallback(DoThing);
+            effectVolumeBarFill.RegisterCallback(ApplyEffectVolume);
+            musicVolumeBarFill.RegisterCallback(ApplyMusicVolume);
+            effectVolumeBarFill.ForceValue(new Vector2(0.5f, 1));
+            musicVolumeBarFill.ForceValue(new Vector2(0.5f, 1));
 
-            _optionsUI.AddElements(backButton, backButtonText, fillBar1, fillBar2, bar1Fill, bar2Fill);
+            _optionsUI.AddElements(backButton, backButtonText, effectVolumeBar, musicVolumeBar, effectVolumeBarFill, musicVolumeBarFill, effectVolumeBarText, musicVolumeBarText);
 
             // Option Menu setup
 

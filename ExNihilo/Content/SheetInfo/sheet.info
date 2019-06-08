@@ -1,0 +1,27 @@
+UI/sheet
+UI/SmallButton 		  0 104 160 52
+UI/SmallButtonDown 	160 104 160 52
+UI/BigButton 		  0  52 240 52
+UI/BigButtonDown 	  0   0 240 52
+UI/SmallEntryBox 	  0 156 276 60
+UI/SmallFillBar 	  0 216 276 40
+UI/GreenBulb 		240   0  28 28
+UI/BlueBulb 		268   0  28 28
+UI/RedBulb 			296   0  28 28
+UI/BlackBulb 		324   0  28 28
+UI/GreenBulbHover 	240  28  28 28
+UI/BlueBulbHover 	268  28  28 28
+UI/RedBulbHover 	296  28  28 28
+UI/BlackBulbHover 	324  28  28 28
+UI/GreenBulbDown 	240  56  28 28
+UI/BlueBulbDown 	268  56  28 28
+UI/RedBulbDown 		296  56  28 28
+UI/BlackBulbDown 	324  56  28 28
+UI/RadioUnselected 	352   0  24 24
+UI/RadioSelected 	376   0  24 24
+UI/PipBarBlue 		352  24  16 24
+UI/PipBarRed 		368  24  16 24
+UI/PipBarGreen 		384  24  16 24
+UI/BarFillRed 		352  48   2 28
+UI/BarFillBlue 		354  48   2 28
+UI/BarFillGreen 	356  48   2 28

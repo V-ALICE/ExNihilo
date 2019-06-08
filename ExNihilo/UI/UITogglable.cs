@@ -33,7 +33,7 @@ namespace ExNihilo.UI
             if (WasOver)
             {
                 Activated = !Activated;
-                Function?.Invoke(new UICallbackPackage(GivenName, Activated?1:-1, point, OriginPosition));
+                Function?.Invoke(new UICallbackPackage(GivenName, point, OriginPosition, Activated ? 1 : -1));
                 WasOver = false;
             }
         }

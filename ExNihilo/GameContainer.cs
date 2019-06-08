@@ -161,7 +161,7 @@ namespace ExNihilo
 
             Content.RootDirectory = "Content";
             SpriteBatch = new SpriteBatch(GraphicsDevice);
-            UILibrary.LoadLibrary(GraphicsDevice, Content);
+            UILibrary.LoadLibrary(GraphicsDevice, Content, "title.info", "sheet.info");
 
             TextDrawer.Initialize(GraphicsDevice, Content.Load<Texture2D>("UI/FONT"));
             foreach (var sector in _sectorDirectory.Values) sector.LoadContent(GraphicsDevice, Content);

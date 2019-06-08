@@ -11,14 +11,14 @@ namespace ExNihilo.UI
     public struct UICallbackPackage
     {
         public string caller;
-        public float value;
+        public float[] value;
         public Point screenPos;
         public Coordinate elementPos;
 
-        public UICallbackPackage(string name, float v, Point screen, Vector2 origin)
+        public UICallbackPackage(string name, Point screen, Vector2 origin, params float[] values)
         {
             caller = name;
-            value = v;
+            value = values;
             screenPos = screen;
             elementPos = new Coordinate((int) Math.Round(screen.X-origin.X), (int) Math.Round(screen.Y-origin.Y));
         }
@@ -105,7 +105,7 @@ namespace ExNihilo.UI
 
         public virtual void OnLeftRelease(Point point)
         {
-            if (Activated) Function?.Invoke(new UICallbackPackage(GivenName, 0, point, OriginPosition));
+            if (Activated) Function?.Invoke(new UICallbackPackage(GivenName, point, OriginPosition));
             Activated = false;
         }
 
