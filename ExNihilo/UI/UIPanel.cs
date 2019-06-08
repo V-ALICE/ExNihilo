@@ -144,15 +144,16 @@ namespace ExNihilo.UI
                     if (click.OnLeftClick(point)) return true;
                 }
             }
-            return base.OnLeftClick(point);
+            //return base.OnLeftClick(point);
+            return false;
         }
 
-        public override void OnLeftRelease()
+        public override void OnLeftRelease(Point point)
         {
-            base.OnLeftRelease();
+            //base.OnLeftRelease(point);
             foreach (var item in Set.Values)
             {
-                if (item is UIClickable click) click.OnLeftRelease();
+                if (item is UIClickable click) click.OnLeftRelease(point);
             }
         }
 

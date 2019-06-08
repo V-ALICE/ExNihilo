@@ -94,6 +94,7 @@
     <Compile Include="UI\UIClickable.cs" />
     <Compile Include="UI\UIElement.cs" />
     <Compile Include="UI\Bases\UILibrary.cs" />
+    <Compile Include="UI\UIExtendable.cs" />
     <Compile Include="UI\UIMovable.cs" />
     <Compile Include="UI\UIPanel.cs" />
     <Compile Include="UI\UIText.cs" />

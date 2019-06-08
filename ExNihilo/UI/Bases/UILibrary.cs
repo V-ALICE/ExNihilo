@@ -79,6 +79,11 @@ namespace ExNihilo.UI.Bases
                 {"UI/PipBarBlue", TextureUtilities.GetSubTexture(graphics, sheet, new Rectangle(352, 24, 16, 24))},
                 {"UI/PipBarRed", TextureUtilities.GetSubTexture(graphics, sheet, new Rectangle(368, 24, 16, 24))},
                 {"UI/PipBarGreen", TextureUtilities.GetSubTexture(graphics, sheet, new Rectangle(384, 24, 16, 24))},
+                {"UI/SmallEntryBox", TextureUtilities.GetSubTexture(graphics, sheet, new Rectangle(0, 156, 276, 60))},
+                {"UI/SmallFillBar", TextureUtilities.GetSubTexture(graphics, sheet, new Rectangle(0, 216, 276, 40))},
+                {"UI/BarFillRed", TextureUtilities.GetSubTexture(graphics, sheet, new Rectangle(352, 48, 2, 28))},
+                {"UI/BarFillBlue", TextureUtilities.GetSubTexture(graphics, sheet, new Rectangle(354, 48, 2, 28))},
+                {"UI/BarFillGreen", TextureUtilities.GetSubTexture(graphics, sheet, new Rectangle(356, 48, 2, 28))},
             };
             sheet.Dispose();
 

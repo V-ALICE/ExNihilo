@@ -8,6 +8,22 @@ using Microsoft.Xna.Framework.Graphics;
 
 namespace ExNihilo.UI
 {
+    public struct UICallbackPackage
+    {
+        public string caller;
+        public float value;
+        public Point screenPos;
+        public Coordinate elementPos;
+
+        public UICallbackPackage(string name, float v, Point screen, Vector2 origin)
+        {
+            caller = name;
+            value = v;
+            screenPos = screen;
+            elementPos = new Coordinate((int) Math.Round(screen.X-origin.X), (int) Math.Round(screen.Y-origin.Y));
+        }
+    }
+
     public class UIClickable : UIElement, IClickable
     {
         protected byte[] Alpha;
@@ -15,7 +31,7 @@ namespace ExNihilo.UI
         protected readonly string AltTexturePath;
         protected readonly bool AllowMulligan;
         protected Color CurrentColor;
-        protected Action<string, float, bool> Function;
+        protected Action<UICallbackPackage> Function;
         
         public bool Disabled { get; protected set; }
         public bool Activated { get; protected set; }
@@ -42,7 +58,7 @@ namespace ExNihilo.UI
             AltTexturePath = "";
         }
 
-        public void RegisterCallback(Action<string, float, bool> action)
+        public void RegisterCallback(Action<UICallbackPackage> action)
         {
             Function = action;
         }
@@ -87,9 +103,9 @@ namespace ExNihilo.UI
             return Activated;
         }
 
-        public virtual void OnLeftRelease()
+        public virtual void OnLeftRelease(Point point)
         {
-            if (Activated) Function?.Invoke(GivenName, 0, false);
+            if (Activated) Function?.Invoke(new UICallbackPackage(GivenName, 0, point, OriginPosition));
             Activated = false;
         }
 

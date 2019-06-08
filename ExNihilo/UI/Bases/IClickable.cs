@@ -6,6 +6,6 @@ namespace ExNihilo.UI.Bases
     {
         void OnMoveMouse(Point point);
         bool OnLeftClick(Point point);
-        void OnLeftRelease();
+        void OnLeftRelease(Point point);
     }
 }

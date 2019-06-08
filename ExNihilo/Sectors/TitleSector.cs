@@ -69,9 +69,9 @@ namespace ExNihilo.Sectors
             return _title.OnLeftClick(point);
         }
 
-        public override void OnLeftRelease()
+        public override void OnLeftRelease(Point point)
         {
-            _title.OnLeftRelease();
+            _title.OnLeftRelease(point);
         }
     }
 }

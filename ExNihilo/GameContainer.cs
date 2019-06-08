@@ -194,7 +194,7 @@ namespace ExNihilo
 
             if (!tmp.StateChange) return;
             if (tmp.LeftDown) ActiveSector.OnLeftClick(tmp.MousePosition);
-            else if (tmp.LeftUp) ActiveSector.OnLeftRelease();
+            else if (tmp.LeftUp) ActiveSector.OnLeftRelease(tmp.MousePosition);
         }
 
         protected override void Update(GameTime gameTime)
@@ -202,17 +202,14 @@ namespace ExNihilo
             UniversalTime.Update(gameTime);
             ColorScale.UpdateGlobalScales();
             Console.Update();
+            UpdateMouse();
 
             switch (_activeSectorID)
             {
                 case SectorID.MainMenu:
                 case SectorID.Outerworld:
                 case SectorID.Underworld:
-                    if (!ConsoleActive)
-                    {
-                        _handler.UpdateInput();
-                        UpdateMouse();
-                    }
+                    if (!ConsoleActive) _handler.UpdateInput();
                     ActiveSector.Update();
                     break;
                 case SectorID.LoadingInit:

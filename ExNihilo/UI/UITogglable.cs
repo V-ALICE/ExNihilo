@@ -28,12 +28,12 @@ namespace ExNihilo.UI
             return WasOver;
         }
 
-        public override void OnLeftRelease()
+        public override void OnLeftRelease(Point point)
         {
             if (WasOver)
             {
                 Activated = !Activated;
-                Function?.Invoke(GivenName, 0, Activated);
+                Function?.Invoke(new UICallbackPackage(GivenName, Activated?1:-1, point, OriginPosition));
                 WasOver = false;
             }
         }

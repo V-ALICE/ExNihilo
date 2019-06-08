@@ -154,6 +154,8 @@ namespace ExNihilo.Systems
         private string _activeText;
         private Vector2 _backdropPos, _activeMessagePosition, _oldMessagePosition;
         private int _maxCharacterCount, _maxLineCount;
+        private float _currentScale;
+        private ScaleRuleSet _rules;
 
         private readonly int _backspaceTimerID;
         private const float _backspaceDelay = 0.05f, _backspaceDelayExtended = 0.35f;
@@ -173,6 +175,8 @@ namespace ExNihilo.Systems
 
         public void LoadContent(GraphicsDevice graphics, ContentManager content)
         {
+            _currentScale = 1;
+            _rules = UILibrary.ReducedScaleRuleSet;
         }
 
         public void OnResize(GraphicsDevice graphics, Coordinate gameWindow)
@@ -193,6 +197,7 @@ namespace ExNihilo.Systems
             _backdropPos = new Vector2(0, gameWindow.Y - _backdrop.Height);
             _activeMessagePosition = new Vector2(TextDrawer.AlphaSpacer, gameWindow.Y - TextDrawer.LineSpacer - TextDrawer.AlphaHeight);
             _oldMessagePosition = new Vector2(TextDrawer.AlphaSpacer, gameWindow.Y - _backdrop.Height + TextDrawer.LineSpacer);
+            _currentScale = _rules.GetScale(gameWindow);
         }
 
         public void Update()
@@ -229,7 +234,7 @@ namespace ExNihilo.Systems
                 if (_activeText.Length + 2 > _maxCharacterCount) message += _activeText.Substring(_activeText.Length + 2 - _maxCharacterCount);
                 else message += _activeText;
 
-                TextDrawer.DrawDumbText(spriteBatch, _activeMessagePosition, message, 1, Color.White);
+                TextDrawer.DrawDumbText(spriteBatch, _activeMessagePosition, message, _currentScale, Color.White);
             }
 
             List<Message> pile = _console.GetAllMessages(); //oldest to newest
@@ -243,7 +248,7 @@ namespace ExNihilo.Systems
                 }
 
                 var c = message.Command ? new ColorScale[] {Color.DarkOrange} : new ColorScale[] { Color.DeepSkyBlue, Color.White };
-                pos = TextDrawer.DrawSmartText(spriteBatch, pos, message.SplitMessage, 1, false, c);
+                pos = TextDrawer.DrawSmartText(spriteBatch, pos, message.SplitMessage, _currentScale, false, c);
             }
         }
 

@@ -17,12 +17,11 @@ namespace ExNihilo.UI
         }
 
         //Right now Movables can't be absolute because relative positioning is required for resizing screen adjustments
-
-        //public UIMovable(string path, Coordinate pixelOffset, UIElement superior, PositionType anchorPoint, PositionType superAnchorPoint, 
-        //    string altPath = "", bool ghost = false) : base(path, pixelOffset, superior, anchorPoint, superAnchorPoint, altPath)
-        //{
-        //    Ghosting = ghost;
-        //}
+        protected UIMovable(string name, string path, Coordinate pixelOffset, UIElement superior, PositionType anchorPoint, PositionType superAnchorPoint,
+            string altPath = "", bool ghost = false) : base(name, path, pixelOffset, superior, anchorPoint, superAnchorPoint, altPath)
+        {
+            Ghosting = ghost;
+        }
 
         public override void OnResize(GraphicsDevice graphics, Coordinate gameWindow)
         {
@@ -82,7 +81,7 @@ namespace ExNihilo.UI
             return Activated;
         }
 
-        public override void OnLeftRelease()
+        public override void OnLeftRelease(Point point)
         {
             if (Activated)
             {
@@ -95,6 +94,8 @@ namespace ExNihilo.UI
                 var relY = BaseElement.CurrentPixelSize.Y == 0 ? 0
                     : (OriginPosition.Y - BaseElement.OriginPosition.Y + TextureOffsetToOrigin.Y) / BaseElement.CurrentPixelSize.Y;
                 PositionRelativeToBase = new Vector2(relX, relY);
+
+                Function?.Invoke(new UICallbackPackage(GivenName, 0, point, OriginPosition));
             }
         }
     }

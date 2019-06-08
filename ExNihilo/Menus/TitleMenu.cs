@@ -14,17 +14,17 @@ namespace ExNihilo.Menus
 /********************************************************************
 ------->Title Menu Callbacks
 ********************************************************************/
-        private void SwapToLoad(string sender, float value, bool on)
+        private void SwapToLoad(UICallbackPackage package)
         {
             _type = CurrentMenu.Play;
         }
 
-        private void SwapToOptions(string sender, float value, bool on)
+        private void SwapToOptions(UICallbackPackage package)
         {
             _type = CurrentMenu.Options;
         }
 
-        private void ExitGame(string sender, float value, bool on)
+        private void ExitGame(UICallbackPackage package)
         {
             Container.ExitGame();
         }
@@ -32,7 +32,7 @@ namespace ExNihilo.Menus
 /********************************************************************
 ------->Options Menu Callbacks
 ********************************************************************/
-        private void SwapToTitle(string sender, float value, bool on)
+        private void SwapToTitle(UICallbackPackage package)
         {
             _type = CurrentMenu.Title;
         }
@@ -53,9 +53,9 @@ namespace ExNihilo.Menus
         private CurrentMenu _type;
         private readonly UIPanel _titleUI, _optionsUI, _loadUI;
 
-        private void DoThing(string s)
+        private void DoThing(UICallbackPackage package)
         {
-            Container.Console.ForceMessage("", "<" + s + " pressed>");
+            Container.Console.ForceMessage("", "<" + package.caller + " pressed with value "+package.value+">");
         }
 
         public TitleMenu(GameContainer container) : base(container)
@@ -86,10 +86,16 @@ namespace ExNihilo.Menus
             // Option Menu setup
             var backButton = new UIClickable("BackButton", "UI/SmallButton", new Coordinate(10, -10), _optionsUI, UIElement.PositionType.BottomLeft, UIElement.PositionType.BottomLeft, "UI/SmallButtonDown");
             var backButtonText = new UIText("BackButtonText", new Coordinate(), "Back", new ColorScale[0], backButton, UIElement.PositionType.Center, UIElement.PositionType.Center);
+            var fillBar1 = new UIElement("FillBar1", "UI/SmallFillBar", new Vector2(0.45f, 0.2f), _optionsUI, UIElement.PositionType.TopRight);
+            var fillBar2 = new UIElement("FillBar2", "UI/SmallFillBar", new Vector2(0.55f, 0.2f), _optionsUI, UIElement.PositionType.TopLeft);
+            var bar1Fill = new UIExtendable("bar1Fill", "UI/BarFillRed", new Coordinate(18, 6), fillBar1, UIElement.PositionType.TopLeft, UIElement.PositionType.TopLeft, new Coordinate(240, 28), true, false);
+            var bar2Fill = new UIExtendable("bar2Fill", "UI/BarFillBlue", new Coordinate(18, 6), fillBar2, UIElement.PositionType.TopLeft, UIElement.PositionType.TopLeft, new Coordinate(240, 28), true, false);
 
             backButton.RegisterCallback(SwapToTitle);
+            bar1Fill.RegisterCallback(DoThing);
+            bar2Fill.RegisterCallback(DoThing);
 
-            _optionsUI.AddElements(backButton, backButtonText);
+            _optionsUI.AddElements(backButton, backButtonText, fillBar1, fillBar2, bar1Fill, bar2Fill);
 
             // Option Menu setup
 
@@ -162,18 +168,18 @@ namespace ExNihilo.Menus
             return false;
         }
 
-        public override void OnLeftRelease()
+        public override void OnLeftRelease(Point point)
         {
             switch (_type)
             {
                 case CurrentMenu.Title:
-                    _titleUI.OnLeftRelease();
+                    _titleUI.OnLeftRelease(point);
                     break;
                 case CurrentMenu.Options:
-                    _optionsUI.OnLeftRelease();
+                    _optionsUI.OnLeftRelease(point);
                     break;
                 case CurrentMenu.Play:
-                    _loadUI.OnLeftRelease();
+                    _loadUI.OnLeftRelease(point);
                     break;
             }
         }

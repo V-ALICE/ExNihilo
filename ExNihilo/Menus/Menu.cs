@@ -83,6 +83,6 @@ namespace ExNihilo.Menus
 
         public abstract bool OnLeftClick(Point point);
 
-        public abstract void OnLeftRelease();
+        public abstract void OnLeftRelease(Point point);
     }
 }
