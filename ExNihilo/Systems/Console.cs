@@ -241,7 +241,8 @@ namespace ExNihilo.Systems
                     pos.Y += message.LineCount*(TextDrawer.AlphaHeight + TextDrawer.LineSpacer);
                     continue;
                 }
-                var c = message.Command ? new[] { Color.DarkOrange } : new[] { Color.DeepSkyBlue, Color.White };
+
+                var c = message.Command ? new ColorScale[] {Color.DarkOrange} : new ColorScale[] { Color.DeepSkyBlue, Color.White };
                 pos = TextDrawer.DrawSmartText(spriteBatch, pos, message.SplitMessage, 1, false, c);
             }
         }
@@ -264,7 +265,7 @@ namespace ExNihilo.Systems
             if (_activeText.Length == 0) return;
 
             if (_activeText.StartsWith("/")) Asura.Handle(this, _activeText);
-            else _console.AddMessage("<Player>", _activeText);
+            else _console.AddMessage(" <Player>", _activeText);
 
             //Active = false;
             _lastMessage = _activeText;

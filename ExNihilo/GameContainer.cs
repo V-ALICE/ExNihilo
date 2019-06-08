@@ -121,7 +121,11 @@ namespace ExNihilo
             _handler.Initialize(this);
             SystemClockID = UniversalTime.NewTimer(true);
             _frameTimeID = UniversalTime.NewTimer(true, 1.5);
+            UILibrary.LoadRuleSets();
             UniversalTime.TurnOnTimer(SystemClockID, _frameTimeID);
+
+            ColorScale.AddToGlobal("Random", new ColorScale(1.5f, 32, 222));
+            ColorScale.AddToGlobal("Rainbow", new ColorScale(1.0f, false, Color.Red, Color.Yellow, Color.Lime, Color.Cyan, Color.Blue, Color.Magenta));
 
             //IsMouseVisible = true;
             Window.AllowUserResizing = true;
@@ -196,6 +200,7 @@ namespace ExNihilo
         protected override void Update(GameTime gameTime)
         {
             UniversalTime.Update(gameTime);
+            ColorScale.UpdateGlobalScales();
             Console.Update();
 
             switch (_activeSectorID)
@@ -222,7 +227,7 @@ namespace ExNihilo
             base.Update(gameTime);
         }
 
-        protected virtual void DrawDebugInfo()
+        protected void DrawDebugInfo()
         {
             TextDrawer.DrawDumbText(SpriteBatch, Vector2.One, _currentFrameRate + " FPS", 1, Color.White);
         }
@@ -285,7 +290,7 @@ namespace ExNihilo
             Console.OpenConsole(initMessage);
         }
 
-        protected virtual void ExitGame()
+        public void ExitGame()
         {
             AudioManager.KillCurrentSong();
             foreach (var sector in _sectorDirectory.Values) sector.OnExit();

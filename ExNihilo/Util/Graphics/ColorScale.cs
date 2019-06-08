@@ -1,63 +1,108 @@
 ﻿using System;
+using System.Collections.Generic;
 using Microsoft.Xna.Framework;
 
 namespace ExNihilo.Util.Graphics
 {
     public class ColorScale
     {
-        private readonly bool _random, _singular;
-        private bool _halted;
+        private static readonly Dictionary<string, ColorScale> _globalScaleMap = new Dictionary<string, ColorScale>();
+
+        private readonly bool _random, _oneWay;
         private readonly byte _upper, _lower;
-        private Color _first, _next;
+        private readonly List<Color> _colors;
         private static readonly Random _rand = new Random();
-        private readonly int _timerID;
+        private readonly int _timerID = -1;
 
         public ColorScale(float lerpTime, byte lowerBound, byte upperBound)
-        {//rainbow sort of
+        {
+            //random rainbow
             _random = true;
             _upper = upperBound;
             _lower = lowerBound;
-            _first = new Color(_upper, _upper, _upper);
-            _next = new Color((byte)_rand.Next(_lower, _upper), (byte)_rand.Next(_lower, _upper), (byte)_rand.Next(_lower, _upper));
+            _colors = new List<Color>
+            {
+                new Color(_upper, _upper, _upper),
+                new Color((byte) _rand.Next(_lower, _upper), (byte) _rand.Next(_lower, _upper), (byte) _rand.Next(_lower, _upper))
+            };
             _timerID = UniversalTime.NewTimer(false, lerpTime);
             UniversalTime.TurnOnTimer(_timerID);
         }
-        public ColorScale(float lerpTime, Color lowerBound, Color upperBound, bool oneWay=false)
-        {//between two colors
-            _random = false;
-            _singular = oneWay; //Go from lower to upper bound and then stop
-            _first = lowerBound;
-            _next = upperBound;
-            _timerID = UniversalTime.NewTimer(false, lerpTime);
+        public ColorScale(float lerpTimePerColor, bool oneWay, Color firstColor, params Color[] colors)
+        {
+            //set of colors
+            _oneWay = oneWay; //Go through all colors and then stop
+            _colors = new List<Color> {firstColor};
+            foreach (var color in colors) _colors.Add(color);
+            _timerID = UniversalTime.NewTimer(false, lerpTimePerColor);
             UniversalTime.TurnOnTimer(_timerID);
         }
+        public ColorScale(Color color)
+        {
+            //single color
+            _colors = new List<Color> {color};
+        }
+
+        public static implicit operator ColorScale(Color c)
+        {
+            return new ColorScale(c);
+        }
+
+        public static implicit operator Color(ColorScale c)
+        {
+            return c.Get();
+        }
+
         ~ColorScale()
         {
-            UniversalTime.SellTimer(_timerID);
+            if (_timerID >= 0) UniversalTime.SellTimer(_timerID);
+        }
+
+        public static ColorScale GetFromGlobal(string name)
+        {
+            return _globalScaleMap.ContainsKey(name) ? _globalScaleMap[name] : null;
+        }
+
+        public static void AddToGlobal(string name, ColorScale scale)
+        {
+            if (_globalScaleMap.ContainsKey(name)) _globalScaleMap[name] = scale;
+            else _globalScaleMap.Add(name, scale);
+        }
+
+        public static void UpdateGlobalScales()
+        {
+            foreach (var scale in _globalScaleMap) scale.Value.Update();
         }
 
         public void Update()
         {
+            if (_colors.Count == 1) return;
             if (UniversalTime.GetNumberOfFires(_timerID) > 0)
             {
                 if (_random)
                 {
-                    _first = _next;
-                    _next = new Color((byte) _rand.Next(_lower, _upper), (byte) _rand.Next(_lower, _upper), (byte) _rand.Next(_lower, _upper));
+                    //random
+                    _colors.RemoveAt(0);
+                    _colors.Add(new Color((byte) _rand.Next(_lower, _upper), (byte) _rand.Next(_lower, _upper), (byte) _rand.Next(_lower, _upper)));
                 }
-                else if (!_singular)
+                else if (_oneWay)
                 {
-                    var tmp = _next.ToVector3();
-                    _next = _first;
-                    _first = new Color(tmp);
+                    //non-looping non-random
+                    _colors.RemoveAt(0);
                 }
-                else _halted = true;
+                else
+                {
+                    //looping non-random
+                    _colors.Add(_colors[0]);
+                    _colors.RemoveAt(0);
+                }
             }           
         }
 
         public Color Get()
         {
-            return _halted ? _next : Color.Lerp(_first, _next, (float)UniversalTime.GetPercentageDone(_timerID));
+            if (_colors.Count == 1) return _colors[0];
+            return Color.Lerp(_colors[0], _colors[1], (float)UniversalTime.GetPercentageDone(_timerID));
         }
     }
 }

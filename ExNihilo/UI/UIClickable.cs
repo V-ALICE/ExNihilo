@@ -1,6 +1,7 @@
 ﻿using System;
 using ExNihilo.UI.Bases;
 using ExNihilo.Util;
+using ExNihilo.Util.Graphics;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
@@ -92,14 +93,14 @@ namespace ExNihilo.UI
             Activated = false;
         }
 
-        public virtual void Disable(Color c)
+        public virtual void Disable(ColorScale c)
         {
             Activated = false;
             CurrentColor = c;
             Disabled = true;
         }
 
-        public virtual  void Enable(Color c)
+        public virtual void Enable(ColorScale c)
         {
             CurrentColor = c;
             Disabled = false;

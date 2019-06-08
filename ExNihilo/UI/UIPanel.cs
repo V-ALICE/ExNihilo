@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using ExNihilo.Util;
+using ExNihilo.Util.Graphics;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
@@ -155,7 +156,7 @@ namespace ExNihilo.UI
             }
         }
 
-        public override void Enable(Color c)
+        public override void Enable(ColorScale c)
         {
             foreach (var item in Set.Values)
             {
@@ -163,7 +164,7 @@ namespace ExNihilo.UI
             }
         }
 
-        public override void Disable(Color c)
+        public override void Disable(ColorScale c)
         {
             foreach (var item in Set.Values)
             {
@@ -173,6 +174,7 @@ namespace ExNihilo.UI
 
         public UIElement GetElement(string title)
         {
+            if (GivenName == title) return this;
             return Set.ContainsKey(title) ? Set[title] : null;
         }
     }

@@ -12,9 +12,9 @@ namespace ExNihilo.UI
         protected bool SpacesReduced;
         protected string Text; 
         protected Coordinate UnscaledSize;
-        protected Color[] Colors;
+        protected ColorScale[] Colors;
 
-        public UIText(string name, Vector2 relPos, string smartText, Color[] colors, UIPanel superior, PositionType anchorPoint, 
+        public UIText(string name, Vector2 relPos, string smartText, ColorScale[] colors, UIPanel superior, PositionType anchorPoint, 
             bool reducedSpaces = false) : base(name, "null", relPos, superior, anchorPoint)
         {
             SpacesReduced = reducedSpaces;
@@ -22,7 +22,7 @@ namespace ExNihilo.UI
             Colors = colors;
         }
 
-        public UIText(string name, Coordinate pixelOffset, string smartText, Color[] colors, UIElement superior, PositionType anchorPoint,
+        public UIText(string name, Coordinate pixelOffset, string smartText, ColorScale[] colors, UIElement superior, PositionType anchorPoint,
             PositionType superAnchorType, bool reducedSpaces = false) : base(name, "null", pixelOffset, superior, anchorPoint, superAnchorType)
         {
             SpacesReduced = reducedSpaces;
@@ -30,7 +30,7 @@ namespace ExNihilo.UI
             Colors = colors;
         }
 
-        public void SetText(string smartText, params Color[] colors)
+        public void SetText(string smartText, params ColorScale[] colors)
         {
             //TODO: maybe make this build a texture so it can just draw it?
             Text = smartText;
@@ -51,7 +51,7 @@ namespace ExNihilo.UI
         public override void LoadContent(GraphicsDevice graphics, ContentManager content)
         {
             Loaded = true;
-            ScaleRules = UILibrary.DefaultScaleRuleSet;
+            if (ScaleRules is null) ScaleRules = UILibrary.DefaultScaleRuleSet;
             UnscaledSize = TextDrawer.GetSmartTextSize(Text);
             CurrentPixelSize = new Coordinate((int)(CurrentScale * UnscaledSize.X), (int)(CurrentScale * UnscaledSize.Y));
             TextureOffsetToOrigin = GetOffset(AnchorType, CurrentPixelSize);

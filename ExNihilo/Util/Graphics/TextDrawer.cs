@@ -22,7 +22,6 @@ namespace ExNihilo.Util.Graphics
 
         public static int AlphaWidth, AlphaHeight, AlphaSpacer, LineSpacer; //In pixels
         private static Dictionary<char, Texture2D> _charTextures;
-        private static readonly ScaleRuleSet _rules = UILibrary.DefaultScaleRuleSet;
 
         public static void Initialize(GraphicsDevice device, Texture2D alphabet)
         {
@@ -52,7 +51,7 @@ namespace ExNihilo.Util.Graphics
             }
         }       
 
-        public static Vector2 DrawDumbText(SpriteBatch spriteBatch, Vector2 pos, string text, float multiplier, Color c)
+        public static Vector2 DrawDumbText(SpriteBatch spriteBatch, Vector2 pos, string text, float multiplier, ColorScale c)
         {
             var aPos = Utilities.Copy(pos);
             foreach (var t in text)
@@ -64,13 +63,13 @@ namespace ExNihilo.Util.Graphics
         }
 
         public static Vector2 DrawSmartText(SpriteBatch spriteBatch, Vector2 pos, string smartText, float multiplier, 
-            bool reducedSpaces, params Color[] colors)
+            bool reducedSpaces, params ColorScale[] colors)
         {
             //supports up to 10 different colors at a time
             //assumes line has already been split correctly, including buffers
-            var aPos = Utilities.Copy(pos);
+            var aPos = new Vector2((int)Math.Round(pos.X), (int)Math.Round(pos.Y));
             var oldX = aPos.X;
-            var c = colors.Length > 0 ? colors[0] : Color.Black;
+            var c = colors.Length > 0 ? (Color)colors[0] : Color.Black;
             for (var i = 0; i < smartText.Length; i++)
             {
                 var t = smartText[i];

@@ -1,5 +1,4 @@
-﻿using ExNihilo.UI;
-using ExNihilo.UI.Bases;
+﻿using ExNihilo.UI.Bases;
 using ExNihilo.Util;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content;
@@ -15,24 +14,39 @@ namespace ExNihilo.Menus
         }
 
         protected GameContainer Container;
-        protected UIPanel _menuUI;
-        protected bool SubMode;
-        protected int Selection, SubSelection;
 
         protected Menu(GameContainer container)
         {
-            _menuUI = new UIPanel("this.MenuKing", new Vector2(0.5f, 0.5f), Vector2.One, UIElement.PositionType.Center);
             Container = container;
         }
 
         public abstract void Enter();
-        public abstract bool TryBackOut();
 
-        protected abstract void MenuDown();
-        protected abstract void MenuUp();
-        protected abstract void MenuLeft();
-        protected abstract void MenuRight();
-        protected abstract void Select();
+        public virtual bool TryBackOut()
+        {
+            return true;
+        }
+
+        protected virtual void MenuDown()
+        {
+        }
+
+        protected virtual void MenuUp()
+        {
+        }
+
+        protected virtual void MenuLeft()
+        {
+        }
+
+        protected virtual void MenuRight()
+        {
+        }
+
+        protected virtual void Select()
+        {
+        }
+
         public void ReceiveCommand(MenuCommand command)
         {
             switch (command)
@@ -57,37 +71,18 @@ namespace ExNihilo.Menus
 
         public virtual void Update()
         {
-
         }
 
-        public virtual void LoadContent(GraphicsDevice graphics, ContentManager content)
-        {
-            _menuUI.LoadContent(graphics, content);
-        }
+        public abstract void LoadContent(GraphicsDevice graphics, ContentManager content);
 
-        public virtual void OnResize(GraphicsDevice graphics, Coordinate gameWindow)
-        {
-            _menuUI.OnResize(graphics, gameWindow);
-        }
+        public abstract void OnResize(GraphicsDevice graphics, Coordinate gameWindow);
 
-        public virtual void Draw(SpriteBatch spriteBatch)
-        {
-            _menuUI.Draw(spriteBatch);
-        }
+        public abstract void Draw(SpriteBatch spriteBatch);
 
-        public virtual void OnMoveMouse(Point point)
-        {
-            _menuUI.OnMoveMouse(point);
-        }
+        public abstract void OnMoveMouse(Point point);
 
-        public virtual bool OnLeftClick(Point point)
-        {
-            return _menuUI.OnLeftClick(point);
-        }
+        public abstract bool OnLeftClick(Point point);
 
-        public virtual void OnLeftRelease()
-        {
-            _menuUI.OnLeftRelease();
-        }
+        public abstract void OnLeftRelease();
     }
 }

@@ -11,13 +11,10 @@ namespace ExNihilo.UI.Bases
         private static bool _initialized;
         public static Dictionary<string, Texture2D> TextureLookUp;
         public static Dictionary<string, byte[]> TextureAlphaLookUp;
-        public static ScaleRuleSet DefaultScaleRuleSet;
+        public static ScaleRuleSet DefaultScaleRuleSet, ReducedScaleRuleSet, UnscaledScaleRuleSet, HalfScaleRuleSet;
 
-        public static void LoadLibrary(GraphicsDevice graphics, ContentManager content)
+        public static void LoadRuleSets()
         {
-            if (_initialized) return;
-            _initialized = true;
-
             DefaultScaleRuleSet = new ScaleRuleSet();
             DefaultScaleRuleSet.AddRules
             (
@@ -27,10 +24,39 @@ namespace ExNihilo.UI.Bases
                 new ScaleRule(4, ScaleRule.MAX_X, ScaleRule.MAX_Y)
             );
 
+            ReducedScaleRuleSet = new ScaleRuleSet();
+            ReducedScaleRuleSet.AddRules
+            (
+                new ScaleRule(1, 2100, 1500),
+                new ScaleRule(2, ScaleRule.MAX_X, ScaleRule.MAX_Y)
+            );
+
+            UnscaledScaleRuleSet = new ScaleRuleSet();
+            UnscaledScaleRuleSet.AddRules
+            (
+                new ScaleRule(1, ScaleRule.MAX_X, ScaleRule.MAX_Y)
+            );
+
+            HalfScaleRuleSet = new ScaleRuleSet();
+            HalfScaleRuleSet.AddRules
+            (
+                new ScaleRule(0.5f, 1400, 1000),
+                new ScaleRule(1, 2100, 1500),
+                new ScaleRule(1.5f, 2800, 2000),
+                new ScaleRule(2, ScaleRule.MAX_X, ScaleRule.MAX_Y)
+            );
+        }
+
+        public static void LoadLibrary(GraphicsDevice graphics, ContentManager content)
+        {
+            if (_initialized) return;
+            _initialized = true;
+
             var sheet = content.Load<Texture2D>("UI/sheet");
             TextureLookUp = new Dictionary<string, Texture2D>
             {
-                {"null", new Texture2D(graphics, 1, 1) },
+                {"null", new Texture2D(graphics, 1, 1)},
+                {"UI/Title", content.Load<Texture2D>("UI/title")},
                 {"UI/BigButtonUp", TextureUtilities.GetSubTexture(graphics, sheet, new Rectangle(0, 52, 240, 52))},
                 {"UI/BigButtonDown", TextureUtilities.GetSubTexture(graphics, sheet, new Rectangle(0, 0, 240, 52))}
             };

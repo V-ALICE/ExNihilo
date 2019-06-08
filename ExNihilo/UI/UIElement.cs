@@ -20,6 +20,7 @@ namespace ExNihilo.UI
 
         protected PositionType AnchorType, SuperAnchorType;
         protected Texture2D Texture;
+        protected ColorScale ColorScale;
         protected Vector2 PositionRelativeToBase, TextureOffsetToOrigin;
         protected Coordinate PixelOffsetFromBase, LastResizeWindow;
         protected ScaleRuleSet ScaleRules;
@@ -69,7 +70,12 @@ namespace ExNihilo.UI
             GivenName = name;
         }
 
-        public virtual void SetRules(ScaleRuleSet rules)
+        public void SetColorScale(ColorScale scale)
+        {
+            ColorScale = scale;
+        }
+
+        public void SetRules(ScaleRuleSet rules)
         {
             ScaleRules = rules;
         }
@@ -85,7 +91,7 @@ namespace ExNihilo.UI
         public virtual void LoadContent(GraphicsDevice graphics, ContentManager content)
         {
             Loaded = true;
-            ScaleRules = UILibrary.DefaultScaleRuleSet;
+            if (ScaleRules is null) ScaleRules = UILibrary.DefaultScaleRuleSet;
             Texture = UILibrary.TextureLookUp[TexturePath];
             if (CurrentPixelSize is null) CurrentPixelSize = new Coordinate((int) (CurrentScale*Texture.Width), (int) (CurrentScale*Texture.Height));
             TextureOffsetToOrigin = GetOffset(AnchorType, CurrentPixelSize);
@@ -164,9 +170,9 @@ namespace ExNihilo.UI
         public virtual void Draw(SpriteBatch spriteBatch)
         {
             if (!Loaded) return;
-            spriteBatch.Draw(Texture, OriginPosition, null, Color.White, 0, Vector2.Zero, CurrentScale, SpriteEffects.None, 0);
+            spriteBatch.Draw(Texture, OriginPosition, null, ColorScale?.Get() ?? Color.White, 0, Vector2.Zero, CurrentScale, SpriteEffects.None, 0);
         }
-        public void Draw(SpriteBatch spriteBatch, Color c)
+        public void Draw(SpriteBatch spriteBatch, ColorScale c)
         {
             if (!Loaded) return;
             spriteBatch.Draw(Texture, OriginPosition, null, c, 0, Vector2.Zero, CurrentScale, SpriteEffects.None, 0);
