@@ -97,6 +97,7 @@
     <Compile Include="UI\UIMovable.cs" />
     <Compile Include="UI\UIPanel.cs" />
     <Compile Include="UI\UIText.cs" />
+    <Compile Include="UI\UITogglable.cs" />
     <Compile Include="Util\Graphics\AnimatedTexture.cs" />
     <Compile Include="Util\AudioManager.cs" />
     <Compile Include="Util\Graphics\ColorScale.cs" />

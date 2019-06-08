@@ -13,9 +13,9 @@ namespace ExNihilo.UI
         protected byte[] Alpha;
         protected Texture2D AltTexture;
         protected readonly string AltTexturePath;
-        private readonly bool _allowMulligan;
+        protected readonly bool AllowMulligan;
         protected Color CurrentColor;
-        protected Action<string> Function;
+        protected Action<string, float, bool> Function;
         
         public bool Disabled { get; protected set; }
         public bool Activated { get; protected set; }
@@ -24,7 +24,7 @@ namespace ExNihilo.UI
             bool mulligan = false) : base(name, path, relPos, superior, anchorPoint)
         {
             AltTexturePath = altPath;
-            _allowMulligan = mulligan;
+            AllowMulligan = mulligan;
             CurrentColor = Color.White;
         }
 
@@ -32,17 +32,17 @@ namespace ExNihilo.UI
             string altPath = "", bool mulligan = false) : base(name, path, pixelOffset, superior, anchorPoint, superAnchorPoint)
         {
             AltTexturePath = altPath;
-            _allowMulligan = mulligan;
+            AllowMulligan = mulligan;
             CurrentColor = Color.White;
         }
 
         protected UIClickable(string name, Vector2 relPos, PositionType anchorPoint) : base(name, relPos, anchorPoint)
         {
-            _allowMulligan = false;
+            AllowMulligan = false;
             AltTexturePath = "";
         }
 
-        public void RegisterCallback(Action<string> action)
+        public void RegisterCallback(Action<string, float, bool> action)
         {
             Function = action;
         }
@@ -77,7 +77,7 @@ namespace ExNihilo.UI
         public virtual void OnMoveMouse(Point point)
         {
             //mulligans only check the size/alpha of the original texture
-            if (Activated && _allowMulligan) Activated = IsOver(point);
+            if (Activated && AllowMulligan) Activated = IsOver(point);
         }
 
         public virtual bool OnLeftClick(Point point)
@@ -89,7 +89,7 @@ namespace ExNihilo.UI
 
         public virtual void OnLeftRelease()
         {
-            if (Activated) Function?.Invoke(GivenName);
+            if (Activated) Function?.Invoke(GivenName, 0, false);
             Activated = false;
         }
 

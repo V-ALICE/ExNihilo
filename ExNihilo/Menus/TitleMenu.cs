@@ -14,17 +14,17 @@ namespace ExNihilo.Menus
 /********************************************************************
 ------->Title Menu Callbacks
 ********************************************************************/
-        private void SwapToLoad(string s)
+        private void SwapToLoad(string sender, float value, bool on)
         {
             _type = CurrentMenu.Play;
         }
 
-        private void SwapToOptions(string s)
+        private void SwapToOptions(string sender, float value, bool on)
         {
             _type = CurrentMenu.Options;
         }
 
-        private void ExitGame(string s)
+        private void ExitGame(string sender, float value, bool on)
         {
             Container.ExitGame();
         }
@@ -32,7 +32,7 @@ namespace ExNihilo.Menus
 /********************************************************************
 ------->Options Menu Callbacks
 ********************************************************************/
-        private void SwapToTitle(string s)
+        private void SwapToTitle(string sender, float value, bool on)
         {
             _type = CurrentMenu.Title;
         }
@@ -66,9 +66,9 @@ namespace ExNihilo.Menus
 
             // Title Menu setup
             var titlePanel = new UIPanel("TitleButtonPanel", new Vector2(0.5f, 1), new Vector2(0, 0.5f), UIElement.PositionType.CenterBottom);
-            var playButton = new UIClickable("PlayButton", "UI/BigButtonUp", new Vector2(0, 0), titlePanel, UIElement.PositionType.CenterTop, "UI/BigButtonDown");
-            var optionsButton = new UIClickable("OptionsButton", "UI/BigButtonUp", new Coordinate(0, 10), playButton, UIElement.PositionType.CenterTop, UIElement.PositionType.CenterBottom, "UI/BigButtonDown");
-            var exitButton = new UIClickable("ExitButton", "UI/BigButtonUp", new Coordinate(0, 10), optionsButton, UIElement.PositionType.CenterTop, UIElement.PositionType.CenterBottom, "UI/BigButtonDown");
+            var playButton = new UIClickable("PlayButton", "UI/BigButton", new Vector2(0, 0), titlePanel, UIElement.PositionType.CenterTop, "UI/BigButtonDown");
+            var optionsButton = new UIClickable("OptionsButton", "UI/BigButton", new Coordinate(0, 10), playButton, UIElement.PositionType.CenterTop, UIElement.PositionType.CenterBottom, "UI/BigButtonDown");
+            var exitButton = new UIClickable("ExitButton", "UI/BigButton", new Coordinate(0, 10), optionsButton, UIElement.PositionType.CenterTop, UIElement.PositionType.CenterBottom, "UI/BigButtonDown");
             var playButtonText = new UIText("TitleButtonText", new Coordinate(), "Play Game", new ColorScale[0], playButton, UIElement.PositionType.Center, UIElement.PositionType.Center);
             var optionsButtonText = new UIText("OptionsButtonText", new Coordinate(), "Options", new ColorScale[0], optionsButton, UIElement.PositionType.Center, UIElement.PositionType.Center);
             var exitButtonText = new UIText("ExitButtonText", new Coordinate(), "Exit", new ColorScale[0], exitButton, UIElement.PositionType.Center, UIElement.PositionType.Center);
@@ -84,7 +84,7 @@ namespace ExNihilo.Menus
             _titleUI.AddElements(titleDisplay, titlePanel);
 
             // Option Menu setup
-            var backButton = new UIClickable("BackButton", "UI/BigButtonUp", new Coordinate(10, -10), _optionsUI, UIElement.PositionType.BottomLeft, UIElement.PositionType.BottomLeft, "UI/BigButtonDown");
+            var backButton = new UIClickable("BackButton", "UI/SmallButton", new Coordinate(10, -10), _optionsUI, UIElement.PositionType.BottomLeft, UIElement.PositionType.BottomLeft, "UI/SmallButtonDown");
             var backButtonText = new UIText("BackButtonText", new Coordinate(), "Back", new ColorScale[0], backButton, UIElement.PositionType.Center, UIElement.PositionType.Center);
 
             backButton.RegisterCallback(SwapToTitle);
