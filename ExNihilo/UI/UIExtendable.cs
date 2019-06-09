@@ -1,4 +1,6 @@
-﻿using ExNihilo.Util;
+﻿using System;
+using ExNihilo.Util;
+using ExNihilo.Util.Graphics;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
@@ -12,18 +14,18 @@ namespace ExNihilo.UI
         protected Coordinate MaximumSize, BaseTextureSize;
         protected readonly bool HorizontalLocked, VerticalLocked;
 
-        public UIExtendable(string name, string path, Vector2 relPos, UIPanel superior, PositionType anchorPoint, Coordinate maxSize, 
+        public UIExtendable(string name, string path, Vector2 relPos, ColorScale color, UIPanel superior, TextureUtilities.PositionType anchorPoint, Coordinate maxSize, 
             bool allowHorizontalChange = true, bool allowVerticalChange = true) :
-            base(name, path, relPos, superior, anchorPoint)
+            base(name, path, relPos, color, superior, anchorPoint)
         {
             RelativeScalar = new Vector2(1,1);
             MaximumSize = maxSize;
             HorizontalLocked = !allowHorizontalChange;
             VerticalLocked = !allowVerticalChange;
         }
-        public UIExtendable(string name, string path, Coordinate pixelOffset, UIElement superior, PositionType anchorPoint, 
-            PositionType superAnchorPoint, Coordinate maxSize, bool allowHorizontalChange = true, bool allowVerticalChange = true) : 
-            base(name, path, pixelOffset, superior, anchorPoint, superAnchorPoint)
+        public UIExtendable(string name, string path, Coordinate pixelOffset, ColorScale color, UIElement superior, TextureUtilities.PositionType anchorPoint, 
+            TextureUtilities.PositionType superAnchorPoint, Coordinate maxSize, bool allowHorizontalChange = true, bool allowVerticalChange = true) : 
+            base(name, path, pixelOffset, color, superior, anchorPoint, superAnchorPoint)
         {
             RelativeScalar = new Vector2(1,1);
             MaximumSize = maxSize;
@@ -43,7 +45,7 @@ namespace ExNihilo.UI
             if (!Loaded) return;
             CurrentScale = ScaleRules.GetScale(window);
             CurrentPixelSize = new Coordinate((int)(CurrentScale * MaximumSize.X), (int)(CurrentScale * MaximumSize.Y));
-            TextureOffsetToOrigin = GetOffset(AnchorType, CurrentPixelSize);
+            TextureOffsetToOrigin = TextureUtilities.GetOffset(AnchorType, CurrentPixelSize);
         }
 
         public override void LoadContent(GraphicsDevice graphics, ContentManager content)
@@ -58,7 +60,7 @@ namespace ExNihilo.UI
         public override void Draw(SpriteBatch spriteBatch)
         {
             if (!Loaded) return;
-            spriteBatch.Draw(Texture, OriginPosition, null, CurrentColor, 0, Vector2.Zero, CurrentScale*RelativeScalar*MaxiumScalar, SpriteEffects.None, 0);
+            Texture.Draw(spriteBatch, OriginPosition, ColorScale, CurrentScale * RelativeScalar * MaxiumScalar);
         }
 
         protected void ReinterpretScalar(Point point)
@@ -69,9 +71,18 @@ namespace ExNihilo.UI
             RelativeScalar.X = MathHelper.Clamp(RelativeScalar.X, HorizontalLocked ? 1 : 0, 1);
             RelativeScalar.Y = MathHelper.Clamp(RelativeScalar.Y, VerticalLocked ? 1 : 0, 1);
         }
+
+        public override bool IsOver(Point mousePos)
+        {
+            if (TexturePath == "null") return false;
+            int buttonX = (int)(Math.Round(mousePos.X - OriginPosition.X) / CurrentScale);
+            int buttonY = (int)(Math.Round(mousePos.Y - OriginPosition.Y) / CurrentScale);
+            return buttonX >= 0 && buttonY >= 0 && buttonX < MaximumSize.X && buttonY < MaximumSize.Y;
+        }
+
         public override void OnMoveMouse(Point point)
         {
-            if (Activated) ReinterpretScalar(point);
+            if (Down) ReinterpretScalar(point);
         }
 
         public override bool OnLeftClick(Point point)
@@ -79,19 +90,19 @@ namespace ExNihilo.UI
             if (Disabled) return false;
             if (IsOver(point))
             {
-                Activated = true;
+                Down = true;
                 ReinterpretScalar(point);
                 return true;
             }
 
-            Activated = false;
+            Down = false;
             return false;
         }
 
         public override void OnLeftRelease(Point point)
         {
-            if (Activated) Function?.Invoke(new UICallbackPackage(GivenName, point, OriginPosition, RelativeScalar.X, RelativeScalar.Y));
-            Activated = false;
+            if (Down) Function?.Invoke(new UICallbackPackage(GivenName, point, OriginPosition, RelativeScalar.X, RelativeScalar.Y));
+            Down = false;
         }
 
     }

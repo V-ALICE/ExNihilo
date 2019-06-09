@@ -7,6 +7,8 @@ namespace ExNihilo.Util.Graphics
     public class ColorScale
     {
         private static readonly Dictionary<string, ColorScale> _globalScaleMap = new Dictionary<string, ColorScale>();
+        public static ColorScale White = new ColorScale(Color.White);
+        public static ColorScale Black = new ColorScale(Color.Black);
 
         private readonly bool _random, _oneWay;
         private readonly byte _upper, _lower;
@@ -51,6 +53,11 @@ namespace ExNihilo.Util.Graphics
         public static implicit operator Color(ColorScale c)
         {
             return c.Get();
+        }
+
+        public static implicit operator ColorScale[](ColorScale c)
+        {
+            return new[] {c};
         }
 
         ~ColorScale()

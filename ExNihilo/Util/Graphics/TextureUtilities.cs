@@ -2,6 +2,7 @@
 using System.Drawing;
 using System.Drawing.Imaging;
 using System.IO;
+using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Rectangle = Microsoft.Xna.Framework.Rectangle; 
 using FormRectangle = System.Drawing.Rectangle; 
@@ -11,11 +12,56 @@ namespace ExNihilo.Util.Graphics
 {
     public static class TextureUtilities
     {
-
-        public static Texture2D GetSubTexture(GraphicsDevice device, Texture2D sheet, int[] coords)
+        public enum PositionType
         {
-            return GetSubTexture(device, sheet, new Rectangle(coords[0], coords[1], coords[2], coords[3]));
+            TopLeft, TopRight,
+            BottomLeft, BottomRight,
+            CenterTop, CenterBottom,
+            CenterLeft, CenterRight,
+            Center,
         }
+
+        public static Vector2 GetOffset(PositionType anchorType, Coordinate pixelSize)
+        {
+            Vector2 textureOffsetToOrigin;
+            switch (anchorType)
+            {
+                case PositionType.TopLeft:
+                    textureOffsetToOrigin = new Vector2(0, 0);
+                    break;
+                case PositionType.TopRight:
+                    textureOffsetToOrigin = new Vector2(pixelSize.X, 0);
+                    break;
+                case PositionType.BottomLeft:
+                    textureOffsetToOrigin = new Vector2(0, pixelSize.Y);
+                    break;
+                case PositionType.BottomRight:
+                    textureOffsetToOrigin = new Vector2(pixelSize.X, pixelSize.Y);
+                    break;
+                case PositionType.CenterTop:
+                    textureOffsetToOrigin = new Vector2(pixelSize.X / 2, 0);
+                    break;
+                case PositionType.CenterBottom:
+                    textureOffsetToOrigin = new Vector2(pixelSize.X / 2, pixelSize.Y);
+                    break;
+                case PositionType.CenterLeft:
+                    textureOffsetToOrigin = new Vector2(0, pixelSize.Y / 2);
+                    break;
+                case PositionType.CenterRight:
+                    textureOffsetToOrigin = new Vector2(pixelSize.X, pixelSize.Y / 2);
+                    break;
+                case PositionType.Center:
+                    textureOffsetToOrigin = new Vector2(pixelSize.X / 2, pixelSize.Y / 2);
+                    break;
+                default:
+                    textureOffsetToOrigin = new Vector2();
+                    break;
+            }
+
+            return textureOffsetToOrigin;
+        }
+
+
         public static Texture2D GetSubTexture(GraphicsDevice device, Texture2D sheet, Rectangle rect)
         {
             //while (GAME.FormTouched) { Thread.Sleep(100); }
@@ -35,9 +81,8 @@ namespace ExNihilo.Util.Graphics
                 sheet.GetData(0, rect, data, 0, data.Length);
                 return data;
             }
-            catch (NullReferenceException e)
+            catch (NullReferenceException)
             {
-                ExceptionCheck.Fail(e.Message);
             }
             return new Color[0];
         }

@@ -1,24 +1,35 @@
 ﻿using ExNihilo.Util;
 using ExNihilo.Util.Graphics;
 using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Graphics;
 
 namespace ExNihilo.UI
 {
     public class UITogglable : UIClickable
     {
         protected bool WasOver;
-        public UITogglable(string name, string path, Vector2 relPos, UIPanel superior, PositionType anchorPoint, string altPath, bool mulligan=false) : base(name, path, relPos, superior, anchorPoint, altPath, mulligan)
+
+        public UITogglable(string name, string path, Vector2 relPos, ColorScale color, UIPanel superior, 
+            TextureUtilities.PositionType anchorPoint, string downPath, string midPath = "", bool mulligan=false) :
+            base(name, path, relPos, color, superior, anchorPoint, downPath, midPath, mulligan)
         {
         }
 
-        public UITogglable(string name, string path, Coordinate pixelOffset, UIElement superior, PositionType anchorPoint, PositionType superAnchorPoint, string altPath, bool mulligan=false) : base(name, path, pixelOffset, superior, anchorPoint, superAnchorPoint, altPath, mulligan)
+        public UITogglable(string name, string path, Coordinate pixelOffset, ColorScale color, UIElement superior, 
+            TextureUtilities.PositionType anchorPoint, TextureUtilities.PositionType superAnchorPoint, string downPath, string midPath = "",
+            bool mulligan=false) : base(name, path, pixelOffset, color, superior, anchorPoint, superAnchorPoint, downPath, midPath, mulligan)
         {
         }
 
         public override void OnMoveMouse(Point point)
         {
-            //mulligans only check the size/alpha of the original texture
-            if (WasOver && AllowMulligan) Activated = IsOver(point);
+            if (Disabled) return;
+            if ((AllowMulligan && WasOver) || (!Down && OverTexture != null))
+            {
+                var isOver = IsOver(point);
+                if (WasOver && AllowMulligan) WasOver = isOver;
+                if (!Down && OverTexture != null) Over = isOver;
+            }
         }
 
         public override bool OnLeftClick(Point point)
@@ -30,17 +41,21 @@ namespace ExNihilo.UI
 
         public override void OnLeftRelease(Point point)
         {
+            if (Disabled) return;
             if (WasOver)
             {
-                Activated = !Activated;
-                Function?.Invoke(new UICallbackPackage(GivenName, point, OriginPosition, Activated ? 1 : -1));
+                Down = !Down;
+                Function?.Invoke(new UICallbackPackage(GivenName, point, OriginPosition, Down ? 1 : -1));
                 WasOver = false;
+                if (!Down && OverTexture != null) Over = IsOver(point);
+                else Over = false;
             }
         }
 
         public override void Disable(ColorScale c)
         {
-            CurrentColor = c;
+            Over = false;
+            ColorScale = c;
             Disabled = true;
         }
     }

@@ -13,16 +13,16 @@ namespace ExNihilo.UI
         protected Vector2 BaseSizeRel;
         protected bool IsRelativeToWindow, VerticalLocked, HorizontalLocked, King;
 
-        public UIPanel(string name, Vector2 relPos, Coordinate absoluteSize, UIPanel superior, PositionType anchorPoint) : 
-            base(name, "null", relPos, superior, anchorPoint)
+        public UIPanel(string name, Vector2 relPos, Coordinate absoluteSize, UIPanel superior, TextureUtilities.PositionType anchorPoint) : 
+            base(name, "null", relPos, Color.White, superior, anchorPoint)
         {
             Set = new Dictionary<string, UIElement>();
             CurrentPixelSize = absoluteSize;
             IsRelativeToWindow = false;
         }
 
-        public UIPanel(string name, Vector2 relPos, Vector2 relSize, UIPanel superior, PositionType anchorPoint) : 
-            base(name, "null", relPos, superior, anchorPoint)
+        public UIPanel(string name, Vector2 relPos, Vector2 relSize, UIPanel superior, TextureUtilities.PositionType anchorPoint) : 
+            base(name, "null", relPos, Color.White, superior, anchorPoint)
         {
             Set = new Dictionary<string, UIElement>();
             BaseSizeRel = relSize;
@@ -31,22 +31,22 @@ namespace ExNihilo.UI
             IsRelativeToWindow = true;
         }
 
-        public UIPanel(string name, Coordinate pixelSize, Coordinate absoluteSize, UIElement superior, PositionType anchorPoint, 
-            PositionType superAnchorPoint) : base(name, "null", pixelSize, superior, anchorPoint, superAnchorPoint)
+        public UIPanel(string name, Coordinate pixelSize, Coordinate absoluteSize, UIElement superior, TextureUtilities.PositionType anchorPoint, 
+            TextureUtilities.PositionType superAnchorPoint) : base(name, "null", pixelSize, Color.White, superior, anchorPoint, superAnchorPoint)
         {
             Set = new Dictionary<string, UIElement>();
             CurrentPixelSize = absoluteSize;
             IsRelativeToWindow = false;
         }
 
-        public UIPanel(string name, Vector2 relPos, Coordinate absoluteSize, PositionType anchorPoint) : base(name, relPos, anchorPoint)
+        public UIPanel(string name, Vector2 relPos, Coordinate absoluteSize, TextureUtilities.PositionType anchorPoint) : base(name, relPos, anchorPoint)
         {
             Set = new Dictionary<string, UIElement>();
             CurrentPixelSize = absoluteSize;
             IsRelativeToWindow = false;
             King = true;
         }
-        public UIPanel(string name, Vector2 relPos, Vector2 relSize, PositionType anchorPoint) : base(name, relPos, anchorPoint)
+        public UIPanel(string name, Vector2 relPos, Vector2 relSize, TextureUtilities.PositionType anchorPoint) : base(name, relPos, anchorPoint)
         {
             Set = new Dictionary<string, UIElement>();
             BaseSizeRel = relSize;
@@ -97,7 +97,7 @@ namespace ExNihilo.UI
                     if (HorizontalLocked) BaseSizeRel.Y = MathHelper.Clamp(BaseSizeRel.Y, 1f / gameWindow.Y, 1.0f);
 
                     CurrentPixelSize = new Coordinate(gameWindow * BaseSizeRel);
-                    TextureOffsetToOrigin = GetOffset(AnchorType, CurrentPixelSize);
+                    TextureOffsetToOrigin = TextureUtilities.GetOffset(AnchorType, CurrentPixelSize);
 
                     LastResizeWindow = gameWindow;
                     if (AbsoluteOffset)
@@ -118,7 +118,7 @@ namespace ExNihilo.UI
                     if (HorizontalLocked) BaseSizeRel.Y = MathHelper.Clamp(BaseSizeRel.Y, 1f / BaseElement.CurrentPixelSize.Y, 1.0f);
 
                     CurrentPixelSize = new Coordinate(BaseElement.CurrentPixelSize * BaseSizeRel);
-                    TextureOffsetToOrigin = GetOffset(AnchorType, CurrentPixelSize);
+                    TextureOffsetToOrigin = TextureUtilities.GetOffset(AnchorType, CurrentPixelSize);
                     base.OnResize(graphics, gameWindow);
                 }
                 else base.OnResize(graphics, gameWindow);

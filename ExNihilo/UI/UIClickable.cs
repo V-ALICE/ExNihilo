@@ -27,35 +27,37 @@ namespace ExNihilo.UI
     public class UIClickable : UIElement, IClickable
     {
         protected byte[] Alpha;
-        protected Texture2D AltTexture;
-        protected readonly string AltTexturePath;
+        protected AnimatableTexture DownTexture, OverTexture;
+        protected readonly string DownTexturePath, OverTexturePath;
         protected readonly bool AllowMulligan;
-        protected Color CurrentColor;
         protected Action<UICallbackPackage> Function;
         
         public bool Disabled { get; protected set; }
-        public bool Activated { get; protected set; }
+        public bool Down { get; protected set; }
+        public bool Over { get; protected set; }
 
-        public UIClickable(string name, string path, Vector2 relPos, UIPanel superior, PositionType anchorPoint, string altPath = "", 
-            bool mulligan = false) : base(name, path, relPos, superior, anchorPoint)
+        public UIClickable(string name, string path, Vector2 relPos, ColorScale color, UIPanel superior, TextureUtilities.PositionType anchorPoint, 
+            string downPath = "", string overPath ="", bool mulligan = false) : base(name, path, relPos, color, superior, anchorPoint)
         {
-            AltTexturePath = altPath;
+            DownTexturePath = downPath;
+            OverTexturePath = overPath;
             AllowMulligan = mulligan;
-            CurrentColor = Color.White;
         }
 
-        public UIClickable(string name, string path, Coordinate pixelOffset, UIElement superior, PositionType anchorPoint, PositionType superAnchorPoint,
-            string altPath = "", bool mulligan = false) : base(name, path, pixelOffset, superior, anchorPoint, superAnchorPoint)
+        public UIClickable(string name, string path, Coordinate pixelOffset, ColorScale color, UIElement superior, TextureUtilities.PositionType anchorPoint, 
+            TextureUtilities.PositionType superAnchorPoint, string downPath = "", string overPath = "", bool mulligan = false) : 
+            base(name, path, pixelOffset, color, superior, anchorPoint, superAnchorPoint)
         {
-            AltTexturePath = altPath;
+            DownTexturePath = downPath;
+            OverTexturePath = overPath;
             AllowMulligan = mulligan;
-            CurrentColor = Color.White;
         }
 
-        protected UIClickable(string name, Vector2 relPos, PositionType anchorPoint) : base(name, relPos, anchorPoint)
+        protected UIClickable(string name, Vector2 relPos, TextureUtilities.PositionType anchorPoint) : base(name, relPos, anchorPoint)
         {
             AllowMulligan = false;
-            AltTexturePath = "";
+            DownTexturePath = "";
+            OverTexturePath = "";
         }
 
         public void RegisterCallback(Action<UICallbackPackage> action)
@@ -68,57 +70,64 @@ namespace ExNihilo.UI
             base.LoadContent(graphics, content);
 
             Alpha = UILibrary.TextureAlphaLookUp[TexturePath];
-            if (AltTexturePath.Length > 0) AltTexture = UILibrary.TextureLookUp[AltTexturePath];
+            if (DownTexturePath.Length > 0) DownTexture = UILibrary.TextureLookUp[DownTexturePath];
+            if (OverTexturePath.Length > 0) OverTexture = UILibrary.TextureLookUp[OverTexturePath];
         }
 
         public override void Draw(SpriteBatch spriteBatch)
         {
             if (!Loaded) return;
-            if (Activated && AltTexture != null)
-                spriteBatch.Draw(AltTexture, OriginPosition, null, CurrentColor, 0, Vector2.Zero, CurrentScale, SpriteEffects.None, 0);
-            else
-                spriteBatch.Draw(Texture, OriginPosition, null, CurrentColor, 0, Vector2.Zero, CurrentScale, SpriteEffects.None, 0);
+            if (Down && DownTexture != null) DownTexture.Draw(spriteBatch, OriginPosition, ColorScale?.Get() ?? Color.White, CurrentScale);
+            else if (Over && OverTexture != null) OverTexture.Draw(spriteBatch, OriginPosition, ColorScale?.Get() ?? Color.White, CurrentScale);
+            else Texture.Draw(spriteBatch, OriginPosition, ColorScale?.Get() ?? Color.White, CurrentScale);
         }
 
         public virtual bool IsOver(Point mousePos)
         {
-            int buttonX = (int)Math.Round(mousePos.X - OriginPosition.X);
-            int buttonY = (int)Math.Round(mousePos.Y - OriginPosition.Y);
-            if (buttonX < 0 || buttonY < 0 || buttonX >= CurrentPixelSize.X || buttonY >= CurrentPixelSize.Y) return false;
-            var arrayPos = (int) MathHelper.Clamp((buttonY * Texture.Width + buttonX) / CurrentScale, 0, Alpha.Length-1); //TODO: figure out why this was actually breaking
-            bool rtrn = TexturePath=="null" || Alpha[arrayPos] != 0;
-            return rtrn;
+            if (TexturePath == "null") return false;
+            int buttonX = (int) (Math.Round(mousePos.X - OriginPosition.X)/CurrentScale);
+            int buttonY = (int) (Math.Round(mousePos.Y - OriginPosition.Y)/CurrentScale);
+            if (buttonX < 0 || buttonY < 0 || buttonX >= Texture.Width || buttonY >= Texture.Height) return false;
+            return Alpha[buttonY * Texture.Width + buttonX] != 0;
         }
 
         public virtual void OnMoveMouse(Point point)
         {
-            //mulligans only check the size/alpha of the original texture
-            if (Activated && AllowMulligan) Activated = IsOver(point);
+            if (Disabled) return;
+            if ((AllowMulligan && Down) || (!Down && OverTexture != null))
+            {
+                var isOver = IsOver(point);
+                if (Down && AllowMulligan) Down = isOver;
+                if (!Down && OverTexture != null) Over = isOver;
+            }
         }
 
         public virtual bool OnLeftClick(Point point)
         {
             if (Disabled) return false;
-            Activated = IsOver(point);
-            return Activated;
+            Down = IsOver(point);
+            if (Down) Over = false;
+            return Down;
         }
 
         public virtual void OnLeftRelease(Point point)
         {
-            if (Activated) Function?.Invoke(new UICallbackPackage(GivenName, point, OriginPosition));
-            Activated = false;
+            if (Disabled) return;
+            if (Down) Function?.Invoke(new UICallbackPackage(GivenName, point, OriginPosition));
+            Down = false;
         }
 
         public virtual void Disable(ColorScale c)
         {
-            Activated = false;
-            CurrentColor = c;
+            Down = false;
+            Over = false;
+            ColorScale = c;
             Disabled = true;
         }
 
         public virtual void Enable(ColorScale c)
         {
-            CurrentColor = c;
+            ColorScale = c;
             Disabled = false;
         }
     }

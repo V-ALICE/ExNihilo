@@ -1,4 +1,5 @@
 ﻿using ExNihilo.Util;
+using ExNihilo.Util.Graphics;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 
@@ -10,15 +11,16 @@ namespace ExNihilo.UI
         protected Vector2 ShiftedPos;
         protected bool Ghosting;
 
-        public UIMovable(string name, string path, Vector2 relPos, UIPanel superior, PositionType anchorPoint, string altPath = "", bool ghost = false) :
-            base(name, path, relPos, superior, anchorPoint, altPath)
+        public UIMovable(string name, string path, Vector2 relPos, ColorScale color, UIPanel superior, TextureUtilities.PositionType anchorPoint, 
+            string downPath = "", string overPath = "", bool ghost = false) : base(name, path, relPos, color, superior, anchorPoint, downPath, overPath)
         {
             Ghosting = ghost;
         }
 
         //Right now Movables can't be absolute because relative positioning is required for resizing screen adjustments
-        protected UIMovable(string name, string path, Coordinate pixelOffset, UIElement superior, PositionType anchorPoint, PositionType superAnchorPoint,
-            string altPath = "", bool ghost = false) : base(name, path, pixelOffset, superior, anchorPoint, superAnchorPoint, altPath)
+        protected UIMovable(string name, string path, Coordinate pixelOffset, ColorScale color, UIElement superior, TextureUtilities.PositionType anchorPoint, 
+            TextureUtilities.PositionType superAnchorPoint, string downPath = "", string overPath = "", bool ghost = false) : 
+            base(name, path, pixelOffset, color, superior, anchorPoint, superAnchorPoint, downPath, overPath)
         {
             Ghosting = ghost;
         }
@@ -39,33 +41,40 @@ namespace ExNihilo.UI
         {
             if (!Loaded) return;
 
-            if (Activated)
+            if (Down)
             {
                 if (Ghosting)
                 {
-                    var ghost = new Color(CurrentColor.R, CurrentColor.G, CurrentColor.B, CurrentColor.A/4);
-                    spriteBatch.Draw(AltTexture ?? Texture, OriginPosition, null, CurrentColor, 0, Vector2.Zero, CurrentScale, SpriteEffects.None, 0);
-                    spriteBatch.Draw(Texture, OriginPosition + ShiftedPos, null, ghost, 0, Vector2.Zero, CurrentScale, SpriteEffects.None, 0);
+                    var ghost = ColorScale.Get();
+                    ghost.A /= 4;
+                    if (DownTexture is null) Texture.Draw(spriteBatch, OriginPosition, ColorScale, CurrentScale);
+                    else DownTexture.Draw(spriteBatch, OriginPosition, ColorScale, CurrentScale);
+                    Texture.Draw(spriteBatch, OriginPosition + ShiftedPos, ghost, CurrentScale);
                 }
                 else
                 {
-                    spriteBatch.Draw(Texture, OriginPosition + ShiftedPos, null, CurrentColor, 0, Vector2.Zero, CurrentScale, SpriteEffects.None, 0);
+                    Texture.Draw(spriteBatch, OriginPosition + ShiftedPos, ColorScale, CurrentScale);
                 }
             }
             else
             {
-                spriteBatch.Draw(Texture, OriginPosition, null, CurrentColor, 0, Vector2.Zero, CurrentScale, SpriteEffects.None, 0);
+                Texture.Draw(spriteBatch, OriginPosition, ColorScale, CurrentScale);
             }
         }
 
         public override void OnMoveMouse(Point point)
         {
-            if (Activated)
+            if (Disabled) return;
+            if (Down)
             {
                 var opp = BaseElement.CurrentPixelSize + BaseElement.OriginPosition;
                 var newX = MathHelper.Clamp(OriginPosition.X + TextureOffsetToOrigin.X + point.X - Anchor.X, BaseElement.OriginPosition.X, opp.X);
                 var newY = MathHelper.Clamp(OriginPosition.Y + TextureOffsetToOrigin.Y + point.Y - Anchor.Y, BaseElement.OriginPosition.Y, opp.Y);
                 ShiftedPos = new Vector2(newX, newY) - OriginPosition - TextureOffsetToOrigin;
+            }
+            else if (OverTexture != null)
+            {
+                Down = IsOver(point);
             }
         }
 
@@ -74,18 +83,20 @@ namespace ExNihilo.UI
             if (Disabled) return false;
             if (IsOver(point))
             {
-                Activated = true;
+                Over = false;
+                Down = true;
                 Anchor = point;
             }
 
-            return Activated;
+            return Down;
         }
 
         public override void OnLeftRelease(Point point)
         {
-            if (Activated)
+            if (Disabled) return;
+            if (Down)
             {
-                Activated = false;
+                Down = false;
                 OriginPosition += ShiftedPos;
                 ShiftedPos = new Vector2();
 

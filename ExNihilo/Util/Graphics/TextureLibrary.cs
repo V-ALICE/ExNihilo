@@ -1,53 +1,16 @@
 ﻿using System;
-using System.IO;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
+using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
-using ExNihilo.Util.Graphics;
-using Microsoft.Xna.Framework;
 
-namespace ExNihilo.UI.Bases
+namespace ExNihilo.Util.Graphics
 {
-    public static class UILibrary
+    public static class TextureLibrary
     {
         public static Dictionary<string, AnimatableTexture> TextureLookUp;
-        public static Dictionary<string, byte[]> TextureAlphaLookUp;
-        public static ScaleRuleSet DefaultScaleRuleSet, ReducedScaleRuleSet, UnscaledScaleRuleSet, HalfScaleRuleSet;
-
-        public static void LoadRuleSets()
-        {
-            DefaultScaleRuleSet = new ScaleRuleSet();
-            DefaultScaleRuleSet.AddRules
-            (
-                new ScaleRule(1, 1400, 1000),
-                new ScaleRule(2, 2100, 1500),
-                new ScaleRule(3, 2800, 2000),
-                new ScaleRule(4, ScaleRule.MAX_X, ScaleRule.MAX_Y)
-            );
-
-            ReducedScaleRuleSet = new ScaleRuleSet();
-            ReducedScaleRuleSet.AddRules
-            (
-                new ScaleRule(1, 2100, 1500),
-                new ScaleRule(2, ScaleRule.MAX_X, ScaleRule.MAX_Y)
-            );
-
-            UnscaledScaleRuleSet = new ScaleRuleSet();
-            UnscaledScaleRuleSet.AddRules
-            (
-                new ScaleRule(1, ScaleRule.MAX_X, ScaleRule.MAX_Y)
-            );
-
-            HalfScaleRuleSet = new ScaleRuleSet();
-            HalfScaleRuleSet.AddRules
-            (
-                new ScaleRule(0.5f, 1400, 1000),
-                new ScaleRule(1, 2100, 1500),
-                new ScaleRule(1.5f, 2800, 2000),
-                new ScaleRule(2, ScaleRule.MAX_X, ScaleRule.MAX_Y)
-            );
-        }
 
         public static void LoadLibrary(GraphicsDevice graphics, ContentManager content, params string[] infoFiles)
         {
@@ -94,13 +57,6 @@ namespace ExNihilo.UI.Bases
 
                 sheet.Dispose();
             }
-
-            TextureAlphaLookUp = new Dictionary<string, byte[]>();
-            foreach (var texture in TextureLookUp)
-            {
-                TextureAlphaLookUp.Add(texture.Key, texture.Value.GetAlphaMask());
-            }
         }
-
     }
 }

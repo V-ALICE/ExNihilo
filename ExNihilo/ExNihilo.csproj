@@ -99,14 +99,14 @@
     <Compile Include="UI\UIPanel.cs" />
     <Compile Include="UI\UIText.cs" />
     <Compile Include="UI\UITogglable.cs" />
-    <Compile Include="Util\Graphics\AnimatedTexture.cs" />
+    <Compile Include="Util\Graphics\AnimatableTexture.cs" />
     <Compile Include="Util\AudioManager.cs" />
     <Compile Include="Util\Graphics\ColorScale.cs" />
     <Compile Include="Util\Coordinate.cs" />
     <Compile Include="Util\Crypter.cs" />
     <Compile Include="Util\Graphics\ScaleRule.cs" />
+    <Compile Include="Util\Graphics\TextureLibrary.cs" />
     <Compile Include="Util\MathD.cs" />
-    <Compile Include="Util\ExceptionCheck.cs" />
     <Compile Include="UI\Bases\IUI.cs" />
     <Compile Include="Util\TypingKeyboard.cs" />
     <Compile Include="Util\Graphics\TextureUtilities.cs" />

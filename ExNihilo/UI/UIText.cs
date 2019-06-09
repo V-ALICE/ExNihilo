@@ -14,16 +14,16 @@ namespace ExNihilo.UI
         protected Coordinate UnscaledSize;
         protected ColorScale[] Colors;
 
-        public UIText(string name, Vector2 relPos, string smartText, ColorScale[] colors, UIPanel superior, PositionType anchorPoint, 
-            bool reducedSpaces = false) : base(name, "null", relPos, superior, anchorPoint)
+        public UIText(string name, Vector2 relPos, string smartText, ColorScale[] colors, UIPanel superior, TextureUtilities.PositionType anchorPoint, 
+            bool reducedSpaces = false) : base(name, "null", relPos, Color.White, superior, anchorPoint)
         {
             SpacesReduced = reducedSpaces;
             Text = smartText;
             Colors = colors;
         }
 
-        public UIText(string name, Coordinate pixelOffset, string smartText, ColorScale[] colors, UIElement superior, PositionType anchorPoint,
-            PositionType superAnchorType, bool reducedSpaces = false) : base(name, "null", pixelOffset, superior, anchorPoint, superAnchorType)
+        public UIText(string name, Coordinate pixelOffset, string smartText, ColorScale[] colors, UIElement superior, TextureUtilities.PositionType anchorPoint,
+            TextureUtilities.PositionType superAnchorType, bool reducedSpaces = false) : base(name, "null", pixelOffset, Color.White, superior, anchorPoint, superAnchorType)
         {
             SpacesReduced = reducedSpaces;
             Text = smartText;
@@ -37,7 +37,7 @@ namespace ExNihilo.UI
             Colors = colors;
             UnscaledSize = TextDrawer.GetSmartTextSize(Text);
             CurrentPixelSize = new Coordinate((int)(CurrentScale * UnscaledSize.X), (int)(CurrentScale * UnscaledSize.Y));
-            TextureOffsetToOrigin = GetOffset(AnchorType, CurrentPixelSize);
+            TextureOffsetToOrigin = TextureUtilities.GetOffset(AnchorType, CurrentPixelSize);
         }
 
         public override void ReinterpretScale(Coordinate window)
@@ -45,7 +45,7 @@ namespace ExNihilo.UI
             if (!Loaded) return;
             CurrentScale = ScaleRules.GetScale(window);
             CurrentPixelSize = new Coordinate((int) (CurrentScale * UnscaledSize.X), (int) (CurrentScale*UnscaledSize.Y));
-            TextureOffsetToOrigin = GetOffset(AnchorType, CurrentPixelSize);
+            TextureOffsetToOrigin = TextureUtilities.GetOffset(AnchorType, CurrentPixelSize);
         }
 
         public override void LoadContent(GraphicsDevice graphics, ContentManager content)
@@ -54,7 +54,7 @@ namespace ExNihilo.UI
             if (ScaleRules is null) ScaleRules = UILibrary.DefaultScaleRuleSet;
             UnscaledSize = TextDrawer.GetSmartTextSize(Text);
             CurrentPixelSize = new Coordinate((int)(CurrentScale * UnscaledSize.X), (int)(CurrentScale * UnscaledSize.Y));
-            TextureOffsetToOrigin = GetOffset(AnchorType, CurrentPixelSize);
+            TextureOffsetToOrigin = TextureUtilities.GetOffset(AnchorType, CurrentPixelSize);
             LastResizeWindow = new Coordinate();
         }
 

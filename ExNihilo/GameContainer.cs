@@ -34,7 +34,7 @@ namespace ExNihilo
         private Vector2 _mouseDrawPos;
         private Dictionary<SectorID, Sector> _sectorDirectory;
         private Form _form;
-        private Texture2D _mouseTexture;
+        private AnimatableTexture _mouseTexture;
         private MouseController _mouse;
         private CommandHandler _handler;
 
@@ -127,7 +127,7 @@ namespace ExNihilo
             ColorScale.AddToGlobal("Random", new ColorScale(1.5f, 32, 222));
             ColorScale.AddToGlobal("Rainbow", new ColorScale(1.0f, false, Color.Red, Color.Yellow, Color.Lime, Color.Cyan, Color.Blue, Color.Magenta));
 
-            //IsMouseVisible = true;
+            IsMouseVisible = true;
             Window.AllowUserResizing = true;
             _currentForm = FormWindowState.Normal;
             _form = (Form)Control.FromHandle(Window.Handle);
@@ -162,12 +162,13 @@ namespace ExNihilo
             Content.RootDirectory = "Content";
             SpriteBatch = new SpriteBatch(GraphicsDevice);
             UILibrary.LoadLibrary(GraphicsDevice, Content, "title.info", "sheet.info");
+            TextureLibrary.LoadLibrary(GraphicsDevice, Content);
 
             TextDrawer.Initialize(GraphicsDevice, Content.Load<Texture2D>("UI/FONT"));
             foreach (var sector in _sectorDirectory.Values) sector.LoadContent(GraphicsDevice, Content);
             Console.LoadContent(GraphicsDevice, Content);
 
-            _mouseTexture = Content.Load<Texture2D>("UI/Poker");
+            _mouseTexture = new AnimatableTexture(Content.Load<Texture2D>("UI/Poker"));
 
             base.LoadContent();
         }
@@ -253,7 +254,7 @@ namespace ExNihilo
 
             UpdateFPS(); //FPS numbers are calculated based on drawn frames
             Console.Draw(SpriteBatch); //Console will handle when it should draw
-            SpriteBatch.Draw(_mouseTexture, _mouseDrawPos, null, Color.White, 0, Vector2.Zero, _mouseScale, SpriteEffects.None, 0);
+            if (!IsMouseVisible) _mouseTexture.Draw(SpriteBatch, _mouseDrawPos, ColorScale.White, _mouseScale);
             if (ShowDebugInfo) DrawDebugInfo();
 
             SpriteBatch.End();
