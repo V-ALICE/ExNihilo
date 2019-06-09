@@ -1,5 +1,6 @@
 ﻿using System.Threading;
 using ExNihilo.Input.Commands;
+using ExNihilo.Systems;
 using ExNihilo.UI.Bases;
 using ExNihilo.Util;
 using Microsoft.Xna.Framework;
@@ -8,7 +9,7 @@ using Microsoft.Xna.Framework.Graphics;
 
 namespace ExNihilo.Sectors
 {
-    public abstract class Sector : IUI, IClickable
+    public abstract class Sector : IUI, IClickable, ISavable
     {
         protected GameContainer Container;
         protected CommandHandler Handler;
@@ -30,14 +31,19 @@ namespace ExNihilo.Sectors
             Draw(spriteBatch, false);
         }
 
-        public virtual void OnExit()
+        public void OnExit()
         {
             LoadingThread?.Abort();
             LoadingThread?.Join();
+            Exit();
         }
+        protected abstract void Exit();
 
         public abstract void OnMoveMouse(Point point);
         public abstract bool OnLeftClick(Point point);
         public abstract void OnLeftRelease(Point point);
+
+        public abstract void Pack(PackedGame game);
+        public abstract void Unpack(PackedGame game);
     }
 }

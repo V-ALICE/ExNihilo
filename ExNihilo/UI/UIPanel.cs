@@ -188,11 +188,11 @@ namespace ExNihilo.UI
             }
         }
 
-        public override void Enable(ColorScale c)
+        public override void Enable()
         {
             foreach (var item in Set)
             {
-                if (item is UIClickable click) click.Enable(c);
+                if (item is UIClickable click) click.Enable();
             }
         }
 
@@ -207,7 +207,20 @@ namespace ExNihilo.UI
         public UIElement GetElement(string title)
         {
             if (GivenName == title) return this;
-            return Set.FirstOrDefault(s => s.GivenName == title);
+
+            var top = Set.FirstOrDefault(s => s.GivenName == title);
+            if (top != null) return top;
+
+            foreach (var element in Set)
+            {
+                if (element is UIPanel panel)
+                {
+                    var rtrn = panel.GetElement(title);
+                    if (rtrn != null) return rtrn;
+                }
+            }
+
+            return null;
         }
     }
 }

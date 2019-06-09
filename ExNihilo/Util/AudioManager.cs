@@ -23,7 +23,7 @@ namespace ExNihilo.Util
         public static float EffectVolume { get; set; }
         public static float MusicVolume
         {
-            private get => MediaPlayer.Volume;
+            get => MediaPlayer.Volume;
             set => MediaPlayer.Volume = value;
         }
 

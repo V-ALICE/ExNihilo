@@ -135,6 +135,10 @@ namespace ExNihilo
             _form.MinimumSize = new Size(ScaleRule.MIN_X, ScaleRule.MIN_Y);
             _form.WindowState = FormWindowState.Maximized;
 
+            SaveHandler.LoadParameters();
+            PushParameters(SaveHandler.Parameters);
+            SaveHandler.LoadAllSaves(SaveHandler.FILE_1, SaveHandler.FILE_2, SaveHandler.FILE_3);
+
             _sectorDirectory = new Dictionary<SectorID, Sector>
             {
                 {SectorID.MainMenu, new TitleSector(this)},
@@ -295,5 +299,22 @@ namespace ExNihilo
             Exit();
         }
 
+        public void Pack(string id)
+        {
+            PackedGame game = new PackedGame(id);
+            game.Pack(this);
+            foreach (var sector in _sectorDirectory.Values) sector.Pack(game);
+        }
+
+        public void Unpack(PackedGame game)
+        {
+            foreach (var sector in _sectorDirectory.Values) sector.Unpack(game);
+        }
+
+        public void PushParameters(GameParameters param)
+        {
+            AudioManager.MusicVolume = param.MusicVolume;
+            AudioManager.EffectVolume = param.EffectVolume;
+        }
     }
 }

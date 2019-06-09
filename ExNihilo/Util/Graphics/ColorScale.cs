@@ -9,6 +9,7 @@ namespace ExNihilo.Util.Graphics
         private static readonly Dictionary<string, ColorScale> _globalScaleMap = new Dictionary<string, ColorScale>();
         public static ColorScale White = new ColorScale(Color.White);
         public static ColorScale Black = new ColorScale(Color.Black);
+        public static ColorScale Grey = new ColorScale(Color.Gray);
 
         private readonly bool _random, _oneWay;
         private readonly byte _upper, _lower;

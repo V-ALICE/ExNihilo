@@ -60,7 +60,7 @@ namespace ExNihilo.UI
         public override void Draw(SpriteBatch spriteBatch)
         {
             if (!Loaded) return;
-            Texture.Draw(spriteBatch, OriginPosition, ColorScale, CurrentScale * RelativeScalar * MaxiumScalar);
+            Texture.Draw(spriteBatch, OriginPosition, Disabled ? DisabledColor : ColorScale, CurrentScale * RelativeScalar * MaxiumScalar);
         }
 
         protected void ReinterpretScalar(Point point)

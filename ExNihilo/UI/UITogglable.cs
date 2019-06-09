@@ -21,6 +21,14 @@ namespace ExNihilo.UI
         {
         }
 
+        public void ForcePush()
+        {
+            Down = !Down;
+            Function?.Invoke(new UICallbackPackage(GivenName, new Point(), OriginPosition, Down ? 1 : -1));
+            WasOver = false;
+            Over = false;
+        }
+
         public override void OnMoveMouse(Point point)
         {
             if (Disabled) return;
@@ -55,7 +63,7 @@ namespace ExNihilo.UI
         public override void Disable(ColorScale c)
         {
             Over = false;
-            ColorScale = c;
+            DisabledColor = c;
             Disabled = true;
         }
     }

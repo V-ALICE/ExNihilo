@@ -1,5 +1,6 @@
 ﻿using ExNihilo.Input.Commands;
 using ExNihilo.Menus;
+using ExNihilo.Systems;
 using ExNihilo.Util;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content;
@@ -15,10 +16,9 @@ namespace ExNihilo.Sectors
         {
         }
 
-        /********************************************************************
-        ------->Game loop
-        ********************************************************************/
-
+/********************************************************************
+------->Game loop
+********************************************************************/
         public override void OnResize(GraphicsDevice graphicsDevice, Coordinate gameWindow)
         {
             _title.OnResize(graphicsDevice, gameWindow);
@@ -51,12 +51,11 @@ namespace ExNihilo.Sectors
             _title.Draw(spriteBatch);
         }
 
-        /********************************************************************
-        ------->Game functions
-        ********************************************************************/
-        public override void OnExit()
+/********************************************************************
+------->Game functions
+********************************************************************/
+        protected override void Exit()
         {
-            base.OnExit();
         }
 
         public override void OnMoveMouse(Point point)
@@ -72,6 +71,14 @@ namespace ExNihilo.Sectors
         public override void OnLeftRelease(Point point)
         {
             _title.OnLeftRelease(point);
+        }
+
+        public override void Pack(PackedGame game)
+        {
+        }
+
+        public override void Unpack(PackedGame game)
+        {
         }
     }
 }

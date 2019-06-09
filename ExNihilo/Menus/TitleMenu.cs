@@ -1,4 +1,5 @@
-﻿using ExNihilo.UI;
+﻿using ExNihilo.Systems;
+using ExNihilo.UI;
 using ExNihilo.UI.Bases;
 using ExNihilo.Util;
 using ExNihilo.Util.Graphics;
@@ -31,44 +32,96 @@ namespace ExNihilo.Menus
 /********************************************************************
 ------->Options Menu Callbacks
 ********************************************************************/
-        private void SwapToTitle(UICallbackPackage package)
+        private void SwapToTitleFromLoad(UICallbackPackage package)
         {
+            if (_deleteMode)
+            {
+                ((UITogglable)_loadUI.GetElement("DeleteFileButton"))?.ForcePush();
+            }
+            _type = CurrentMenu.Title;
+        }
+
+        private void SwapToTitleFromOptions(UICallbackPackage package)
+        {
+            SaveHandler.SaveParameters();
             _type = CurrentMenu.Title;
         }
 
         private void ApplyMusicVolume(UICallbackPackage package)
         {
             AudioManager.MusicVolume = package.value[0];
+            SaveHandler.Parameters.MusicVolume = package.value[0];
         }
 
         private void ApplyEffectVolume(UICallbackPackage package)
         {
             AudioManager.EffectVolume = package.value[0];
+            SaveHandler.Parameters.EffectVolume = package.value[0];
         }
 
 /********************************************************************
 ------->Loading Menu Callbacks
 ********************************************************************/
+        private void UpdateLoadTexts()
+        {
+            if (_deleteMode)
+            {
+                if (!SaveHandler.HasSave(SaveHandler.FILE_1)) (_loadUI.GetElement(SaveHandler.FILE_1) as UIClickable)?.Disable(ColorScale.Grey);
+                if (!SaveHandler.HasSave(SaveHandler.FILE_2)) (_loadUI.GetElement(SaveHandler.FILE_2) as UIClickable)?.Disable(ColorScale.Grey);
+                if (!SaveHandler.HasSave(SaveHandler.FILE_3)) (_loadUI.GetElement(SaveHandler.FILE_3) as UIClickable)?.Disable(ColorScale.Grey);
+            }
+            else
+            {
+                if (!SaveHandler.HasSave(SaveHandler.FILE_1)) (_loadUI.GetElement(SaveHandler.FILE_1) as UIClickable)?.Enable();
+                if (!SaveHandler.HasSave(SaveHandler.FILE_2)) (_loadUI.GetElement(SaveHandler.FILE_2) as UIClickable)?.Enable();
+                if (!SaveHandler.HasSave(SaveHandler.FILE_3)) (_loadUI.GetElement(SaveHandler.FILE_3) as UIClickable)?.Enable();
+            }
+        }
+
         private void SelectLoad(UICallbackPackage package)
         {
-            DoThing(package.caller, package.value[0]);
+            if (_deleteMode)
+            {
+                SaveHandler.DeleteSave(package.caller);
+                (_loadUI.GetElement(package.caller + "Text") as UIText)?.SetText("No File", ColorScale.Black);
+                UpdateLoadTexts();
+            }
+            else
+            {
+                if (SaveHandler.HasSave(package.caller))
+                {
+                    Container.Unpack(SaveHandler.GetSave(package.caller));
+                }
+                else
+                {
+                    var newGame = new PackedGame(package.caller);
+                    SaveHandler.Save(package.caller, newGame);
+                    (_loadUI.GetElement(package.caller + "Text") as UIText)?.SetText(newGame.TitleCard, ColorScale.Black);
+                }
+            }
+        }
+
+        private void ToggleDeleteMode(UICallbackPackage package)
+        {
+            _deleteMode = package.value[0] > 0;
+            UpdateLoadTexts();
         }
 
 /********************************************************************
 ------->Menu Functions
 ********************************************************************/
-
         private enum CurrentMenu
         {
             Title, Options, Play
         }
 
         private CurrentMenu _type;
+        private bool _deleteMode;
         private readonly UIPanel _titleUI, _optionsUI, _loadUI;
 
         private void DoThing(string caller, float value)
         {
-            Container.Console.ForceMessage("", "<" + caller + " pressed with value " + value + ">");
+            Container.Console.ForceMessage("<Console>", caller + " pressed with value " + value);
         }
 
         public TitleMenu(GameContainer container) : base(container)
@@ -80,16 +133,11 @@ namespace ExNihilo.Menus
             // Title Menu setup
             var titlePanel = new UIPanel("TitleButtonPanel", new Vector2(0.5f, 1), new Vector2(0, 0.5f), TextureUtilities.PositionType.CenterBottom);
             var playButton = new UIClickable("PlayButton", "UI/BigButton", new Vector2(0, 0), ColorScale.White, titlePanel, TextureUtilities.PositionType.CenterTop, "UI/BigButtonDown", "UI/BigButtonOver");
-            var optionsButton = new UIClickable("OptionsButton", "UI/BigButton", new Coordinate(0, 10), ColorScale.White, playButton, TextureUtilities.PositionType.CenterTop,
-                TextureUtilities.PositionType.CenterBottom, "UI/BigButtonDown", "UI/BigButtonOver");
-            var exitButton = new UIClickable("ExitButton", "UI/BigButton", new Coordinate(0, 10), ColorScale.White, optionsButton, TextureUtilities.PositionType.CenterTop,
-                TextureUtilities.PositionType.CenterBottom, "UI/BigButtonDown", "UI/BigButtonOver");
-            var playButtonText = new UIText("TitleButtonText", new Coordinate(), "Play Game", ColorScale.Black, playButton,
-                TextureUtilities.PositionType.Center, TextureUtilities.PositionType.Center);
-            var optionsButtonText = new UIText("OptionsButtonText", new Coordinate(), "Options", ColorScale.Black, optionsButton,
-                TextureUtilities.PositionType.Center, TextureUtilities.PositionType.Center);
-            var exitButtonText = new UIText("ExitButtonText", new Coordinate(), "Exit", ColorScale.Black, exitButton,
-                TextureUtilities.PositionType.Center, TextureUtilities.PositionType.Center);
+            var optionsButton = new UIClickable("OptionsButton", "UI/BigButton", new Coordinate(0, 10), ColorScale.White, playButton, TextureUtilities.PositionType.CenterTop, TextureUtilities.PositionType.CenterBottom, "UI/BigButtonDown", "UI/BigButtonOver");
+            var exitButton = new UIClickable("ExitButton", "UI/BigButton", new Coordinate(0, 10), ColorScale.White, optionsButton, TextureUtilities.PositionType.CenterTop, TextureUtilities.PositionType.CenterBottom, "UI/BigButtonDown", "UI/BigButtonOver");
+            var playButtonText = new UIText("TitleButtonText", new Coordinate(), "Play Game", ColorScale.Black, playButton, TextureUtilities.PositionType.Center, TextureUtilities.PositionType.Center);
+            var optionsButtonText = new UIText("OptionsButtonText", new Coordinate(), "Options", ColorScale.Black, optionsButton, TextureUtilities.PositionType.Center, TextureUtilities.PositionType.Center);
+            var exitButtonText = new UIText("ExitButtonText", new Coordinate(), "Exit", ColorScale.Black, exitButton, TextureUtilities.PositionType.Center, TextureUtilities.PositionType.Center);
             var titleDisplay = new UIElement("Title", "UI/Title", new Vector2(0.5f, 0.25f), ColorScale.GetFromGlobal("Random"), _titleUI, TextureUtilities.PositionType.Center);
 
             playButton.RegisterCallback(SwapToLoad);
@@ -101,47 +149,64 @@ namespace ExNihilo.Menus
             _titleUI.AddElements(titleDisplay, titlePanel);
 
             // Option Menu setup
-            var backButton = new UIClickable("BackButton", "UI/SmallButton", new Coordinate(10, -10), ColorScale.White, _optionsUI, TextureUtilities.PositionType.BottomLeft,
-                TextureUtilities.PositionType.BottomLeft, "UI/SmallButtonDown", "UI/SmallButtonOver");
-            var backButtonText = new UIText("BackButtonText", new Coordinate(), "Back", ColorScale.Black, backButton,
-                TextureUtilities.PositionType.Center, TextureUtilities.PositionType.Center);
+            var backButton = new UIClickable("BackButton", "UI/SmallButton", new Coordinate(10, -10), ColorScale.White, _optionsUI, TextureUtilities.PositionType.BottomLeft, TextureUtilities.PositionType.BottomLeft, "UI/SmallButtonDown", "UI/SmallButtonOver");
+            var backButtonText = new UIText("BackButtonText", new Coordinate(), "Back", ColorScale.Black, backButton, TextureUtilities.PositionType.Center, TextureUtilities.PositionType.Center);
             var effectVolumeBar = new UIElement("EffectVolumeBar", "UI/SmallFillBar", new Vector2(0.45f, 0.2f), ColorScale.White, _optionsUI, TextureUtilities.PositionType.TopRight);
             var musicVolumeBar = new UIElement("MusicVolumeBar", "UI/SmallFillBar", new Vector2(0.55f, 0.2f), ColorScale.White, _optionsUI, TextureUtilities.PositionType.TopLeft);
-            var effectVolumeBarFill = new UIExtendable("EffectVolumeBarFill", "UI/BarFillRed", new Coordinate(18, 6), ColorScale.White, effectVolumeBar,
-                TextureUtilities.PositionType.TopLeft, TextureUtilities.PositionType.TopLeft, new Coordinate(240, 28), true, false);
-            var musicVolumeBarFill = new UIExtendable("MusicVolumeBarFill", "UI/BarFillBlue", new Coordinate(18, 6), ColorScale.White, musicVolumeBar,
-                TextureUtilities.PositionType.TopLeft, TextureUtilities.PositionType.TopLeft, new Coordinate(240, 28), true, false);
-            var effectVolumeBarText = new UIText("EffectVolumeBarText", new Coordinate(2, -4), "Effect Volume", ColorScale.White,
-                effectVolumeBarFill, TextureUtilities.PositionType.BottomLeft, TextureUtilities.PositionType.TopLeft);
-            var musicVolumeBarText = new UIText("MusicVolumeBarText", new Coordinate(2, -4), "Music Volume", ColorScale.White,
-                musicVolumeBarFill, TextureUtilities.PositionType.BottomLeft, TextureUtilities.PositionType.TopLeft);
+            var effectVolumeBarFill = new UIExtendable("EffectVolumeBarFill", "UI/BarFillRed", new Coordinate(18, 6), ColorScale.White, effectVolumeBar, TextureUtilities.PositionType.TopLeft, TextureUtilities.PositionType.TopLeft, new Coordinate(240, 28), true, false);
+            var musicVolumeBarFill = new UIExtendable("MusicVolumeBarFill", "UI/BarFillBlue", new Coordinate(18, 6), ColorScale.White, musicVolumeBar, TextureUtilities.PositionType.TopLeft, TextureUtilities.PositionType.TopLeft, new Coordinate(240, 28), true, false);
+            var effectVolumeBarText = new UIText("EffectVolumeBarText", new Coordinate(2, -4), "Effect Volume", ColorScale.White, effectVolumeBarFill, TextureUtilities.PositionType.BottomLeft, TextureUtilities.PositionType.TopLeft);
+            var musicVolumeBarText = new UIText("MusicVolumeBarText", new Coordinate(2, -4), "Music Volume", ColorScale.White, musicVolumeBarFill, TextureUtilities.PositionType.BottomLeft, TextureUtilities.PositionType.TopLeft);
 
-            var radioSet = new UIPanel("RadioSet", new Vector2(0.45f, 0.55f), new Coordinate(50, 50), _optionsUI, TextureUtilities.PositionType.TopRight);
-            var radioButton1 = new UITogglable("RadioButton1", "UI/GreenBulb", new Coordinate(), ColorScale.White, radioSet, TextureUtilities.PositionType.Center, TextureUtilities.PositionType.TopLeft, "UI/GreenBulbDown", "UI/GreenBulbOver");
-            var radioButton2 = new UITogglable("RadioButton2", "UI/BlueBulb", new Coordinate(), ColorScale.White, radioSet, TextureUtilities.PositionType.Center, TextureUtilities.PositionType.TopRight, "UI/BlueBulbDown", "UI/BlueBulbOver");
-            var radioButton3 = new UITogglable("RadioButton3", "UI/RedBulb", new Coordinate(), ColorScale.White, radioSet, TextureUtilities.PositionType.Center, TextureUtilities.PositionType.BottomLeft, "UI/RedBulbDown", "UI/RedBulbOver");
-            var radioButton4 = new UITogglable("RadioButton4", "UI/BlackBulb", new Coordinate(), ColorScale.White, radioSet, TextureUtilities.PositionType.Center, TextureUtilities.PositionType.BottomRight, "UI/BlackBulbDown", "UI/BlackBulbOver");
-            var radioButton5 = new UITogglable("RadioButton5", "UI/RadioUnselected", new Coordinate(), ColorScale.White, radioSet, TextureUtilities.PositionType.Center, TextureUtilities.PositionType.Center, "UI/RadioSelected");
+            //var radioSet = new UIPanel("RadioSet", new Vector2(0.45f, 0.55f), new Coordinate(50, 50), _optionsUI, TextureUtilities.PositionType.TopRight);
+            //var radioButton1 = new UITogglable("RadioButton1", "UI/GreenBulb", new Coordinate(), ColorScale.White, radioSet, TextureUtilities.PositionType.Center, TextureUtilities.PositionType.TopLeft, "UI/GreenBulbDown", "UI/GreenBulbOver");
+            //var radioButton2 = new UITogglable("RadioButton2", "UI/BlueBulb", new Coordinate(), ColorScale.White, radioSet, TextureUtilities.PositionType.Center, TextureUtilities.PositionType.TopRight, "UI/BlueBulbDown", "UI/BlueBulbOver");
+            //var radioButton3 = new UITogglable("RadioButton3", "UI/RedBulb", new Coordinate(), ColorScale.White, radioSet, TextureUtilities.PositionType.Center, TextureUtilities.PositionType.BottomLeft, "UI/RedBulbDown", "UI/RedBulbOver");
+            //var radioButton4 = new UITogglable("RadioButton4", "UI/BlackBulb", new Coordinate(), ColorScale.White, radioSet, TextureUtilities.PositionType.Center, TextureUtilities.PositionType.BottomRight, "UI/BlackBulbDown", "UI/BlackBulbOver");
+            //var radioButton5 = new UITogglable("RadioButton5", "UI/RadioUnselected", new Coordinate(), ColorScale.White, radioSet, TextureUtilities.PositionType.Center, TextureUtilities.PositionType.Center, "UI/RadioSelected");
+            //var moveTest = new UIMovable("MoveTest", "UI/SmallEntryBox", new Vector2(0.75f, 0.75f), ColorScale.White, _optionsUI, TextureUtilities.PositionType.Center, "", "", true);
+            //radioSet.AddElements(radioButton1, radioButton2, radioButton3, radioButton4, radioButton5);
+            //_optionsUI.AddElements(radioSet, moveTest);
 
-            var moveTest = new UIMovable("MoveTest", "UI/SmallEntryBox", new Vector2(0.75f, 0.75f), ColorScale.White, _optionsUI, TextureUtilities.PositionType.Center, "", "", true);
-
-            backButton.RegisterCallback(SwapToTitle);
+            backButton.RegisterCallback(SwapToTitleFromOptions);
             effectVolumeBarFill.RegisterCallback(ApplyEffectVolume);
             musicVolumeBarFill.RegisterCallback(ApplyMusicVolume);
-            effectVolumeBarFill.ForceValue(new Vector2(0.5f, 1));
-            musicVolumeBarFill.ForceValue(new Vector2(0.5f, 1));
+            effectVolumeBarFill.ForceValue(new Vector2(AudioManager.EffectVolume, 1));
+            musicVolumeBarFill.ForceValue(new Vector2(AudioManager.MusicVolume, 1));
 
-            radioSet.AddElements(radioButton1, radioButton2, radioButton3, radioButton4, radioButton5);
-            _optionsUI.AddElements(backButton, backButtonText, effectVolumeBar, musicVolumeBar, effectVolumeBarFill, musicVolumeBarFill, effectVolumeBarText, musicVolumeBarText, radioSet, moveTest);
+            _optionsUI.AddElements(backButton, backButtonText, effectVolumeBar, musicVolumeBar, effectVolumeBarFill, musicVolumeBarFill, effectVolumeBarText, musicVolumeBarText);
 
-            // Option Menu setup
+            // Load Menu setup
+            var file1Text = SaveHandler.HasSave(SaveHandler.FILE_1) ? SaveHandler.GetSave(SaveHandler.FILE_1).TitleCard : "No File";
+            var file2Text = SaveHandler.HasSave(SaveHandler.FILE_2) ? SaveHandler.GetSave(SaveHandler.FILE_2).TitleCard : "No File";
+            var file3Text = SaveHandler.HasSave(SaveHandler.FILE_3) ? SaveHandler.GetSave(SaveHandler.FILE_3).TitleCard : "No File";
 
-            _loadUI.AddElements(backButton, backButtonText);
+            var loadPanel = new UIPanel("LoadFilePanel", new Vector2(0.5f, 1), new Vector2(0, 0.5f), TextureUtilities.PositionType.CenterBottom);
+            var loadFile1 = new UIClickable(SaveHandler.FILE_1, "UI/BigButton", new Vector2(0, 0), ColorScale.White, loadPanel, TextureUtilities.PositionType.CenterTop, "UI/BigButtonDown", "UI/BigButtonOver");
+            var loadFile2 = new UIClickable(SaveHandler.FILE_2, "UI/BigButton", new Coordinate(0, 10), ColorScale.White, loadFile1, TextureUtilities.PositionType.CenterTop, TextureUtilities.PositionType.CenterBottom, "UI/BigButtonDown", "UI/BigButtonOver");
+            var loadFile3 = new UIClickable(SaveHandler.FILE_3, "UI/BigButton", new Coordinate(0, 10), ColorScale.White, loadFile2, TextureUtilities.PositionType.CenterTop, TextureUtilities.PositionType.CenterBottom, "UI/BigButtonDown", "UI/BigButtonOver");
+            var loadFile1Text = new UIText(SaveHandler.FILE_1 + "Text", new Coordinate(), file1Text, ColorScale.Black, loadFile1, TextureUtilities.PositionType.Center, TextureUtilities.PositionType.Center);
+            var loadFile2Text = new UIText(SaveHandler.FILE_2 + "Text", new Coordinate(), file2Text, ColorScale.Black, loadFile2, TextureUtilities.PositionType.Center, TextureUtilities.PositionType.Center);
+            var loadFile3Text = new UIText(SaveHandler.FILE_3 + "Text", new Coordinate(), file3Text, ColorScale.Black, loadFile3, TextureUtilities.PositionType.Center, TextureUtilities.PositionType.Center);
+            var deleteFileButton = new UITogglable("DeleteFileButton", "UI/SmallButton", new Coordinate(-10, -10), ColorScale.White, _loadUI, TextureUtilities.PositionType.BottomRight, TextureUtilities.PositionType.BottomRight, "UI/SmallButtonDown", "UI/SmallButtonOver");
+            var deleteFileButtonText = new UIText("DeleteFileButtonText", new Coordinate(), "Delete File", ColorScale.Black, deleteFileButton, TextureUtilities.PositionType.Center, TextureUtilities.PositionType.Center);
+            var backButton2 = new UIClickable("BackButton", "UI/SmallButton", new Coordinate(10, -10), ColorScale.White, _loadUI, TextureUtilities.PositionType.BottomLeft, TextureUtilities.PositionType.BottomLeft, "UI/SmallButtonDown", "UI/SmallButtonOver");
+            var backButtonText2 = new UIText("BackButtonText", new Coordinate(), "Back", ColorScale.Black, backButton2, TextureUtilities.PositionType.Center, TextureUtilities.PositionType.Center);
+
+            loadFile1.RegisterCallback(SelectLoad);
+            loadFile2.RegisterCallback(SelectLoad);
+            loadFile3.RegisterCallback(SelectLoad);
+            deleteFileButton.RegisterCallback(ToggleDeleteMode);
+            backButton2.RegisterCallback(SwapToTitleFromLoad);
+
+            loadPanel.AddElements(loadFile1, loadFile2, loadFile3, loadFile1Text, loadFile2Text, loadFile3Text);
+            _loadUI.AddElements(backButton2, backButtonText2, titleDisplay, deleteFileButton, deleteFileButtonText, loadPanel);
         }
 
         public override void Enter()
         {
             _type = CurrentMenu.Title;
+            _deleteMode = false;
         }
 
         public override void LoadContent(GraphicsDevice graphics, ContentManager content)

@@ -1,4 +1,5 @@
 ﻿using ExNihilo.Input.Commands;
+using ExNihilo.Systems;
 using ExNihilo.Util;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content;
@@ -48,9 +49,9 @@ namespace ExNihilo.Sectors
         /********************************************************************
         ------->Game functions
         ********************************************************************/
-        public override void OnExit()
+
+        protected override void Exit()
         {
-            base.OnExit();
         }
 
         public override void OnMoveMouse(Point point)
@@ -65,6 +66,14 @@ namespace ExNihilo.Sectors
         public override void OnLeftRelease(Point point)
         {
             
+        }
+
+        public override void Pack(PackedGame game)
+        {
+        }
+
+        public override void Unpack(PackedGame game)
+        {
         }
     }
 }

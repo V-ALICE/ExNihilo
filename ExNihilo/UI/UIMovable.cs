@@ -58,7 +58,7 @@ namespace ExNihilo.UI
             }
             else
             {
-                Texture.Draw(spriteBatch, OriginPosition, ColorScale, CurrentScale);
+                Texture.Draw(spriteBatch, OriginPosition, Disabled ? DisabledColor : ColorScale, CurrentScale);
             }
         }
 

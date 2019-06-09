@@ -34,10 +34,25 @@ namespace ExNihilo.UI
         {
             //TODO: maybe make this build a texture so it can just draw it?
             Text = smartText;
-            Colors = colors;
+            if (colors.Length > 0) Colors = colors;
             UnscaledSize = TextDrawer.GetSmartTextSize(Text);
             CurrentPixelSize = new Coordinate((int)(CurrentScale * UnscaledSize.X), (int)(CurrentScale * UnscaledSize.Y));
             TextureOffsetToOrigin = TextureUtilities.GetOffset(AnchorType, CurrentPixelSize);
+
+            if (AbsoluteOffset)
+            {
+                //Position of this element is relative to the origin of its base element in scaled pixels
+                var scaledOffset = new Coordinate(
+                    (int)(BaseElement.CurrentScale * PixelOffsetFromBase.X),
+                    (int)(BaseElement.CurrentScale * PixelOffsetFromBase.Y));
+                var superOffset = TextureUtilities.GetOffset(SuperAnchorType, BaseElement.CurrentPixelSize);
+                OriginPosition = BaseElement.OriginPosition + scaledOffset - TextureOffsetToOrigin + superOffset;
+            }
+            else
+            {
+                //Position of this element is relative to the space of its base panel
+                OriginPosition = BaseElement.OriginPosition + BaseElement.CurrentPixelSize * PositionRelativeToBase - TextureOffsetToOrigin;
+            }
         }
 
         public override void ReinterpretScale(Coordinate window)

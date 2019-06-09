@@ -27,6 +27,7 @@ namespace ExNihilo.UI
     public class UIClickable : UIElement, IClickable
     {
         protected byte[] Alpha;
+        protected ColorScale DisabledColor;
         protected AnimatableTexture DownTexture, OverTexture;
         protected readonly string DownTexturePath, OverTexturePath;
         protected readonly bool AllowMulligan;
@@ -42,6 +43,7 @@ namespace ExNihilo.UI
             DownTexturePath = downPath;
             OverTexturePath = overPath;
             AllowMulligan = mulligan;
+            DisabledColor = color;
         }
 
         public UIClickable(string name, string path, Coordinate pixelOffset, ColorScale color, UIElement superior, TextureUtilities.PositionType anchorPoint, 
@@ -51,6 +53,7 @@ namespace ExNihilo.UI
             DownTexturePath = downPath;
             OverTexturePath = overPath;
             AllowMulligan = mulligan;
+            DisabledColor = color;
         }
 
         protected UIClickable(string name, Vector2 relPos, TextureUtilities.PositionType anchorPoint) : base(name, relPos, anchorPoint)
@@ -79,6 +82,7 @@ namespace ExNihilo.UI
             if (!Loaded) return;
             if (Down && DownTexture != null) DownTexture.Draw(spriteBatch, OriginPosition, ColorScale?.Get() ?? Color.White, CurrentScale);
             else if (Over && OverTexture != null) OverTexture.Draw(spriteBatch, OriginPosition, ColorScale?.Get() ?? Color.White, CurrentScale);
+            else if (Disabled) Texture.Draw(spriteBatch, OriginPosition, DisabledColor?.Get() ?? Color.White, CurrentScale);
             else Texture.Draw(spriteBatch, OriginPosition, ColorScale?.Get() ?? Color.White, CurrentScale);
         }
 
@@ -121,13 +125,12 @@ namespace ExNihilo.UI
         {
             Down = false;
             Over = false;
-            ColorScale = c;
+            DisabledColor = c;
             Disabled = true;
         }
 
-        public virtual void Enable(ColorScale c)
+        public virtual void Enable()
         {
-            ColorScale = c;
             Disabled = false;
         }
     }
