@@ -22,6 +22,11 @@ namespace ExNihilo.Sectors
         {
         }
 
+        public override void Enter()
+        {
+            
+        }
+
         public override void Initialize()
         {
             Handler = new CommandHandler();

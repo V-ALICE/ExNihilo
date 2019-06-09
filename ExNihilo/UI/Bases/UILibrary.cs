@@ -13,7 +13,7 @@ namespace ExNihilo.UI.Bases
     {
         public static Dictionary<string, AnimatableTexture> TextureLookUp;
         public static Dictionary<string, byte[]> TextureAlphaLookUp;
-        public static ScaleRuleSet DefaultScaleRuleSet, ReducedScaleRuleSet, UnscaledScaleRuleSet, HalfScaleRuleSet;
+        public static ScaleRuleSet DefaultScaleRuleSet, ReducedScaleRuleSet, UnscaledScaleRuleSet, HalfScaleRuleSet, DoubleScaleRuleSet;
 
         public static void LoadRuleSets()
         {
@@ -46,6 +46,15 @@ namespace ExNihilo.UI.Bases
                 new ScaleRule(1, 2100, 1500),
                 new ScaleRule(1.5f, 2800, 2000),
                 new ScaleRule(2, ScaleRule.MAX_X, ScaleRule.MAX_Y)
+            );
+
+            DoubleScaleRuleSet = new ScaleRuleSet();
+            DoubleScaleRuleSet.AddRules
+            (
+                new ScaleRule(2, 1400, 1000),
+                new ScaleRule(4, 2100, 1500),
+                new ScaleRule(6, 2800, 2000),
+                new ScaleRule(8, ScaleRule.MAX_X, ScaleRule.MAX_Y)
             );
         }
 

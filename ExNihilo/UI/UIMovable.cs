@@ -107,6 +107,7 @@ namespace ExNihilo.UI
                 PositionRelativeToBase = new Vector2(relX, relY);
 
                 Function?.Invoke(new UICallbackPackage(GivenName, point, OriginPosition));
+                Over = IsOver(point);
             }
         }
     }

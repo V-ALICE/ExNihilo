@@ -15,5 +15,10 @@ namespace ExNihilo.Util
         {
             return new Vector2(inV.X, inV.Y);
         }
+
+        public static string Clamp(string input, int max)
+        {
+            return input.Length > max ? input.Substring(0, max) : input;
+        }
     }
 }

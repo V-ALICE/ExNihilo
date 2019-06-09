@@ -19,8 +19,7 @@ namespace ExNihilo
     {
         public enum SectorID
         {
-            MainMenu, Outerworld, Underworld,
-            Unloading, LoadingInit, Loading2Under, Loading2Outer, 
+            MainMenu, Outerworld, Underworld, Loading
         }
 
         private SectorID _activeSectorID;
@@ -36,9 +35,10 @@ namespace ExNihilo
         private Form _form;
         private AnimatableTexture _mouseTexture;
         private MouseController _mouse;
-        private CommandHandler _handler;
+        private CommandHandler _handler, _superHandler;
 
         public ConsoleHandler Console { get; private set; }
+        public SectorID PreviousSectorID;
 
         protected bool ShowDebugInfo, FormTouched;
         protected bool ConsoleActive => Console.Active;
@@ -66,7 +66,7 @@ namespace ExNihilo
 
                 Console.OnResize(GraphicsDevice, _windowSize);
                 _mouseScale = UILibrary.DefaultScaleRuleSet.GetScale(_windowSize);
-                foreach (var sector in _sectorDirectory.Values) sector.OnResize(GraphicsDevice, _windowSize);
+                foreach (var sector in _sectorDirectory.Values) sector?.OnResize(GraphicsDevice, _windowSize);
             }
         }
         private void f_FormClosing(object sender, FormClosingEventArgs e)
@@ -114,11 +114,14 @@ namespace ExNihilo
         protected override void Initialize()
         {
             _activeSectorID = SectorID.MainMenu;
+            PreviousSectorID = SectorID.MainMenu;
             _mouseScale = 1;
             _mouse = new MouseController();
             Console = new ConsoleHandler();
             _handler = new CommandHandler();
-            _handler.Initialize(this);
+            _superHandler = new CommandHandler();
+            _handler.Initialize(this, false);
+            _superHandler.Initialize(this, true);
             SystemClockID = UniversalTime.NewTimer(true);
             _frameTimeID = UniversalTime.NewTimer(true, 1.5);
             UILibrary.LoadRuleSets();
@@ -143,12 +146,14 @@ namespace ExNihilo
             {
                 {SectorID.MainMenu, new TitleSector(this)},
                 {SectorID.Outerworld, new OuterworldSector(this) },
-                {SectorID.Underworld, new UnderworldSector(this) }
+                {SectorID.Underworld, new UnderworldSector(this) },
+                {SectorID.Loading, null }
             };
-            foreach (var sector in _sectorDirectory.Values) sector.Initialize();
+            foreach (var sector in _sectorDirectory.Values) sector?.Initialize();
 
             base.Initialize();
             CheckForWindowUpdate();
+            ActiveSector?.Enter();
         }
 
         protected override void LoadContent()
@@ -169,7 +174,7 @@ namespace ExNihilo
             TextureLibrary.LoadLibrary(GraphicsDevice, Content);
 
             TextDrawer.Initialize(GraphicsDevice, Content.Load<Texture2D>("UI/FONT"));
-            foreach (var sector in _sectorDirectory.Values) sector.LoadContent(GraphicsDevice, Content);
+            foreach (var sector in _sectorDirectory.Values) sector?.LoadContent(GraphicsDevice, Content);
             Console.LoadContent(GraphicsDevice, Content);
 
             _mouseTexture = new AnimatableTexture(Content.Load<Texture2D>("UI/Poker"));
@@ -198,6 +203,7 @@ namespace ExNihilo
             }
 
             if (!tmp.StateChange) return;
+            if (ConsoleActive) Console.CloseConsole();
             if (tmp.LeftDown) ActiveSector.OnLeftClick(tmp.MousePosition);
             else if (tmp.LeftUp) ActiveSector.OnLeftRelease(tmp.MousePosition);
         }
@@ -208,24 +214,12 @@ namespace ExNihilo
             ColorScale.UpdateGlobalScales();
             Console.Update();
             UpdateMouse();
+            _superHandler.UpdateInput();
+            TypingKeyboard.GetText();
 
-            switch (_activeSectorID)
-            {
-                case SectorID.MainMenu:
-                case SectorID.Outerworld:
-                case SectorID.Underworld:
-                    if (!ConsoleActive) _handler.UpdateInput();
-                    ActiveSector.Update();
-                    break;
-                case SectorID.LoadingInit:
-                    break;
-                case SectorID.Loading2Under:
-                    break;
-                case SectorID.Loading2Outer:
-                    break;
-                case SectorID.Unloading:
-                    break;
-            }
+            if (!TypingKeyboard.Active) _handler.UpdateInput();
+            ActiveSector?.Update();
+
             base.Update(gameTime);
         }
 
@@ -239,22 +233,7 @@ namespace ExNihilo
             GraphicsDevice.Clear(Color.DarkBlue);
             SpriteBatch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend, SamplerState.PointClamp);
 
-            switch (_activeSectorID)
-            {
-                case SectorID.MainMenu:
-                case SectorID.Outerworld:
-                case SectorID.Underworld:
-                    ActiveSector.Draw(SpriteBatch, ShowDebugInfo);
-                    break;
-                case SectorID.LoadingInit:
-                    break;
-                case SectorID.Loading2Under:
-                    break;
-                case SectorID.Loading2Outer:
-                    break;
-                case SectorID.Unloading:
-                    break;
-            }
+            ActiveSector?.Draw(SpriteBatch, ShowDebugInfo);
 
             UpdateFPS(); //FPS numbers are calculated based on drawn frames
             Console.Draw(SpriteBatch); //Console will handle when it should draw
@@ -270,15 +249,17 @@ namespace ExNihilo
 ********************************************************************/
         public int RequestSectorChange(SectorID newSector)
         {
-            if (newSector > SectorID.LoadingInit) //Transitioning to loading
+            if (newSector == SectorID.Loading) //Transitioning to loading
             {
-                if (_activeSectorID >= SectorID.LoadingInit)
+                if (_activeSectorID == SectorID.Loading)
                 {
-                    return -1; //wait
+                    return -1; //already loading; wait
                 }
             }
 
+            PreviousSectorID = _activeSectorID;
             _activeSectorID = newSector;
+            ActiveSector?.Enter();
             return 0; //no issue
         }
 
@@ -295,20 +276,26 @@ namespace ExNihilo
         public void ExitGame()
         {
             AudioManager.KillCurrentSong();
-            foreach (var sector in _sectorDirectory.Values) sector.OnExit();
+            foreach (var sector in _sectorDirectory.Values) sector?.OnExit();
             Exit();
+        }
+
+        public void BackOut()
+        {
+            if (ConsoleActive) Console.CloseConsole();
+            else ActiveSector.BackOut();
         }
 
         public void Pack(string id)
         {
             PackedGame game = new PackedGame(id);
             game.Pack(this);
-            foreach (var sector in _sectorDirectory.Values) sector.Pack(game);
+            foreach (var sector in _sectorDirectory.Values) sector?.Pack(game);
         }
 
         public void Unpack(PackedGame game)
         {
-            foreach (var sector in _sectorDirectory.Values) sector.Unpack(game);
+            foreach (var sector in _sectorDirectory.Values) sector?.Unpack(game);
         }
 
         public void PushParameters(GameParameters param)

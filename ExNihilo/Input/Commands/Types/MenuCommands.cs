@@ -2,10 +2,21 @@
 
 namespace ExNihilo.Input.Commands.Types
 {
-
-    public class ToggleMenu : MenuCommand
+    public class ToggleTitleMenu : MenuCommand
     {
-        public ToggleMenu(Sector game) : base(game)
+        public ToggleTitleMenu(Sector game) : base(game)
+        {
+        }
+
+        public override void Activate()
+        {
+            Receiver.RequestSectorChange(GameContainer.SectorID.MainMenu);
+        }
+    }
+
+    public class MenuBack : MenuCommand
+    {
+        public MenuBack(Sector game) : base(game)
         {
         }
 

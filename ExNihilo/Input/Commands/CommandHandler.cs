@@ -23,26 +23,32 @@ namespace ExNihilo.Input.Commands
             _bucket = new List<KeyBlock>();
         }
 
-        public void Initialize(GameContainer game)
+        public void Initialize(GameContainer game, bool super)
         {
             if (_bucket.Count > 0) return;
 
-            _bucket.Add(new KeyBlock(new ToggleTitleMenu(game), false, Keys.Escape, Buttons.Back));
-            _bucket.Add(new KeyBlock(new ToggleDebugUI(game), false, Keys.F1));
-            _bucket.Add(new KeyBlock(new ToggleFullScreen(game), false, Keys.F2));
-            _bucket.Add(new KeyBlock(new Uncommand(), new OpenConsole(game), false, Keys.T));
-            _bucket.Add(new KeyBlock(new Uncommand(), new OpenConsoleForCommand(game), false, Keys.OemQuestion));
+            if (super)
+            {
+                _bucket.Add(new KeyBlock(new BackspaceMessage(game), new UnbackspaceMessage(game), false, Keys.Back));
+                _bucket.Add(new KeyBlock(new BackOutCommand(game), false, Keys.Escape, Buttons.Back));
+                _bucket.Add(new KeyBlock(new ToggleDebugUI(game), false, Keys.F1));
+                _bucket.Add(new KeyBlock(new ToggleFullScreen(game), false, Keys.F2));
+            }
+            else
+            {
+                _bucket.Add(new KeyBlock(new Uncommand(), new OpenConsole(game), false, Keys.T));
+                _bucket.Add(new KeyBlock(new Uncommand(), new OpenConsoleForCommand(game), false, Keys.OemQuestion));
+            }
         }
 
         public void Initialize(ConsoleHandler console)
         {
             if (_bucket.Count > 0) return;
 
-            _bucket.Add(new KeyBlock(new BackOutConsole(console), false, Keys.Escape));
             _bucket.Add(new KeyBlock(new PushConsole(console), false, Keys.Enter));
             _bucket.Add(new KeyBlock(new RememberLastMessage(console), false, Keys.Up));
             _bucket.Add(new KeyBlock(new ForgetCurrentMessage(console), false, Keys.Down));
-            _bucket.Add(new KeyBlock(new BackspaceMessage(console), new UnBackspaceMessage(console), false, Keys.Back));
+            
         }
 
         public void Initialize(Sector game)
@@ -51,7 +57,8 @@ namespace ExNihilo.Input.Commands
 
             if (game is UnderworldSector sector)
             {
-                _bucket.Add(new KeyBlock(new InteractWithWorld(sector), false, Keys.E, Keys.Enter, Buttons.A));
+                _bucket.Add(new KeyBlock(new InteractWithWorld(sector), false, Keys.E, Buttons.A));
+
                 /*
                 _bucket.Add(new KeyBlock(new TurnLeft(game.OwnPlayer), new UnTurnLeft(game.OwnPlayer), false, Keys.Left, Keys.A, Buttons.DPadLeft, Buttons.LeftThumbstickLeft));
                 _bucket.Add(new KeyBlock(new TurnUp(game.OwnPlayer), new UnTurnUp(game.OwnPlayer), false, Keys.Up, Keys.W, Buttons.DPadUp, Buttons.LeftThumbstickUp));
@@ -60,16 +67,13 @@ namespace ExNihilo.Input.Commands
                 _bucket.Add(new KeyBlock(new DoubleSpeed(game.OwnPlayer), new UnDoubleSpeed(game.OwnPlayer), false, Keys.LeftShift, Buttons.X, Buttons.Y));
                 */
             }
-            else
-            {
-                _bucket.Add(new KeyBlock(new MenuUp(game), true, Keys.Up, Keys.W, Buttons.DPadUp, Buttons.LeftThumbstickUp));
-                _bucket.Add(new KeyBlock(new MenuDown(game), true, Keys.Down, Keys.S, Buttons.DPadDown, Buttons.LeftThumbstickDown));
-                _bucket.Add(new KeyBlock(new MenuLeft(game), true, Keys.Left, Keys.A, Buttons.DPadLeft, Buttons.LeftThumbstickLeft));
-                _bucket.Add(new KeyBlock(new MenuRight(game), true, Keys.Right, Keys.D, Buttons.DPadRight, Buttons.LeftThumbstickRight));
-                _bucket.Add(new KeyBlock(new MenuSelect(game), false, Keys.Enter, Buttons.A));
-                _bucket.Add(new KeyBlock(new ToggleMenu(game), false, Keys.Tab, Buttons.Start));
-            }
 
+            _bucket.Add(new KeyBlock(new MenuUp(game), true, Keys.Up, Keys.W, Buttons.DPadUp, Buttons.LeftThumbstickUp));
+            _bucket.Add(new KeyBlock(new MenuDown(game), true, Keys.Down, Keys.S, Buttons.DPadDown, Buttons.LeftThumbstickDown));
+            _bucket.Add(new KeyBlock(new MenuLeft(game), true, Keys.Left, Keys.A, Buttons.DPadLeft, Buttons.LeftThumbstickLeft));
+            _bucket.Add(new KeyBlock(new MenuRight(game), true, Keys.Right, Keys.D, Buttons.DPadRight, Buttons.LeftThumbstickRight));
+            _bucket.Add(new KeyBlock(new MenuSelect(game), false, Keys.Enter, Buttons.A));
+            _bucket.Add(new KeyBlock(new MenuBack(game), false, Keys.Q, Buttons.Start));
         }
 
         public void UpdateInput()

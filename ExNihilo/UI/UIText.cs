@@ -10,9 +10,10 @@ namespace ExNihilo.UI
     public class UIText : UIElement
     {
         protected bool SpacesReduced;
-        protected string Text; 
         protected Coordinate UnscaledSize;
-        protected ColorScale[] Colors;
+
+        public string Text { get; protected set; }
+        public ColorScale[] Colors { get; private set; }
 
         public UIText(string name, Vector2 relPos, string smartText, ColorScale[] colors, UIPanel superior, TextureUtilities.PositionType anchorPoint, 
             bool reducedSpaces = false) : base(name, "null", relPos, Color.White, superior, anchorPoint)

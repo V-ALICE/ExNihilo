@@ -90,6 +90,7 @@
     <Compile Include="Systems\Asura.cs" />
     <Compile Include="Systems\Console.cs" />
     <Compile Include="Systems\ISavable.cs" />
+    <Compile Include="Systems\ITypable.cs" />
     <Compile Include="Systems\SaveHandler.cs" />
     <Compile Include="UI\Bases\IClickable.cs" />
     <Compile Include="UI\Bases\IScalable.cs" />

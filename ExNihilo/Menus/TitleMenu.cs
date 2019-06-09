@@ -62,7 +62,7 @@ namespace ExNihilo.Menus
 /********************************************************************
 ------->Loading Menu Callbacks
 ********************************************************************/
-        private void UpdateLoadTexts()
+        private void ToggleLoadButtons()
         {
             if (_deleteMode)
             {
@@ -83,20 +83,20 @@ namespace ExNihilo.Menus
             if (_deleteMode)
             {
                 SaveHandler.DeleteSave(package.caller);
-                (_loadUI.GetElement(package.caller + "Text") as UIText)?.SetText("No File", ColorScale.Black);
-                UpdateLoadTexts();
+                UpdateLoadButtonText();
+                ToggleLoadButtons();
             }
             else
             {
                 if (SaveHandler.HasSave(package.caller))
                 {
                     Container.Unpack(SaveHandler.GetSave(package.caller));
+                    //Container.RequestSectorChange(GameContainer.SectorID.Loading);
                 }
                 else
                 {
-                    var newGame = new PackedGame(package.caller);
-                    SaveHandler.Save(package.caller, newGame);
-                    (_loadUI.GetElement(package.caller + "Text") as UIText)?.SetText(newGame.TitleCard, ColorScale.Black);
+                    _type = CurrentMenu.NewGame;
+                    slot = package.caller;
                 }
             }
         }
@@ -104,24 +104,85 @@ namespace ExNihilo.Menus
         private void ToggleDeleteMode(UICallbackPackage package)
         {
             _deleteMode = package.value[0] > 0;
-            UpdateLoadTexts();
+            ToggleLoadButtons();
         }
 
 /********************************************************************
-------->Menu Functions
+------->New Game Menu Callbacks
 ********************************************************************/
+        private void CancelNewGame(UICallbackPackage package)
+        {
+            _type = CurrentMenu.Play;
+        }
+
+        private void PrepForTextEntry(UICallbackPackage package)
+        {
+            _textEntryMode = package.value[0] > 0;
+            if (_textEntryMode && TypingKeyboard.Lock(this))
+            {
+                
+            }
+            else
+            {
+                _textEntryMode = false;
+                TypingKeyboard.Unlock(this);
+            }
+        }
+
+        private void UpdateLoadButtonText()
+        {
+            var file1Text = SaveHandler.HasSave(SaveHandler.FILE_1) ? SaveHandler.GetSave(SaveHandler.FILE_1).TitleCard : "No File";
+            var file2Text = SaveHandler.HasSave(SaveHandler.FILE_2) ? SaveHandler.GetSave(SaveHandler.FILE_2).TitleCard : "No File";
+            var file3Text = SaveHandler.HasSave(SaveHandler.FILE_3) ? SaveHandler.GetSave(SaveHandler.FILE_3).TitleCard : "No File";
+            (_loadUI.GetElement(SaveHandler.FILE_1 + "Text") as UIText)?.SetText(file1Text);
+            (_loadUI.GetElement(SaveHandler.FILE_2 + "Text") as UIText)?.SetText(file2Text);
+            (_loadUI.GetElement(SaveHandler.FILE_3 + "Text") as UIText)?.SetText(file3Text);
+        }
+
+        private void CreateNewGame(UICallbackPackage package)
+        {
+            if (!(_newGameUI.GetElement("NewGameInputBoxText") is UIText text) || text.Text.Length == 0) return;
+            var newGame = new PackedGame(text.Text);
+            SaveHandler.Save(slot, newGame);
+            UpdateLoadButtonText();
+            _type = CurrentMenu.Play;
+            slot = "";
+            (_newGameUI.GetElement("NewGameInputBoxText") as UIText)?.SetText(""); //temp until creating a new game closes the menu
+        }
+
+        /********************************************************************
+        ------->Menu Functions
+        ********************************************************************/
         private enum CurrentMenu
         {
-            Title, Options, Play
+            Title, Options, Play, NewGame
         }
 
         private CurrentMenu _type;
-        private bool _deleteMode;
-        private readonly UIPanel _titleUI, _optionsUI, _loadUI;
+        private string slot;
+        private bool _deleteMode, _textEntryMode;
+        private readonly UIPanel _titleUI, _optionsUI, _loadUI, _newGameUI;
+        private const int MAX_NEWGAME_TEXT_SIZE = 15;
 
         private void DoThing(string caller, float value)
         {
             Container.Console.ForceMessage("<Console>", caller + " pressed with value " + value);
+        }
+
+        private UIPanel ActivePanel()
+        {
+            switch (_type)
+            {
+                case CurrentMenu.Title:
+                    return _titleUI;
+                case CurrentMenu.Options:
+                    return _optionsUI;
+                case CurrentMenu.Play:
+                    return _loadUI;
+                case CurrentMenu.NewGame:
+                    return _newGameUI;
+                default: return null;
+            }
         }
 
         public TitleMenu(GameContainer container) : base(container)
@@ -129,6 +190,7 @@ namespace ExNihilo.Menus
             _titleUI = new UIPanel("this.MenuKing", new Vector2(0.5f, 0.5f), Vector2.One, TextureUtilities.PositionType.Center);
             _optionsUI = new UIPanel("this.MenuKing", new Vector2(0.5f, 0.5f), Vector2.One, TextureUtilities.PositionType.Center);
             _loadUI = new UIPanel("this.MenuKing", new Vector2(0.5f, 0.5f), Vector2.One, TextureUtilities.PositionType.Center);
+            _newGameUI = new UIPanel("this.MenuKing", new Vector2(0.5f, 0.5f), Vector2.One, TextureUtilities.PositionType.Center);
 
             // Title Menu setup
             var titlePanel = new UIPanel("TitleButtonPanel", new Vector2(0.5f, 1), new Vector2(0, 0.5f), TextureUtilities.PositionType.CenterBottom);
@@ -177,17 +239,13 @@ namespace ExNihilo.Menus
             _optionsUI.AddElements(backButton, backButtonText, effectVolumeBar, musicVolumeBar, effectVolumeBarFill, musicVolumeBarFill, effectVolumeBarText, musicVolumeBarText);
 
             // Load Menu setup
-            var file1Text = SaveHandler.HasSave(SaveHandler.FILE_1) ? SaveHandler.GetSave(SaveHandler.FILE_1).TitleCard : "No File";
-            var file2Text = SaveHandler.HasSave(SaveHandler.FILE_2) ? SaveHandler.GetSave(SaveHandler.FILE_2).TitleCard : "No File";
-            var file3Text = SaveHandler.HasSave(SaveHandler.FILE_3) ? SaveHandler.GetSave(SaveHandler.FILE_3).TitleCard : "No File";
-
             var loadPanel = new UIPanel("LoadFilePanel", new Vector2(0.5f, 1), new Vector2(0, 0.5f), TextureUtilities.PositionType.CenterBottom);
             var loadFile1 = new UIClickable(SaveHandler.FILE_1, "UI/BigButton", new Vector2(0, 0), ColorScale.White, loadPanel, TextureUtilities.PositionType.CenterTop, "UI/BigButtonDown", "UI/BigButtonOver");
             var loadFile2 = new UIClickable(SaveHandler.FILE_2, "UI/BigButton", new Coordinate(0, 10), ColorScale.White, loadFile1, TextureUtilities.PositionType.CenterTop, TextureUtilities.PositionType.CenterBottom, "UI/BigButtonDown", "UI/BigButtonOver");
             var loadFile3 = new UIClickable(SaveHandler.FILE_3, "UI/BigButton", new Coordinate(0, 10), ColorScale.White, loadFile2, TextureUtilities.PositionType.CenterTop, TextureUtilities.PositionType.CenterBottom, "UI/BigButtonDown", "UI/BigButtonOver");
-            var loadFile1Text = new UIText(SaveHandler.FILE_1 + "Text", new Coordinate(), file1Text, ColorScale.Black, loadFile1, TextureUtilities.PositionType.Center, TextureUtilities.PositionType.Center);
-            var loadFile2Text = new UIText(SaveHandler.FILE_2 + "Text", new Coordinate(), file2Text, ColorScale.Black, loadFile2, TextureUtilities.PositionType.Center, TextureUtilities.PositionType.Center);
-            var loadFile3Text = new UIText(SaveHandler.FILE_3 + "Text", new Coordinate(), file3Text, ColorScale.Black, loadFile3, TextureUtilities.PositionType.Center, TextureUtilities.PositionType.Center);
+            var loadFile1Text = new UIText(SaveHandler.FILE_1 + "Text", new Coordinate(), "", ColorScale.Black, loadFile1, TextureUtilities.PositionType.Center, TextureUtilities.PositionType.Center);
+            var loadFile2Text = new UIText(SaveHandler.FILE_2 + "Text", new Coordinate(), "", ColorScale.Black, loadFile2, TextureUtilities.PositionType.Center, TextureUtilities.PositionType.Center);
+            var loadFile3Text = new UIText(SaveHandler.FILE_3 + "Text", new Coordinate(), "", ColorScale.Black, loadFile3, TextureUtilities.PositionType.Center, TextureUtilities.PositionType.Center);
             var deleteFileButton = new UITogglable("DeleteFileButton", "UI/SmallButton", new Coordinate(-10, -10), ColorScale.White, _loadUI, TextureUtilities.PositionType.BottomRight, TextureUtilities.PositionType.BottomRight, "UI/SmallButtonDown", "UI/SmallButtonOver");
             var deleteFileButtonText = new UIText("DeleteFileButtonText", new Coordinate(), "Delete File", ColorScale.Black, deleteFileButton, TextureUtilities.PositionType.Center, TextureUtilities.PositionType.Center);
             var backButton2 = new UIClickable("BackButton", "UI/SmallButton", new Coordinate(10, -10), ColorScale.White, _loadUI, TextureUtilities.PositionType.BottomLeft, TextureUtilities.PositionType.BottomLeft, "UI/SmallButtonDown", "UI/SmallButtonOver");
@@ -201,12 +259,49 @@ namespace ExNihilo.Menus
 
             loadPanel.AddElements(loadFile1, loadFile2, loadFile3, loadFile1Text, loadFile2Text, loadFile3Text);
             _loadUI.AddElements(backButton2, backButtonText2, titleDisplay, deleteFileButton, deleteFileButtonText, loadPanel);
+
+            //New Game Menu setup
+            var cancelButton = new UIClickable("BackButton", "UI/SmallButton", new Coordinate(10, -10), ColorScale.White, _newGameUI, TextureUtilities.PositionType.BottomLeft, TextureUtilities.PositionType.BottomLeft, "UI/SmallButtonDown", "UI/SmallButtonOver");
+            var cancelButtonText = new UIText("BackButtonText", new Coordinate(), "Cancel", ColorScale.Black, cancelButton, TextureUtilities.PositionType.Center, TextureUtilities.PositionType.Center);
+            var confirmButton = new UIClickable("ConfirmButton", "UI/SmallButton", new Coordinate(-10, -10), ColorScale.White, _newGameUI, TextureUtilities.PositionType.BottomRight, TextureUtilities.PositionType.BottomRight, "UI/SmallButtonDown", "UI/SmallButtonOver");
+            var confirmButtonText = new UIText("ConfirmButtonText", new Coordinate(), "Confirm", ColorScale.Black, confirmButton, TextureUtilities.PositionType.Center, TextureUtilities.PositionType.Center);
+            var inputBox = new UITogglable("NewGameInputBox", "UI/SmallEntryBox", new Vector2(0.1f, 0.1f), ColorScale.White, _newGameUI, TextureUtilities.PositionType.TopLeft, "UI/SmallEntryBox", "", true);
+            var inputBoxText = new UIText("NewGameInputBoxText", new Coordinate(20, 20), "", ColorScale.Black, inputBox, TextureUtilities.PositionType.TopLeft, TextureUtilities.PositionType.TopLeft);
+
+            cancelButton.RegisterCallback(CancelNewGame);
+            inputBox.RegisterCallback(PrepForTextEntry);
+            confirmButton.RegisterCallback(CreateNewGame);
+            inputBoxText.SetRules(UILibrary.DoubleScaleRuleSet);
+
+            _newGameUI.AddElements(cancelButton, cancelButtonText, inputBox, inputBoxText, confirmButton, confirmButtonText);
         }
 
         public override void Enter()
         {
             _type = CurrentMenu.Title;
-            _deleteMode = false;
+            (_newGameUI.GetElement("NewGameInputBoxText") as UIText)?.SetText("");
+            UpdateLoadButtonText();
+        }
+
+        public override bool BackOut()
+        {
+            if (_textEntryMode)
+            {
+                (_newGameUI.GetElement("NewGameInputBox") as UITogglable)?.ForcePush();
+                return false;
+            }
+            switch (_type)
+            {
+                case CurrentMenu.NewGame:
+                    _type = CurrentMenu.Play;
+                    return false;
+                case CurrentMenu.Play:
+                case CurrentMenu.Options:
+                    _type = CurrentMenu.Title;
+                    return false;
+                default:
+                    return true;
+            }
         }
 
         public override void LoadContent(GraphicsDevice graphics, ContentManager content)
@@ -214,6 +309,7 @@ namespace ExNihilo.Menus
             _titleUI.LoadContent(graphics, content);
             _optionsUI.LoadContent(graphics, content);
             _loadUI.LoadContent(graphics, content);
+            _newGameUI.LoadContent(graphics, content);
         }
 
         public override void OnResize(GraphicsDevice graphics, Coordinate gameWindow)
@@ -221,70 +317,47 @@ namespace ExNihilo.Menus
             _titleUI.OnResize(graphics, gameWindow);
             _optionsUI.OnResize(graphics, gameWindow);
             _loadUI.OnResize(graphics, gameWindow);
+            _newGameUI.OnResize(graphics, gameWindow);
         }
 
         public override void Draw(SpriteBatch spriteBatch)
         {
-            switch (_type)
-            {
-                case CurrentMenu.Title:
-                    _titleUI.Draw(spriteBatch);
-                    break;
-                case CurrentMenu.Options:
-                    _optionsUI.Draw(spriteBatch);
-                    break;
-                case CurrentMenu.Play:
-                    _loadUI.Draw(spriteBatch);
-                    break;
-            }
+            ActivePanel().Draw(spriteBatch);
         }
 
         public override void OnMoveMouse(Point point)
         {
-            switch (_type)
-            {
-                case CurrentMenu.Title:
-                    _titleUI.OnMoveMouse(point);
-                    break;
-                case CurrentMenu.Options:
-                    _optionsUI.OnMoveMouse(point);
-                    break;
-                case CurrentMenu.Play:
-                    _loadUI.OnMoveMouse(point);
-                    break;
-            }
+            ActivePanel().OnMoveMouse(point);
         }
 
         public override bool OnLeftClick(Point point)
         {
-            switch (_type)
-            {
-                case CurrentMenu.Title:
-                    return _titleUI.OnLeftClick(point);
-                case CurrentMenu.Options:
-                    return _optionsUI.OnLeftClick(point);
-                case CurrentMenu.Play:
-                    return _loadUI.OnLeftClick(point);
-            }
-
-            return false;
+            return ActivePanel().OnLeftClick(point);
         }
 
         public override void OnLeftRelease(Point point)
         {
-            switch (_type)
+            ActivePanel().OnLeftRelease(point);
+        }
+
+        public override void Backspace(int len)
+        {
+            if (!_textEntryMode) return;
+
+            if (_newGameUI.GetElement("NewGameInputBoxText") is UIText text)
             {
-                case CurrentMenu.Title:
-                    _titleUI.OnLeftRelease(point);
-                    break;
-                case CurrentMenu.Options:
-                    _optionsUI.OnLeftRelease(point);
-                    break;
-                case CurrentMenu.Play:
-                    _loadUI.OnLeftRelease(point);
-                    break;
+                if (text.Text.Length >= len) text.SetText(text.Text.Substring(0, text.Text.Length - len));
             }
         }
 
+        public override void ReceiveInput(string input)
+        {
+            if (!_textEntryMode) return;
+
+            if (_newGameUI.GetElement("NewGameInputBoxText") is UIText text)
+            {
+                text.SetText(Utilities.Clamp(text.Text + input, MAX_NEWGAME_TEXT_SIZE));
+            }
+        }
     }
 }

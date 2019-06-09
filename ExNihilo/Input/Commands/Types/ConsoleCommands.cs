@@ -2,18 +2,6 @@
 
 namespace ExNihilo.Input.Commands.Types
 {
-    public class BackOutConsole : ConsoleCommand
-    {
-        public BackOutConsole(ConsoleHandler game) : base(game)
-        {
-        }
-
-        public override void Activate()
-        {
-            Receiver.CloseConsole();
-        }
-    }
-
     public class PushConsole : ConsoleCommand
     {
         public PushConsole(ConsoleHandler game) : base(game)
@@ -50,27 +38,4 @@ namespace ExNihilo.Input.Commands.Types
         }
     }
 
-    public class BackspaceMessage : ConsoleCommand
-    {
-        public BackspaceMessage(ConsoleHandler game) : base(game)
-        {
-        }
-
-        public override void Activate()
-        {
-            Receiver.Backspace();
-        }
-    }
-
-    public class UnBackspaceMessage : ConsoleCommand
-    {
-        public UnBackspaceMessage(ConsoleHandler game) : base(game)
-        {
-        }
-
-        public override void Activate()
-        {
-            Receiver.UnBackspace();
-        }
-    }
 }

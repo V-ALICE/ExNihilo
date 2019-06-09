@@ -167,10 +167,6 @@ namespace ExNihilo.Systems
             {
                 //ExportMap(g);
             }
-            else if (!_cheatyMode)
-            {
-                g.ForceMessage("","<You do not have permission to use commands>");
-            }
             else
             {
                 switch (command)
@@ -210,10 +206,6 @@ namespace ExNihilo.Systems
             if (command.StartsWith("help "))
             {
                 PostHelp(g, command.Substring(5));
-            }
-            else if (!_cheatyMode)
-            {
-                g.ForceMessage("","<You do not have permission to use commands>");
             }
             else if (command.StartsWith("giveitem "))
             {
@@ -272,7 +264,7 @@ namespace ExNihilo.Systems
             }
             else
             {
-                PostHelp(g, command.Substring(command.IndexOf(' ')));
+                PostHelp(g, command.Substring(0, command.IndexOf(' ')));
             }
         }
 

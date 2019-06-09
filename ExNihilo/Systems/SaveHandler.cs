@@ -9,18 +9,48 @@ namespace ExNihilo.Systems
     [Serializable]
     public class PackedGame
     {
-        public string ID { get; set; }
-        public string TitleCard;
+        public string ID { get; }
+        public string TitleCard { get; private set; }
+        private DateTime _lastSaveDate;
 
+        private void FormatTitleCard()
+        {
+            var diff = _lastSaveDate.ToString(CultureInfo.InvariantCulture).Length - ID.Length;
+            var paddedID = ID;
+            var paddedDate = _lastSaveDate.ToString(CultureInfo.InvariantCulture);
+
+            if (diff < 0 && diff % 2 == 0)
+            {
+                diff = Math.Abs(diff);
+                paddedDate = paddedDate.PadLeft(paddedDate.Length + diff / 2).PadRight(paddedDate.Length + diff / 2);
+            }
+            else if (diff < 0)
+            {
+                diff = Math.Abs(diff);
+                paddedDate = "@h"+paddedDate.PadLeft(paddedDate.Length + diff / 2).PadRight(paddedDate.Length + diff / 2)+"@h";
+            }
+            else if (diff > 0 && diff % 2 == 0)
+            {
+                paddedID = paddedID.PadLeft(paddedID.Length + diff / 2).PadRight(paddedID.Length + diff / 2);
+            }
+            else if (diff > 0)
+            {
+                paddedID = "@h" + paddedID.PadLeft(paddedID.Length + diff / 2).PadRight(paddedID.Length + diff / 2) + "@h";
+            }
+
+            TitleCard = paddedID + "\n" + paddedDate;
+        }
         public PackedGame(string id)
         {
             //Default game file stuff
             ID = id;
-            TitleCard = "Save Game: " + id + "\n" + DateTime.Now.ToString(CultureInfo.InvariantCulture);
+            _lastSaveDate = DateTime.Now;
+            FormatTitleCard();
         }
 
         public void Pack(GameContainer game)
         {
+            _lastSaveDate = DateTime.Now;
         }
     }
 

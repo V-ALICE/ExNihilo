@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Windows.Forms;
+using ExNihilo.Systems;
 using Microsoft.Xna.Framework.Input;
 using Keys = Microsoft.Xna.Framework.Input.Keys;
 
@@ -48,34 +49,86 @@ namespace ExNihilo.Util
             {Keys.OemQuestion, '/'}, {Keys.Space, ' '}
         };
 
-        private static KeyboardState _oldState;
-        public static string GetText()
+        private static ITypable _currentSub;
+        public static bool Active => _currentSub != null;
+        public static bool Lock(ITypable sub)
         {
-            var list = Keyboard.GetState();
-            var text = "";
-            foreach (var key in list.GetPressedKeys())
+            if (_currentSub is null) _currentSub = sub;
+            return Active;
+        }
+        public static bool Unlock(ITypable sub)
+        {
+            if (_currentSub.Equals(sub)) _currentSub = null;
+            return !Active;
+        }
+
+        private const float _backspaceDelay = 0.03f, _backspaceDelayExtended = 0.4f;
+        private static readonly int _backspaceTimerID = UniversalTime.NewTimer(true, _backspaceDelay);
+        private static bool _firstBackspace, _backspace;
+        public static void Backspace()
+        {
+            if (!Active) return;
+            UniversalTime.TurnOnTimer(_backspaceTimerID);
+            _firstBackspace = _backspace = true;
+            _currentSub.Backspace(1);
+        }
+
+        public static void Unbackspace()
+        {
+            if (!Active) return;
+            UniversalTime.ResetTimer(_backspaceTimerID);
+            UniversalTime.TurnOffTimer(_backspaceTimerID);
+            _firstBackspace = _backspace = false;
+        }
+
+        private static KeyboardState _oldState;
+        public static void GetText()
+        {
+            if (Active)
             {
-                if (_oldState.IsKeyDown(key)) continue;
-                try
+                var list = Keyboard.GetState();
+                var text = "";
+                foreach (var key in list.GetPressedKeys())
                 {
-                    if (list.IsKeyDown(Keys.LeftShift) || list.IsKeyDown(Keys.RightShift))
+                    if (_oldState.IsKeyDown(key)) continue;
+                    try
                     {
-                        text += _shiftedKeyboard[key];
+                        if (list.IsKeyDown(Keys.LeftShift) || list.IsKeyDown(Keys.RightShift))
+                        {
+                            text += _shiftedKeyboard[key];
+                        }
+                        else if (Control.IsKeyLocked(System.Windows.Forms.Keys.CapsLock))
+                        {
+                            text += _capsLockKeyboard[key];
+                        }
+                        else
+                        {
+                            text += _defaultKeyboard[key];
+                        }
                     }
-                    else if (Control.IsKeyLocked(System.Windows.Forms.Keys.CapsLock))
+                    catch (KeyNotFoundException)
                     {
-                        text += _capsLockKeyboard[key];
-                    }
-                    else
-                    {
-                        text += _defaultKeyboard[key];
                     }
                 }
-                catch (KeyNotFoundException) {}
-            }
 
-            _oldState = list;
-            return text;
+                _oldState = list;
+                if (text.Length > 0) _currentSub.ReceiveInput(text);
+
+                if (_backspace)
+                {
+                    if (_firstBackspace && UniversalTime.GetCurrentTime(_backspaceTimerID) > _backspaceDelayExtended)
+                    {
+                        //pressing backspace for significant time (0.35 sec) to engage auto
+                        _firstBackspace = false;
+                        UniversalTime.ResetTimer(_backspaceTimerID);
+                    }
+                    else if (!_firstBackspace && UniversalTime.GetCurrentTime(_backspaceTimerID) > _backspaceDelay)
+                    {
+                        //auto is engaged and enough time has passed to go again
+                        _currentSub.Backspace(UniversalTime.GetNumberOfFires(_backspaceTimerID));
+                    }
+                }
+            }
         }
     }
 }

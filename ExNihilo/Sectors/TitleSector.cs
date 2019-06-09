@@ -24,6 +24,11 @@ namespace ExNihilo.Sectors
             _title.OnResize(graphicsDevice, gameWindow);
         }
 
+        public override void Enter()
+        {
+            _title.Enter();
+        }
+
         public override void Initialize()
         {
             Handler = new CommandHandler();
@@ -38,7 +43,7 @@ namespace ExNihilo.Sectors
 
         public override void Update()
         {
-            Handler.UpdateInput();
+            if (!TypingKeyboard.Active) Handler.UpdateInput();
         }
 
         protected override void DrawDebugInfo()
@@ -56,6 +61,15 @@ namespace ExNihilo.Sectors
 ********************************************************************/
         protected override void Exit()
         {
+        }
+
+        public override void BackOut()
+        {
+            if (_title.BackOut()) RequestSectorChange(Container.PreviousSectorID);
+        }
+        public override void ReceiveCommand(Menu.MenuCommand command)
+        {
+            _title.ReceiveCommand(command);
         }
 
         public override void OnMoveMouse(Point point)

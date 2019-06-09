@@ -146,7 +146,7 @@ namespace ExNihilo.Systems
 
     }
 
-    public class ConsoleHandler : IUI
+    public class ConsoleHandler : IUI, ITypable
     {
         private readonly ConsoleBox _console;
         private readonly CommandHandler _handler;
@@ -156,10 +156,6 @@ namespace ExNihilo.Systems
         private int _maxCharacterCount, _maxLineCount;
         private float _currentScale;
         private ScaleRuleSet _rules;
-
-        private readonly int _backspaceTimerID;
-        private const float _backspaceDelay = 0.05f, _backspaceDelayExtended = 0.35f;
-        private bool _backspace, _firstBackspace;
         private string _lastMessage;
 
         public bool Active;
@@ -168,7 +164,6 @@ namespace ExNihilo.Systems
         {
             _handler = new CommandHandler();
             _handler.Initialize(this);
-            _backspaceTimerID = UniversalTime.NewTimer(true);
             _console = new ConsoleBox(_maxLineCount, _maxCharacterCount);
             _lastMessage = "";
         }
@@ -205,24 +200,7 @@ namespace ExNihilo.Systems
             _console.Update();
             if (!Active) return;
 
-            _activeText += TypingKeyboard.GetText();
             _handler.UpdateInput();
-
-            if (_backspace)
-            {
-                if (_firstBackspace && UniversalTime.GetCurrentTime(_backspaceTimerID) > _backspaceDelayExtended)
-                {
-                    //pressing backspace for significant time (0.35 sec) to engage auto
-                    _firstBackspace = false;
-                    UniversalTime.ResetTimer(_backspaceTimerID);
-                }
-                else if (!_firstBackspace && UniversalTime.GetCurrentTime(_backspaceTimerID) > _backspaceDelay)
-                {
-                    //auto is engaged and enough time has passed to go again
-                    UniversalTime.ResetTimer(_backspaceTimerID);
-                    if (_activeText.Length > 0) _activeText = _activeText.Substring(0, _activeText.Length - 1);
-                }
-            }
         }
 
         public void Draw(SpriteBatch spriteBatch)
@@ -254,15 +232,17 @@ namespace ExNihilo.Systems
 
         public void OpenConsole(string initMessage)
         {
-            if (Active) return;
+            if (Active || TypingKeyboard.Active) return;
             Active = true;
             _activeText = initMessage;
+            TypingKeyboard.Lock(this);
         }
 
         public void CloseConsole()
         {
             _activeText = "";
             Active = false;
+            TypingKeyboard.Unlock(this);
         }
 
         public void PushConsole()
@@ -292,18 +272,14 @@ namespace ExNihilo.Systems
             _activeText = "";
         }
 
-        public void Backspace()
+        public void Backspace(int len)
         {
-            UniversalTime.TurnOnTimer(_backspaceTimerID);
-            _firstBackspace = _backspace = true;
-            if (_activeText.Length > 0) _activeText = _activeText.Substring(0, _activeText.Length - 1);
+            if (_activeText.Length >= len) _activeText = _activeText.Substring(0, _activeText.Length - len);
         }
 
-        public void UnBackspace()
+        public void ReceiveInput(string input)
         {
-            UniversalTime.ResetTimer(_backspaceTimerID);
-            UniversalTime.TurnOffTimer(_backspaceTimerID);
-            _firstBackspace = _backspace = false;
+            _activeText += input;
         }
     }
 }

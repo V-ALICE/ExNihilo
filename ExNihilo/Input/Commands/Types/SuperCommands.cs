@@ -1,4 +1,6 @@
-﻿namespace ExNihilo.Input.Commands.Types
+﻿using ExNihilo.Util;
+
+namespace ExNihilo.Input.Commands.Types
 {
 
     public class ToggleDebugUI : SuperCommand
@@ -10,18 +12,6 @@
         public override void Activate()
         {
             Receiver.ToggleShowDebugInfo();
-        }
-    }
-    
-    public class ToggleTitleMenu : SuperCommand
-    {
-        public ToggleTitleMenu(GameContainer game) : base(game)
-        {
-        }
-
-        public override void Activate()
-        {
-            //Receiver.ResetTitle();
         }
     }
 
@@ -61,4 +51,40 @@
         }
     }
 
+    public class BackOutCommand : SuperCommand
+    {
+        public BackOutCommand(GameContainer game) : base(game)
+        {
+
+        }
+
+        public override void Activate()
+        {
+            Receiver.BackOut();
+        }
+    }
+
+    public class BackspaceMessage : SuperCommand
+    {
+        public BackspaceMessage(GameContainer game) : base(game)
+        {
+        }
+
+        public override void Activate()
+        {
+            TypingKeyboard.Backspace();
+        }
+    }
+
+    public class UnbackspaceMessage : SuperCommand
+    {
+        public UnbackspaceMessage(GameContainer game) : base(game)
+        {
+        }
+
+        public override void Activate()
+        {
+            TypingKeyboard.Unbackspace();
+        }
+    }
 }

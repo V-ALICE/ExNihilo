@@ -1,4 +1,5 @@
-﻿using ExNihilo.UI.Bases;
+﻿using ExNihilo.Systems;
+using ExNihilo.UI.Bases;
 using ExNihilo.Util;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content;
@@ -6,7 +7,7 @@ using Microsoft.Xna.Framework.Graphics;
 
 namespace ExNihilo.Menus
 {
-    public abstract class Menu : IUI, IClickable
+    public abstract class Menu : IUI, IClickable, ITypable
     {
         public enum MenuCommand
         {
@@ -22,7 +23,7 @@ namespace ExNihilo.Menus
 
         public abstract void Enter();
 
-        public virtual bool TryBackOut()
+        public virtual bool BackOut()
         {
             return true;
         }
@@ -84,5 +85,9 @@ namespace ExNihilo.Menus
         public abstract bool OnLeftClick(Point point);
 
         public abstract void OnLeftRelease(Point point);
+        public abstract void ReceiveInput(string input);
+        public virtual void Backspace(int len)
+        {
+        }
     }
 }

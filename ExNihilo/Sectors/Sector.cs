@@ -1,5 +1,6 @@
 ﻿using System.Threading;
 using ExNihilo.Input.Commands;
+using ExNihilo.Menus;
 using ExNihilo.Systems;
 using ExNihilo.UI.Bases;
 using ExNihilo.Util;
@@ -21,6 +22,7 @@ namespace ExNihilo.Sectors
         }
 
         public abstract void OnResize(GraphicsDevice graphicsDevice, Coordinate gameWindow);
+        public abstract void Enter();
         public abstract void Initialize();
         public abstract void LoadContent(GraphicsDevice graphicsDevice, ContentManager content);
         public abstract void Update();
@@ -38,6 +40,19 @@ namespace ExNihilo.Sectors
             Exit();
         }
         protected abstract void Exit();
+
+        public virtual void BackOut()
+        {
+            RequestSectorChange(GameContainer.SectorID.MainMenu);
+        }
+        public virtual void ReceiveCommand(Menu.MenuCommand command)
+        {
+        }
+
+        public void RequestSectorChange(GameContainer.SectorID sector)
+        {
+            Container.RequestSectorChange(sector);
+        }
 
         public abstract void OnMoveMouse(Point point);
         public abstract bool OnLeftClick(Point point);

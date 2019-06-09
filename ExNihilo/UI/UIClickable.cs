@@ -88,6 +88,7 @@ namespace ExNihilo.UI
 
         public virtual bool IsOver(Point mousePos)
         {
+            if (Disabled) return false;
             if (TexturePath == "null") return false;
             int buttonX = (int) (Math.Round(mousePos.X - OriginPosition.X)/CurrentScale);
             int buttonY = (int) (Math.Round(mousePos.Y - OriginPosition.Y)/CurrentScale);
@@ -119,6 +120,7 @@ namespace ExNihilo.UI
             if (Disabled) return;
             if (Down) Function?.Invoke(new UICallbackPackage(GivenName, point, OriginPosition));
             Down = false;
+            Over = IsOver(point);
         }
 
         public virtual void Disable(ColorScale c)
