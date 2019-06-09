@@ -116,12 +116,14 @@ namespace ExNihilo.Menus
             var musicVolumeBarText = new UIText("MusicVolumeBarText", new Coordinate(2, -4), "Music Volume", ColorScale.White,
                 musicVolumeBarFill, TextureUtilities.PositionType.BottomLeft, TextureUtilities.PositionType.TopLeft);
 
-            var radioSet = new UIPanel("RadioSet", new Vector2(0.45f, 0.55f), new Coordinate(100, 100), _optionsUI, TextureUtilities.PositionType.TopRight);
+            var radioSet = new UIPanel("RadioSet", new Vector2(0.45f, 0.55f), new Coordinate(50, 50), _optionsUI, TextureUtilities.PositionType.TopRight);
             var radioButton1 = new UITogglable("RadioButton1", "UI/GreenBulb", new Coordinate(), ColorScale.White, radioSet, TextureUtilities.PositionType.Center, TextureUtilities.PositionType.TopLeft, "UI/GreenBulbDown", "UI/GreenBulbOver");
             var radioButton2 = new UITogglable("RadioButton2", "UI/BlueBulb", new Coordinate(), ColorScale.White, radioSet, TextureUtilities.PositionType.Center, TextureUtilities.PositionType.TopRight, "UI/BlueBulbDown", "UI/BlueBulbOver");
             var radioButton3 = new UITogglable("RadioButton3", "UI/RedBulb", new Coordinate(), ColorScale.White, radioSet, TextureUtilities.PositionType.Center, TextureUtilities.PositionType.BottomLeft, "UI/RedBulbDown", "UI/RedBulbOver");
             var radioButton4 = new UITogglable("RadioButton4", "UI/BlackBulb", new Coordinate(), ColorScale.White, radioSet, TextureUtilities.PositionType.Center, TextureUtilities.PositionType.BottomRight, "UI/BlackBulbDown", "UI/BlackBulbOver");
             var radioButton5 = new UITogglable("RadioButton5", "UI/RadioUnselected", new Coordinate(), ColorScale.White, radioSet, TextureUtilities.PositionType.Center, TextureUtilities.PositionType.Center, "UI/RadioSelected");
+
+            var moveTest = new UIMovable("MoveTest", "UI/SmallEntryBox", new Vector2(0.75f, 0.75f), ColorScale.White, _optionsUI, TextureUtilities.PositionType.Center, "", "", true);
 
             backButton.RegisterCallback(SwapToTitle);
             effectVolumeBarFill.RegisterCallback(ApplyEffectVolume);
@@ -130,7 +132,7 @@ namespace ExNihilo.Menus
             musicVolumeBarFill.ForceValue(new Vector2(0.5f, 1));
 
             radioSet.AddElements(radioButton1, radioButton2, radioButton3, radioButton4, radioButton5);
-            _optionsUI.AddElements(backButton, backButtonText, effectVolumeBar, musicVolumeBar, effectVolumeBarFill, musicVolumeBarFill, effectVolumeBarText, musicVolumeBarText, radioSet);
+            _optionsUI.AddElements(backButton, backButtonText, effectVolumeBar, musicVolumeBar, effectVolumeBarFill, musicVolumeBarFill, effectVolumeBarText, musicVolumeBarText, radioSet, moveTest);
 
             // Option Menu setup
 

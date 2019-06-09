@@ -127,7 +127,7 @@ namespace ExNihilo
             ColorScale.AddToGlobal("Random", new ColorScale(1.5f, 32, 222));
             ColorScale.AddToGlobal("Rainbow", new ColorScale(1.0f, false, Color.Red, Color.Yellow, Color.Lime, Color.Cyan, Color.Blue, Color.Magenta));
 
-            IsMouseVisible = true;
+            //IsMouseVisible = true;
             Window.AllowUserResizing = true;
             _currentForm = FormWindowState.Normal;
             _form = (Form)Control.FromHandle(Window.Handle);

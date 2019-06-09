@@ -16,10 +16,10 @@ namespace ExNihilo.UI
         protected Coordinate PixelOffsetFromBase, LastResizeWindow;
         protected ScaleRuleSet ScaleRules;
         protected UIElement BaseElement;
-        protected float CurrentScale;
         protected readonly string TexturePath;
         protected bool AbsoluteOffset, Loaded;
 
+        public float CurrentScale { get; protected set; }
         public string GivenName { get; protected set; }
         public Vector2 OriginPosition { get; protected set; }
         public Coordinate CurrentPixelSize { get; protected set; }
