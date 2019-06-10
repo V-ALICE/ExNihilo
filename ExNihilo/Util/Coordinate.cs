@@ -19,6 +19,11 @@ namespace ExNihilo.Util
             X = x;
             Y = y;
         }
+        public Coordinate(float x, float y)
+        {
+            X = MathD.RoundDown(x);
+            Y = MathD.RoundDown(y);
+        }
         public Coordinate(Vector2 v)
         {
             X = MathD.RoundDown(v.X);

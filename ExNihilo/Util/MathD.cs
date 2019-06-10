@@ -24,5 +24,10 @@ namespace ExNihilo.Util
             if (x > 0) return (int)x;
             return (int)(x - 1);
         }
+
+        public static int RandomlySigned(Random r, int min, int max)
+        {
+            return (r.Next(0, 2) == 0 ? -1 : 1)*r.Next(min, max);
+        }
     }
 }

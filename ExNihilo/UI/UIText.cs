@@ -33,7 +33,6 @@ namespace ExNihilo.UI
 
         public void SetText(string smartText, params ColorScale[] colors)
         {
-            //TODO: maybe make this build a texture so it can just draw it?
             Text = smartText;
             if (colors.Length > 0) Colors = colors;
             UnscaledSize = TextDrawer.GetSmartTextSize(Text);

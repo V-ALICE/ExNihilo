@@ -20,5 +20,6 @@ namespace ExNihilo.Util
         {
             return input.Length > max ? input.Substring(0, max) : input;
         }
+
     }
 }

@@ -91,6 +91,7 @@ namespace ExNihilo.Menus
                 if (SaveHandler.HasSave(package.caller))
                 {
                     Container.Unpack(SaveHandler.GetSave(package.caller));
+                    DoThing(package.caller, 1);
                     //Container.RequestSectorChange(GameContainer.SectorID.Loading);
                 }
                 else
@@ -200,7 +201,7 @@ namespace ExNihilo.Menus
             var playButtonText = new UIText("TitleButtonText", new Coordinate(), "Play Game", ColorScale.Black, playButton, TextureUtilities.PositionType.Center, TextureUtilities.PositionType.Center);
             var optionsButtonText = new UIText("OptionsButtonText", new Coordinate(), "Options", ColorScale.Black, optionsButton, TextureUtilities.PositionType.Center, TextureUtilities.PositionType.Center);
             var exitButtonText = new UIText("ExitButtonText", new Coordinate(), "Exit", ColorScale.Black, exitButton, TextureUtilities.PositionType.Center, TextureUtilities.PositionType.Center);
-            var titleDisplay = new UIElement("Title", "UI/Title", new Vector2(0.5f, 0.25f), ColorScale.GetFromGlobal("Random"), _titleUI, TextureUtilities.PositionType.Center);
+            var titleDisplay = new UIElement("Title", "UI/Title", new Vector2(0.5f, 0.25f), ColorScale.GetFromGlobal("Rainbow"), _titleUI, TextureUtilities.PositionType.Center);
 
             playButton.RegisterCallback(SwapToLoad);
             optionsButton.RegisterCallback(SwapToOptions);

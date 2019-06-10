@@ -7,19 +7,19 @@ namespace ExNihilo.Util.Graphics
     {
         private int _frameNow;
         private readonly int _timerID;
-        private readonly Texture2D _textureStrip;
+        protected readonly Texture2D TextureStrip;
         private readonly bool _animated;
         private readonly int _frameCount;
         private byte[] _alphaMask;
 
         public int Width { get; }
-        public int Height => _textureStrip.Height;
+        public int Height => TextureStrip.Height;
 
         public AnimatableTexture(Texture2D texture, int frameCount=1, int framesPerSec=1)
         {
             _frameCount = frameCount;
-            _textureStrip = texture;
-            Width = _textureStrip.Width / _frameCount;
+            TextureStrip = texture;
+            Width = TextureStrip.Width / _frameCount;
             _frameNow = 0;
             if (frameCount > 1)
             {
@@ -31,7 +31,17 @@ namespace ExNihilo.Util.Graphics
         ~AnimatableTexture()
         {
             UniversalTime.SellTimer(_timerID);
-            _textureStrip.Dispose();
+            TextureStrip.Dispose();
+        }
+
+        public static implicit operator AnimatableTexture(Texture2D t)
+        {
+            return new AnimatableTexture(t);
+        }
+
+        public static implicit operator Texture2D(AnimatableTexture t)
+        {
+            return t.TextureStrip;
         }
 
         public void AdjustFPS(int newFPS)
@@ -48,47 +58,51 @@ namespace ExNihilo.Util.Graphics
         {
             if (_alphaMask is null)
             {
-                var data = new Color[_textureStrip.Width * _textureStrip.Height];
-                _textureStrip.GetData(data);
+                var data = new Color[TextureStrip.Width * TextureStrip.Height];
+                TextureStrip.GetData(data);
                 _alphaMask = new byte[data.Length];
                 for (int i = 0; i < data.Length; i++) _alphaMask[i] = data[i].A;
             }
             return _alphaMask;
         }
 
-        public void Draw(SpriteBatch batch, Vector2 screenPos, ColorScale color, float scale, float rotation = 0, TextureUtilities.PositionType origin = TextureUtilities.PositionType.TopLeft, SpriteEffects effect =SpriteEffects.None)
+        public virtual void Draw(SpriteBatch batch, Vector2 screenPos, ColorScale color, float scale, float rotation = 0,
+            TextureUtilities.PositionType origin = TextureUtilities.PositionType.TopLeft, SpriteEffects effect = SpriteEffects.None)
         {
             var originVec = Vector2.Zero;
-            if (origin != TextureUtilities.PositionType.TopLeft) originVec = TextureUtilities.GetOffset(origin, new Coordinate(Width, _textureStrip.Height));
+            if (origin != TextureUtilities.PositionType.TopLeft)
+                originVec = TextureUtilities.GetOffset(origin, new Coordinate(Width, Height));
 
             if (_animated)
             {
                 var frameShifts = UniversalTime.GetNumberOfFires(_timerID);
                 if (frameShifts > 0) _frameNow = (_frameNow + frameShifts) % _frameCount;
-                var rect = new Rectangle(Width * _frameNow, 0, Width, _textureStrip.Height);
-                batch.Draw(_textureStrip, screenPos, rect, color, rotation, originVec, scale, effect, 0);
+                var rect = new Rectangle(Width * _frameNow, 0, Width, TextureStrip.Height);
+                batch.Draw(TextureStrip, screenPos, rect, color, rotation, originVec, scale, effect, 0);
             }
             else
             {
-                batch.Draw(_textureStrip, screenPos, null, color, rotation, originVec, scale, effect, 0);
+                batch.Draw(TextureStrip, screenPos, null, color, rotation, originVec, scale, effect, 0);
             }
         }
 
-        public void Draw(SpriteBatch batch, Vector2 screenPos, ColorScale color, Vector2 scale, float rotation = 0, TextureUtilities.PositionType origin = TextureUtilities.PositionType.TopLeft, SpriteEffects effect = SpriteEffects.None)
+        public virtual void Draw(SpriteBatch batch, Vector2 screenPos, ColorScale color, Vector2 scale, float rotation = 0,
+            TextureUtilities.PositionType origin = TextureUtilities.PositionType.TopLeft, SpriteEffects effect = SpriteEffects.None)
         {
             var originVec = Vector2.Zero;
-            if (origin != TextureUtilities.PositionType.TopLeft) originVec = TextureUtilities.GetOffset(origin, new Coordinate(Width, _textureStrip.Height));
+            if (origin != TextureUtilities.PositionType.TopLeft)
+                originVec = TextureUtilities.GetOffset(origin, new Coordinate(Width, Height));
 
             if (_animated)
             {
                 var frameShifts = UniversalTime.GetNumberOfFires(_timerID);
                 if (frameShifts > 0) _frameNow = (_frameNow + frameShifts) % _frameCount;
-                var rect = new Rectangle(Width * _frameNow, 0, Width, _textureStrip.Height);
-                batch.Draw(_textureStrip, screenPos, rect, color, rotation, originVec, scale, effect, 0);
+                var rect = new Rectangle(Width * _frameNow, 0, Width, TextureStrip.Height);
+                batch.Draw(TextureStrip, screenPos, rect, color, rotation, originVec, scale, effect, 0);
             }
             else
             {
-                batch.Draw(_textureStrip, screenPos, null, color, rotation, originVec, scale, effect, 0);
+                batch.Draw(TextureStrip, screenPos, null, color, rotation, originVec, scale, effect, 0);
             }
         }
     }

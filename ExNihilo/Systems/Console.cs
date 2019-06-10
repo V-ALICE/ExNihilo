@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using ExNihilo.Input.Commands;
+using ExNihilo.Systems.Bases;
 using ExNihilo.UI.Bases;
 using ExNihilo.Util;
 using ExNihilo.Util.Graphics;
@@ -166,6 +167,7 @@ namespace ExNihilo.Systems
             _handler.Initialize(this);
             _console = new ConsoleBox(_maxLineCount, _maxCharacterCount);
             _lastMessage = "";
+            _activeText = "";
         }
 
         public void LoadContent(GraphicsDevice graphics, ContentManager content)
@@ -234,13 +236,12 @@ namespace ExNihilo.Systems
         {
             if (Active || TypingKeyboard.Active) return;
             Active = true;
-            _activeText = initMessage;
+            if (_activeText.Length == 0) _activeText = initMessage;
             TypingKeyboard.Lock(this);
         }
 
         public void CloseConsole()
         {
-            _activeText = "";
             Active = false;
             TypingKeyboard.Unlock(this);
         }

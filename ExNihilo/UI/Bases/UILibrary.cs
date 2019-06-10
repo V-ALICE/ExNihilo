@@ -2,6 +2,7 @@
 using System.IO;
 using System.Collections.Generic;
 using System.Linq;
+using ExNihilo.Util;
 using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
 using ExNihilo.Util.Graphics;
@@ -60,7 +61,7 @@ namespace ExNihilo.UI.Bases
 
         public static void LoadLibrary(GraphicsDevice graphics, ContentManager content, params string[] infoFiles)
         {
-            TextureLookUp = new Dictionary<string, AnimatableTexture> {{"null", new AnimatableTexture(new Texture2D(graphics, 1, 1))}};
+            TextureLookUp = new Dictionary<string, AnimatableTexture> {{"null", new Texture2D(graphics, 1, 1)}};
 
             foreach (var file in infoFiles)
             {
@@ -98,7 +99,7 @@ namespace ExNihilo.UI.Bases
                         if (!int.TryParse(trueSegments[5], out int fps)) continue;
                         TextureLookUp.Add(name, new AnimatableTexture(TextureUtilities.GetSubTexture(graphics, sheet, new Rectangle(x, y, width, height)), frames, fps));
                     }
-                    else TextureLookUp.Add(name, new AnimatableTexture(TextureUtilities.GetSubTexture(graphics, sheet, new Rectangle(x, y, width, height))));
+                    else TextureLookUp.Add(name, TextureUtilities.GetSubTexture(graphics, sheet, new Rectangle(x, y, width, height)));
                 }
 
                 sheet.Dispose();

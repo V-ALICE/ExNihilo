@@ -1,4 +1,4 @@
-﻿namespace ExNihilo.Systems
+﻿namespace ExNihilo.Systems.Bases
 {
     public interface ISavable
     {

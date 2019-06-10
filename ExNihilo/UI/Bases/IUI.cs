@@ -1,5 +1,4 @@
 ﻿using ExNihilo.Util;
-using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
 

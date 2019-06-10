@@ -64,11 +64,27 @@ namespace ExNihilo
                 _graphics.ApplyChanges();
                 _windowSize = new Coordinate(Window.ClientBounds.Width, Window.ClientBounds.Height);
 
+                ParticleBackdrop.OnResize(_windowSize);
                 Console.OnResize(GraphicsDevice, _windowSize);
                 _mouseScale = UILibrary.DefaultScaleRuleSet.GetScale(_windowSize);
                 foreach (var sector in _sectorDirectory.Values) sector?.OnResize(GraphicsDevice, _windowSize);
             }
         }
+        public void ToggleFullScreen()
+        {
+            //if (Loading) return;
+            if (Window.IsBorderless)
+            {
+                Window.IsBorderless = false;
+            }
+            else
+            {
+                _form.WindowState = FormWindowState.Minimized;
+                Window.IsBorderless = true;
+                _form.WindowState = FormWindowState.Maximized;
+            }
+        }
+        
         private void f_FormClosing(object sender, FormClosingEventArgs e)
         {
             e.Cancel = true;
@@ -92,25 +108,18 @@ namespace ExNihilo
             CheckForWindowUpdate();
             FormTouched = false;
         }
-
-        public void ToggleFullScreen()
+        private void f_Activate(object sender, EventArgs e)
         {
-            //if (Loading) return;
-            if (Window.IsBorderless)
-            {
-                Window.IsBorderless = false;
-            }
-            else
-            {
-                _form.WindowState = FormWindowState.Minimized;
-                Window.IsBorderless = true;
-                _form.WindowState = FormWindowState.Maximized;
-            }
+            IsMouseVisible = false;
+        }
+        private void f_Deactivate(object sender, EventArgs e)
+        {
+            IsMouseVisible = true;
         }
 
 /********************************************************************
-------->Game loop
-********************************************************************/
+        ------->Game loop
+        ********************************************************************/
         protected override void Initialize()
         {
             _activeSectorID = SectorID.MainMenu;
@@ -168,16 +177,21 @@ namespace ExNihilo
                 f.Resize += f_Resize;
             }
 
+            Activated += f_Activate;
+            Deactivated += f_Deactivate;
+
             Content.RootDirectory = "Content";
             SpriteBatch = new SpriteBatch(GraphicsDevice);
             UILibrary.LoadLibrary(GraphicsDevice, Content, "title.info", "sheet.info");
             TextureLibrary.LoadLibrary(GraphicsDevice, Content);
+            ParticleBackdrop.AddDefault(GraphicsDevice);
+            ParticleBackdrop.Initialize(ParticleBackdrop.Mode.Random);
 
             TextDrawer.Initialize(GraphicsDevice, Content.Load<Texture2D>("UI/FONT"));
             foreach (var sector in _sectorDirectory.Values) sector?.LoadContent(GraphicsDevice, Content);
             Console.LoadContent(GraphicsDevice, Content);
 
-            _mouseTexture = new AnimatableTexture(Content.Load<Texture2D>("UI/Poker"));
+            _mouseTexture = Content.Load<Texture2D>("UI/Poker");
 
             base.LoadContent();
         }
@@ -212,12 +226,16 @@ namespace ExNihilo
         {
             UniversalTime.Update(gameTime);
             ColorScale.UpdateGlobalScales();
+            ParticleBackdrop.Update();
             Console.Update();
-            UpdateMouse();
-            _superHandler.UpdateInput();
-            TypingKeyboard.GetText();
-
-            if (!TypingKeyboard.Active) _handler.UpdateInput();
+            if (IsActive)
+            {
+                //Don't listen to the keyboard/mouse if the game isn't focused
+                UpdateMouse();
+                _superHandler.UpdateInput();
+                TypingKeyboard.GetText();
+                if (!TypingKeyboard.Active) _handler.UpdateInput();
+            }
             ActiveSector?.Update();
 
             base.Update(gameTime);
@@ -230,9 +248,10 @@ namespace ExNihilo
 
         protected override void Draw(GameTime gameTime)
         {
-            GraphicsDevice.Clear(Color.DarkBlue);
+            GraphicsDevice.Clear(Color.Black);
             SpriteBatch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend, SamplerState.PointClamp);
 
+            ParticleBackdrop.Draw(SpriteBatch);
             ActiveSector?.Draw(SpriteBatch, ShowDebugInfo);
 
             UpdateFPS(); //FPS numbers are calculated based on drawn frames

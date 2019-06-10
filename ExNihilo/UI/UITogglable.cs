@@ -1,7 +1,6 @@
 ﻿using ExNihilo.Util;
 using ExNihilo.Util.Graphics;
 using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Graphics;
 
 namespace ExNihilo.UI
 {

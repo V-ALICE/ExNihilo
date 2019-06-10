@@ -119,11 +119,6 @@ namespace ExNihilo.UI
             if (!Loaded) return;
             Texture.Draw(spriteBatch, OriginPosition, ColorScale?.Get() ?? Color.White, CurrentScale);
         }
-        public void Draw(SpriteBatch spriteBatch, ColorScale c)
-        {
-            if (!Loaded) return;
-            Texture.Draw(spriteBatch, OriginPosition, c, CurrentScale);
-        }
 
     }
 }

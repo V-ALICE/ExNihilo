@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace ExNihilo.Util.Graphics
+namespace ExNihilo.Util
 {
     public class ScaleRule
     {
