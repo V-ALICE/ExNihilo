@@ -54,6 +54,7 @@ namespace ExNihilo.Util
         {
             if (_timeBus[id].FireCount <= 0) return false;
             _timeBus[id].FireCount--;
+            _timeBus[id].FlushTime();
             return true;
         }
 

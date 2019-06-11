@@ -12,15 +12,14 @@ namespace ExNihilo.UI
         protected bool Ghosting;
 
         public UIMovable(string name, string path, Vector2 relPos, ColorScale color, UIPanel superior, TextureUtilities.PositionType anchorPoint, 
-            string downPath = "", string overPath = "", bool ghost = false) : base(name, path, relPos, color, superior, anchorPoint, downPath, overPath)
+           bool ghost = false) : base(name, path, relPos, color, superior, anchorPoint)
         {
             Ghosting = ghost;
         }
 
         //Right now Movables can't be absolute because relative positioning is required for resizing screen adjustments
         protected UIMovable(string name, string path, Coordinate pixelOffset, ColorScale color, UIElement superior, TextureUtilities.PositionType anchorPoint, 
-            TextureUtilities.PositionType superAnchorPoint, string downPath = "", string overPath = "", bool ghost = false) : 
-            base(name, path, pixelOffset, color, superior, anchorPoint, superAnchorPoint, downPath, overPath)
+            TextureUtilities.PositionType superAnchorPoint, bool ghost = false) : base(name, path, pixelOffset, color, superior, anchorPoint, superAnchorPoint)
         {
             Ghosting = ghost;
         }
@@ -41,24 +40,36 @@ namespace ExNihilo.UI
         {
             if (!Loaded) return;
 
-            if (Down)
+            if (Disabled)
+            {
+                Texture.Draw(spriteBatch, OriginPosition, DisabledColor?.Get() ?? ColorScale.Get(), CurrentScale);
+            }
+            else if (Down)
             {
                 if (Ghosting)
                 {
                     var ghost = ColorScale.Get();
                     ghost.A /= 4;
-                    if (DownTexture is null) Texture.Draw(spriteBatch, OriginPosition, ColorScale, CurrentScale);
-                    else DownTexture.Draw(spriteBatch, OriginPosition, ColorScale, CurrentScale);
+
+                    if (DownTexture != null) DownTexture.Draw(spriteBatch, OriginPosition, DownColor?.Get() ?? ColorScale.Get(), CurrentScale);
+                    else Texture.Draw(spriteBatch, OriginPosition, DownColor?.Get() ?? ColorScale.Get(), CurrentScale);
+
                     Texture.Draw(spriteBatch, OriginPosition + ShiftedPos, ghost, CurrentScale);
                 }
                 else
                 {
-                    Texture.Draw(spriteBatch, OriginPosition + ShiftedPos, ColorScale, CurrentScale);
+                    if (DownTexture != null) DownTexture.Draw(spriteBatch, OriginPosition + ShiftedPos, DownColor?.Get() ?? ColorScale.Get(), CurrentScale);
+                    else Texture.Draw(spriteBatch, OriginPosition + ShiftedPos, DownColor?.Get() ?? ColorScale.Get(), CurrentScale);
                 }
+            }
+            else if (Over)
+            {
+                if (OverTexture != null) OverTexture.Draw(spriteBatch, OriginPosition, OverColor?.Get() ?? ColorScale.Get(), CurrentScale);
+                else Texture.Draw(spriteBatch, OriginPosition, OverColor?.Get() ?? ColorScale.Get(), CurrentScale);
             }
             else
             {
-                Texture.Draw(spriteBatch, OriginPosition, Disabled ? DisabledColor : ColorScale, CurrentScale);
+                Texture.Draw(spriteBatch, OriginPosition, ColorScale.Get(), CurrentScale);
             }
         }
 

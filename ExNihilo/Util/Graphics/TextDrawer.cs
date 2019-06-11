@@ -21,6 +21,24 @@ namespace ExNihilo.Util.Graphics
 
         public static int AlphaWidth, AlphaHeight, AlphaSpacer, LineSpacer; //In pixels
         private static Dictionary<char, Texture2D> _charTextures;
+        private static Texture2D _underline;
+        private static Vector2 _underlineOffset;
+        private static int _metronome;
+
+        public struct TextParameters
+        {
+            public bool ReducedSpaces;
+            public float WaveIntensity, WaveSpeed;
+
+            public TextParameters(bool reducedSpaces=false, float waveIntensity=10, float waveSpeed=7)
+            {
+                ReducedSpaces = reducedSpaces;
+                WaveIntensity = waveIntensity;
+                WaveSpeed = waveSpeed;
+            }
+        }
+
+        private static readonly TextParameters _defaultParameters = new TextParameters();
 
         public static void Initialize(GraphicsDevice device, Texture2D alphabet)
         {
@@ -31,11 +49,16 @@ namespace ExNihilo.Util.Graphics
                 var letter = new Rectangle(charWidth * chr.Value, 0, charWidth, alphabet.Height);
                 _charTextures.Add(chr.Key, TextureUtilities.GetSubTexture(device, alphabet, letter));
             }
-
+            
             AlphaWidth = _charTextures['A'].Width;
             AlphaHeight = _charTextures['A'].Height;
             AlphaSpacer = AlphaWidth/3;
             LineSpacer = 2*AlphaSpacer;
+            _underlineOffset = new Vector2(-AlphaSpacer, AlphaHeight+AlphaSpacer);
+            _underline = TextureUtilities.CreateSingleColorTexture(device, AlphaWidth + 2*AlphaSpacer, AlphaSpacer, Color.White);
+
+            _metronome = UniversalTime.NewTimer(true, 2*Math.PI);
+            UniversalTime.TurnOnTimer(_metronome);
         }
 
         public static Texture2D GetLetter(char let)
@@ -50,10 +73,10 @@ namespace ExNihilo.Util.Graphics
             }
         }       
 
-        public static Vector2 DrawDumbText(SpriteBatch spriteBatch, Vector2 pos, string text, float multiplier, ColorScale c)
+        public static Vector2 DrawDumbText(SpriteBatch spriteBatch, Vector2 pos, string dumbText, float multiplier, ColorScale c)
         {
             var aPos = Utilities.Copy(pos);
-            foreach (var t in text)
+            foreach (var t in dumbText)
             {
                 spriteBatch.Draw(GetLetter(t), aPos, null, c, 0, Vector2.Zero, multiplier, SpriteEffects.None, 0);
                 aPos.X = (int) Math.Round(aPos.X + multiplier * (AlphaSpacer + AlphaWidth));
@@ -61,14 +84,19 @@ namespace ExNihilo.Util.Graphics
             return aPos;
         }
 
-        public static Vector2 DrawSmartText(SpriteBatch spriteBatch, Vector2 pos, string smartText, float multiplier, 
-            bool reducedSpaces, params ColorScale[] colors)
+        public static Vector2 DrawSmartText(SpriteBatch spriteBatch, Vector2 pos, string smartText, float multiplier, TextParameters? parameters = null, params ColorScale[] colors)
         {
+            int underlining = 0;
+            int wavy = 0;
+            double sineOffset = 0;
+            double metro = UniversalTime.GetCurrentTime(_metronome, true);
+
             //supports up to 10 different colors at a time
             //assumes line has already been split correctly, including buffers
             var aPos = new Vector2((int)Math.Round(pos.X), (int)Math.Round(pos.Y));
             var oldX = aPos.X;
-            var c = colors.Length > 0 ? (Color)colors[0] : Color.Black;
+            var c = colors.Length > 0 ? colors[0] : ColorScale.Black;
+            var p = parameters ?? _defaultParameters;
             for (var i = 0; i < smartText.Length; i++)
             {
                 var t = smartText[i];
@@ -80,7 +108,12 @@ namespace ExNihilo.Util.Graphics
                 }
                 if (t == ' ') //space
                 {
-                    if (reducedSpaces)
+                    if (underlining > 0)
+                    {
+                        underlining--;
+                        spriteBatch.Draw(_underline, aPos + multiplier*_underlineOffset, null, c, 0, Vector2.Zero, multiplier, SpriteEffects.None, 0);
+                    }
+                    if (p.ReducedSpaces)
                         aPos.X = (int) Math.Round(aPos.X + multiplier * AlphaWidth);
                     else
                         aPos.X = (int) Math.Round(aPos.X + multiplier * (AlphaWidth + AlphaSpacer));
@@ -103,7 +136,7 @@ namespace ExNihilo.Util.Graphics
                             break;
                         case 'h': //insert half space
                             i++; //consume h
-                            if (reducedSpaces)
+                            if (p.ReducedSpaces)
                                 aPos.X = (int)Math.Round(aPos.X + 0.5 * multiplier * AlphaWidth);
                             else
                                 aPos.X = (int)Math.Round(aPos.X + 0.5 * multiplier * (AlphaWidth + AlphaSpacer));
@@ -112,13 +145,57 @@ namespace ExNihilo.Util.Graphics
                             i++; //consume n
                             aPos.Y = (int) Math.Round(aPos.Y + 0.5f * multiplier * (AlphaHeight + LineSpacer));
                             break;
+                        case 's': //sin wave
+                            i += 2; //fully consume s
+                            string s = "";
+                            if (i == smartText.Length) return aPos; //make sure there's actually something after
+                            while (smartText[i] != '@')
+                            {
+                                s += smartText[i];
+                                i++;
+                                if (i == smartText.Length) return aPos; //ignore malformed strings
+                            }
+                            if (int.TryParse(s, out int lenS))
+                            {
+                                wavy = lenS;
+                                sineOffset = 2*Math.PI / lenS;
+                            }
+                            break;
+                        case 'u': //underline for some amount of characterss
+                            i+=2; //fully consume u
+                            string u = "";
+                            if (i == smartText.Length) return aPos; //make sure there's actually something after
+                            while (smartText[i] != '@')
+                            {
+                                u += smartText[i];
+                                i++;
+                                if (i == smartText.Length) return aPos; //ignore malformed strings
+                            }
+                            if (int.TryParse(u, out int lenU)) underlining = lenU;                          
+                            break;
                         default:
                             i++;
                             break;
                     }
                     continue; //don't need to draw anything right after a format change
                 }
-                spriteBatch.Draw(GetLetter(t), aPos, null, c, 0, Vector2.Zero, multiplier, SpriteEffects.None, 0);
+
+                if (wavy > 0)
+                {
+                    wavy--;
+                    var offset = new Vector2(0, (float) Math.Round(10 * Math.Sin(7 * metro + wavy * sineOffset)));
+                    spriteBatch.Draw(GetLetter(t), aPos+offset, null, c, 0, Vector2.Zero, multiplier, SpriteEffects.None, 0);
+                }
+                else
+                {
+                    spriteBatch.Draw(GetLetter(t), aPos, null, c, 0, Vector2.Zero, multiplier, SpriteEffects.None, 0);
+                }
+                if (underlining > 0)
+                {
+                    underlining--;
+                    spriteBatch.Draw(_underline, aPos + multiplier*_underlineOffset, null, c, 0, Vector2.Zero, multiplier, SpriteEffects.None, 0);
+                }
+                
                 aPos.X = (int) Math.Round(aPos.X + multiplier * (AlphaSpacer + AlphaWidth));
             }
 
@@ -162,6 +239,15 @@ namespace ExNihilo.Util.Graphics
                         case 'n': //insert half newline skip (can be done mid line as well)
                             i++; //consume n
                             pixelSize.Y += (int)Math.Round(0.5f * multiplier * (AlphaHeight + LineSpacer));
+                            break;
+                        case 'u': //underline for some amount of characters
+                        case 's': //sine wave for some amount of characters
+                            while (smartText[i] != '@')
+                            {
+                                i++;
+                                if (i == smartText.Length) break; //ignore malformed strings
+                            }
+                            i++; //consume second @
                             break;
                         default:
                             i++;

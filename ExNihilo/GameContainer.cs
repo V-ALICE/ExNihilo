@@ -6,7 +6,6 @@ using ExNihilo.Input.Commands;
 using ExNihilo.Input.Controllers;
 using ExNihilo.Sectors;
 using ExNihilo.Systems;
-using ExNihilo.UI.Bases;
 using ExNihilo.Util;
 using ExNihilo.Util.Graphics;
 using Microsoft.Xna.Framework;
@@ -66,7 +65,7 @@ namespace ExNihilo
 
                 ParticleBackdrop.OnResize(_windowSize);
                 Console.OnResize(GraphicsDevice, _windowSize);
-                _mouseScale = UILibrary.DefaultScaleRuleSet.GetScale(_windowSize);
+                _mouseScale = TextureLibrary.DefaultScaleRuleSet.GetScale(_windowSize);
                 foreach (var sector in _sectorDirectory.Values) sector?.OnResize(GraphicsDevice, _windowSize);
             }
         }
@@ -133,10 +132,12 @@ namespace ExNihilo
             _superHandler.Initialize(this, true);
             SystemClockID = UniversalTime.NewTimer(true);
             _frameTimeID = UniversalTime.NewTimer(true, 1.5);
-            UILibrary.LoadRuleSets();
+            TextureLibrary.LoadRuleSets();
             UniversalTime.TurnOnTimer(SystemClockID, _frameTimeID);
 
-            ColorScale.AddToGlobal("Random", new ColorScale(1.5f, 32, 222));
+            ColorScale.AddToGlobal("Random", new ColorScale(2f, 32, 222));
+            ColorScale.AddToGlobal("Pulse", new ColorScale(0.5f, false, Color.White, Color.Black, Color.White));
+            ColorScale.AddToGlobal("Ember", new ColorScale(0.75f, false, Color.Red, Color.Red, Color.OrangeRed, Color.Orange, Color.OrangeRed));
             ColorScale.AddToGlobal("Rainbow", new ColorScale(1.0f, false, Color.Red, Color.Yellow, Color.Lime, Color.Cyan, Color.Blue, Color.Magenta));
 
             //IsMouseVisible = true;
@@ -150,6 +151,7 @@ namespace ExNihilo
             SaveHandler.LoadParameters();
             PushParameters(SaveHandler.Parameters);
             SaveHandler.LoadAllSaves(SaveHandler.FILE_1, SaveHandler.FILE_2, SaveHandler.FILE_3);
+            ParticleBackdrop.AddDefault(GraphicsDevice);
 
             _sectorDirectory = new Dictionary<SectorID, Sector>
             {
@@ -165,6 +167,7 @@ namespace ExNihilo
             ActiveSector?.Enter();
         }
 
+        private Texture2D a;
         protected override void LoadContent()
         {
             if (Control.FromHandle(Window.Handle) is Form f)
@@ -182,16 +185,16 @@ namespace ExNihilo
 
             Content.RootDirectory = "Content";
             SpriteBatch = new SpriteBatch(GraphicsDevice);
-            UILibrary.LoadLibrary(GraphicsDevice, Content, "title.info", "sheet.info");
-            TextureLibrary.LoadLibrary(GraphicsDevice, Content);
-            ParticleBackdrop.AddDefault(GraphicsDevice);
-            ParticleBackdrop.Initialize(ParticleBackdrop.Mode.Random);
+            TextureLibrary.LoadUILibrary(GraphicsDevice, Content, "LOGO.info", "UI.info");
+            TextureLibrary.LoadIconLibrary(GraphicsDevice, Content, "ICON.info");
+            TextureLibrary.LoadTextureLibrary(GraphicsDevice, Content, "BACK.info");
 
             TextDrawer.Initialize(GraphicsDevice, Content.Load<Texture2D>("UI/FONT"));
             foreach (var sector in _sectorDirectory.Values) sector?.LoadContent(GraphicsDevice, Content);
             Console.LoadContent(GraphicsDevice, Content);
 
-            _mouseTexture = Content.Load<Texture2D>("UI/Poker");
+            _mouseTexture = Content.Load<Texture2D>("UI/CURSOR");
+            a = Content.Load<Texture2D>("Backs/abyss");
 
             base.LoadContent();
         }

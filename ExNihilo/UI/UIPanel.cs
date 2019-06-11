@@ -74,7 +74,7 @@ namespace ExNihilo.UI
             King = true;
         }
 
-        public void AddElements(params UIElement[] elements)
+        public virtual void AddElements(params UIElement[] elements)
         {
             Set.AddRange(elements);
         }
@@ -99,7 +99,7 @@ namespace ExNihilo.UI
             if (!Loaded) return;
             foreach (var item in Set) item.Draw(spriteBatch);
 
-            //LineDrawer.DrawSquare(spriteBatch, Pos, BaseSize.X, BaseSize.Y, Activated ? Color.White : Color.Black, 5);
+            //LineDrawer.DrawSquare(spriteBatch, OriginPosition, CurrentPixelSize.X, CurrentPixelSize.Y, Color.White, 5);
         }
 
         public override void OnResize(GraphicsDevice graphics, Coordinate gameWindow)
@@ -204,7 +204,7 @@ namespace ExNihilo.UI
             }
         }
 
-        public UIElement GetElement(string title)
+        public virtual UIElement GetElement(string title)
         {
             if (GivenName == title) return this;
 

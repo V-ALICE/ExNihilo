@@ -1,4 +1,5 @@
-﻿using ExNihilo.Util;
+﻿using System;
+using ExNihilo.Util;
 using ExNihilo.Util.Graphics;
 using Microsoft.Xna.Framework;
 
@@ -9,25 +10,33 @@ namespace ExNihilo.UI
         protected bool WasOver, DeactivateOnExternalClick;
 
         public UITogglable(string name, string path, Vector2 relPos, ColorScale color, UIPanel superior,
-            TextureUtilities.PositionType anchorPoint, string downPath, string overPath = "", bool deactivateOnExternalClick = false,
-            bool mulligan = false) : base(name, path, relPos, color, superior, anchorPoint, downPath, overPath, mulligan)
+            TextureUtilities.PositionType anchorPoint, bool down, bool deactivateOnExternalClick = false,
+            bool mulligan = false) : base(name, path, relPos, color, superior, anchorPoint, mulligan)
         {
+            Down = down;
             DeactivateOnExternalClick = deactivateOnExternalClick;
         }
 
         public UITogglable(string name, string path, Coordinate pixelOffset, ColorScale color, UIElement superior, TextureUtilities.PositionType anchorPoint, 
-            TextureUtilities.PositionType superAnchorPoint, string downPath, string overPath = "", bool deactivateOnExternalClick = false,
-            bool mulligan=false) : base(name, path, pixelOffset, color, superior, anchorPoint, superAnchorPoint, downPath, overPath, mulligan)
+            TextureUtilities.PositionType superAnchorPoint, bool down, bool deactivateOnExternalClick = false,
+            bool mulligan=false) : base(name, path, pixelOffset, color, superior, anchorPoint, superAnchorPoint, mulligan)
         {
+            Down = down;
             DeactivateOnExternalClick = deactivateOnExternalClick;
         }
 
-        public void ForcePush()
+        public void ForcePush(bool down, bool doAction=true)
         {
-            Down = !Down;
-            Function?.Invoke(new UICallbackPackage(GivenName, new Point(), OriginPosition, Down ? 1 : -1));
+            Down = down;
+            if (doAction) Function?.Invoke(new UICallbackPackage(GivenName, new Point(), OriginPosition, Down ? 1 : -1));
             WasOver = false;
             Over = false;
+        }
+
+        public override void RegisterCallback(Action<UICallbackPackage> action)
+        {
+            base.RegisterCallback(action);
+            if (Down) Function?.Invoke(new UICallbackPackage(GivenName, new Point(), OriginPosition, Down ? 1 : -1));
         }
 
         public override void OnMoveMouse(Point point)

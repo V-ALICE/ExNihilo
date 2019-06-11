@@ -1,0 +1,99 @@
+UI/ICON
+attack/0    0   0 128 128
+attack/1  128   0 128 128
+attack/2  256   0 128 128
+attack/3  384   0 128 128
+attack/4  512   0 128 128
+attack/5  640   0 128 128
+attack/6  768   0 128 128
+attack/7  896   0 128 128
+attack/8    0 128 128 128
+attack/9  128 128 128 128
+
+action/buy       256 256 128 128
+action/cancel    384 256 128 128
+action/equip     512 256 128 128
+action/use       640 256 128 128
+action/take      768 256 128 128
+action/sell      896 256 128 128
+action/sellitem    0 384 128 128
+action/swap      128 384 128 128
+action/takeall   256 384 128 128
+action/toss      384 384 128 128
+action/unequip   512 384 128 128
+action/run       640 384 128 128
+action/no        768 384 128 128
+action/yes       896 384 128 128
+action/deposit   256 512 128 128
+action/withdraw  384 512 128 128
+action/reforge   512 512 128 128
+action/combine   640 512 128 128
+
+skill/atkup        0 640 128 128
+skill/defup      128 640 128 128
+skill/luck       256 640 128 128
+skill/fireres    384 640 128 128
+skill/iceres     512 640 128 128
+skill/deathres   640 640 128 128
+skill/steal      768 640 128 128
+skill/exp        896 640 128 128
+skill/fire         0 768 128 128
+skill/ice        128 768 128 128
+skill/poison     256 768 128 128
+skill/atkdown    384 768 128 128
+skill/divine     512 768 128 128
+skill/heal       640 768 128 128
+skill/thorns     768 768 128 128
+skill/death      896 768 128 128
+skill/poisonres    0 896 128 128
+
+wep/axeL        0 1024 128 128
+wep/bowL      128 1024 128 128
+wep/daggerL   256 1024 128 128
+wep/gswordL   384 1024 128 128
+wep/hammerL   512 1024 128 128
+wep/maceL     640 1024 128 128
+wep/scytheL   768 1024 128 128
+wep/staffL    896 1024 128 128
+wep/swordL      0 1152 128 128
+wep/tridentL  128 1152 128 128
+wep/wandL     256 1152 128 128
+
+wep/axe        0 1280 128 128
+wep/bow      128 1280 128 128
+wep/dagger   256 1280 128 128
+wep/gsword   384 1280 128 128
+wep/hammer   512 1280 128 128
+wep/mace     640 1280 128 128
+wep/scythe   768 1280 128 128
+wep/staff    896 1280 128 128
+wep/sword      0 1408 128 128
+wep/trident  128 1408 128 128
+wep/wand     256 1408 128 128
+
+acc/necklace    0 1536 128 128
+acc/ring      256 1536 128 128
+acc/amulet    512 1536 128 128
+acc/charm     512 1664 128 128
+acc/pendant   768 1664 128 128
+
+light/leg   128 1536 128 128
+light/head  896 1536 128 128
+light/hand  128 1664 128 128
+light/body  256 1664 128 128
+light/foot  640 1664 128 128
+
+heavy/foot  384 1536 128 128
+heavy/head  640 1536 128 128
+heavy/leg   768 1536 128 128
+heavy/hand    0 1664 128 128
+heavy/body  384 1664 128 128
+
+item/gold      0 1792 128 128
+item/ice     128 1792 128 128
+item/potion  256 1792 128 128
+item/fire    384 1792 128 128
+item/health  512 1792 128 128
+item/poison  640 1792 128 128
+item/exp     768 1792 128 128
+item/warp    896 1792 128 128

@@ -58,12 +58,15 @@ namespace ExNihilo.Systems
     public class GameParameters
     {
         public float MusicVolume, EffectVolume;
+        public byte ParticleType, ParticleColor;
 
         public GameParameters()
         {
             //Default Parameter set
             MusicVolume = 0.5f;
             EffectVolume = 0.5f;
+            ParticleType = 4;
+            ParticleColor = 0;
         }
     }
 

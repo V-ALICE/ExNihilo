@@ -1,4 +1,5 @@
-﻿using ExNihilo.UI.Bases;
+﻿using ExNihilo.Systems;
+using ExNihilo.UI.Bases;
 using ExNihilo.Util;
 using ExNihilo.Util.Graphics;
 using Microsoft.Xna.Framework;
@@ -78,8 +79,8 @@ namespace ExNihilo.UI
         public virtual void LoadContent(GraphicsDevice graphics, ContentManager content)
         {
             Loaded = true;
-            if (ScaleRules is null) ScaleRules = UILibrary.DefaultScaleRuleSet;
-            Texture = UILibrary.TextureLookUp[TexturePath];
+            if (ScaleRules is null) ScaleRules = TextureLibrary.DefaultScaleRuleSet;
+            Texture = TextureLibrary.Lookup(TexturePath);
             if (CurrentPixelSize is null) CurrentPixelSize = new Coordinate((int) (CurrentScale*Texture.Width), (int) (CurrentScale*Texture.Height));
             TextureOffsetToOrigin = TextureUtilities.GetOffset(AnchorType, CurrentPixelSize);
             LastResizeWindow = new Coordinate();

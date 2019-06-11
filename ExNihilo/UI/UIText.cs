@@ -1,4 +1,4 @@
-﻿using ExNihilo.UI.Bases;
+﻿using ExNihilo.Systems;
 using ExNihilo.Util;
 using ExNihilo.Util.Graphics;
 using Microsoft.Xna.Framework;
@@ -9,7 +9,7 @@ namespace ExNihilo.UI
 {
     public class UIText : UIElement
     {
-        protected bool SpacesReduced;
+        protected TextDrawer.TextParameters param;
         protected Coordinate UnscaledSize;
 
         public string Text { get; protected set; }
@@ -18,7 +18,7 @@ namespace ExNihilo.UI
         public UIText(string name, Vector2 relPos, string smartText, ColorScale[] colors, UIPanel superior, TextureUtilities.PositionType anchorPoint, 
             bool reducedSpaces = false) : base(name, "null", relPos, Color.White, superior, anchorPoint)
         {
-            SpacesReduced = reducedSpaces;
+            param = new TextDrawer.TextParameters(reducedSpaces);
             Text = smartText;
             Colors = colors;
         }
@@ -26,7 +26,7 @@ namespace ExNihilo.UI
         public UIText(string name, Coordinate pixelOffset, string smartText, ColorScale[] colors, UIElement superior, TextureUtilities.PositionType anchorPoint,
             TextureUtilities.PositionType superAnchorType, bool reducedSpaces = false) : base(name, "null", pixelOffset, Color.White, superior, anchorPoint, superAnchorType)
         {
-            SpacesReduced = reducedSpaces;
+            param = new TextDrawer.TextParameters(reducedSpaces);
             Text = smartText;
             Colors = colors;
         }
@@ -66,7 +66,7 @@ namespace ExNihilo.UI
         public override void LoadContent(GraphicsDevice graphics, ContentManager content)
         {
             Loaded = true;
-            if (ScaleRules is null) ScaleRules = UILibrary.DefaultScaleRuleSet;
+            if (ScaleRules is null) ScaleRules = TextureLibrary.DefaultScaleRuleSet;
             UnscaledSize = TextDrawer.GetSmartTextSize(Text);
             CurrentPixelSize = new Coordinate((int)(CurrentScale * UnscaledSize.X), (int)(CurrentScale * UnscaledSize.Y));
             TextureOffsetToOrigin = TextureUtilities.GetOffset(AnchorType, CurrentPixelSize);
@@ -76,7 +76,7 @@ namespace ExNihilo.UI
         public override void Draw(SpriteBatch spriteBatch)
         {
             if (!Loaded) return;
-            TextDrawer.DrawSmartText(spriteBatch, OriginPosition, Text, CurrentScale, SpacesReduced, Colors);
+            TextDrawer.DrawSmartText(spriteBatch, OriginPosition, Text, CurrentScale, param, Colors);
         }
     }
 }

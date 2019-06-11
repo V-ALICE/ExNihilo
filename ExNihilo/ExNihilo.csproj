@@ -97,11 +97,11 @@
     <Compile Include="UI\Bases\IScalable.cs" />
     <Compile Include="UI\UIClickable.cs" />
     <Compile Include="UI\UIElement.cs" />
-    <Compile Include="UI\Bases\UILibrary.cs" />
     <Compile Include="UI\UIExtendable.cs" />
     <Compile Include="UI\UIMovable.cs" />
     <Compile Include="UI\UIPanel.cs" />
     <Compile Include="UI\UIParallaxElement.cs" />
+    <Compile Include="UI\UIRadioSet.cs" />
     <Compile Include="UI\UIText.cs" />
     <Compile Include="UI\UITogglable.cs" />
     <Compile Include="Util\Graphics\AnimatableTexture.cs" />
@@ -110,7 +110,7 @@
     <Compile Include="Util\Coordinate.cs" />
     <Compile Include="Util\EncryptedSerializer.cs" />
     <Compile Include="Util\ScaleRule.cs" />
-    <Compile Include="Util\Graphics\TextureLibrary.cs" />
+    <Compile Include="Systems\TextureLibrary.cs" />
     <Compile Include="Util\MathD.cs" />
     <Compile Include="UI\Bases\IUI.cs" />
     <Compile Include="Util\TypingKeyboard.cs" />
@@ -135,10 +135,16 @@
   <ItemGroup>
     <MonoGameContentReference Include="Content\Content.mgcb" />
     <None Include="app.manifest" />
-    <Content Include="Content\SheetInfo\sheet.info">
+    <Content Include="Content\Resources\ICON.info">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="Content\SheetInfo\title.info">
+    <Content Include="Content\Resources\LOGO.info">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Content\Resources\UI.info">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Content\Resources\BACK.info">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <None Include="packages.config" />

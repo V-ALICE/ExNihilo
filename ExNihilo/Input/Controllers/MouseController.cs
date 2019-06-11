@@ -37,18 +37,18 @@ namespace ExNihilo.Input.Controllers
             Left, Right, Middle
         }
 
-        private MouseState _previousMouseState;
+        public static MouseState PreviousMouseState;
 
         public MouseController()
         {
-            _previousMouseState = Mouse.GetState();
+            PreviousMouseState = Mouse.GetState();
         }
 
         public MouseAction UpdateInput()
         {
             var currentMouseState = Mouse.GetState();
-            var rtrn = new MouseAction(currentMouseState, _previousMouseState);
-            _previousMouseState = currentMouseState;
+            var rtrn = new MouseAction(currentMouseState, PreviousMouseState);
+            PreviousMouseState = currentMouseState;
             return rtrn;
         }
     }

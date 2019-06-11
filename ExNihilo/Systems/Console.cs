@@ -173,7 +173,7 @@ namespace ExNihilo.Systems
         public void LoadContent(GraphicsDevice graphics, ContentManager content)
         {
             _currentScale = 1;
-            _rules = UILibrary.ReducedScaleRuleSet;
+            _rules = TextureLibrary.ReducedScaleRuleSet;
         }
 
         public void OnResize(GraphicsDevice graphics, Coordinate gameWindow)
@@ -214,7 +214,7 @@ namespace ExNihilo.Systems
                 if (_activeText.Length + 2 > _maxCharacterCount) message += _activeText.Substring(_activeText.Length + 2 - _maxCharacterCount);
                 else message += _activeText;
 
-                TextDrawer.DrawDumbText(spriteBatch, _activeMessagePosition, message, _currentScale, Color.White);
+                TextDrawer.DrawSmartText(spriteBatch, _activeMessagePosition, message, _currentScale, null, Color.White);
             }
 
             List<Message> pile = _console.GetAllMessages(); //oldest to newest
@@ -228,7 +228,7 @@ namespace ExNihilo.Systems
                 }
 
                 var c = message.Command ? new ColorScale[] {Color.DarkOrange} : new ColorScale[] { Color.DeepSkyBlue, Color.White };
-                pos = TextDrawer.DrawSmartText(spriteBatch, pos, message.SplitMessage, _currentScale, false, c);
+                pos = TextDrawer.DrawSmartText(spriteBatch, pos, message.SplitMessage, _currentScale, null, c);
             }
         }
 
