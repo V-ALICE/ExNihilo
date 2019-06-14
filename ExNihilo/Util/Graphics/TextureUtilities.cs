@@ -21,6 +21,11 @@ namespace ExNihilo.Util.Graphics
             Center,
         }
 
+        public static Vector2 GetOffset(PositionType anchorType, AnimatableTexture texture)
+        {
+            return GetOffset(anchorType, new Coordinate(texture.Width, texture.Height));
+        }
+
         public static Vector2 GetOffset(PositionType anchorType, Coordinate pixelSize)
         {
             Vector2 textureOffsetToOrigin;

@@ -106,7 +106,7 @@ namespace ExNihilo.UI
                     (int) (BaseElement.CurrentScale * PixelOffsetFromBase.X), 
                     (int) (BaseElement.CurrentScale * PixelOffsetFromBase.Y));
                 var superOffset = TextureUtilities.GetOffset(SuperAnchorType, BaseElement.CurrentPixelSize);
-                OriginPosition = BaseElement.OriginPosition + scaledOffset - TextureOffsetToOrigin + superOffset;
+                OriginPosition = scaledOffset + BaseElement.OriginPosition - TextureOffsetToOrigin + superOffset;
             }
             else  
             {

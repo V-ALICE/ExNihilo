@@ -1,5 +1,6 @@
 ﻿using ExNihilo.Sectors;
 using ExNihilo.Systems;
+using ExNihilo.Systems.Bases;
 
 namespace ExNihilo.Input.Commands.Types
 {
@@ -40,8 +41,8 @@ namespace ExNihilo.Input.Commands.Types
 
     public abstract class GameplayCommand : ICommand
     {
-        protected readonly UnderworldSector Receiver;
-        protected GameplayCommand(UnderworldSector receiver)
+        protected readonly IPlayer Receiver;
+        protected GameplayCommand(IPlayer receiver)
         {
             Receiver = receiver;
         }

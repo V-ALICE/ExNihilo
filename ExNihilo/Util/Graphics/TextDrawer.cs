@@ -76,10 +76,23 @@ namespace ExNihilo.Util.Graphics
         public static Vector2 DrawDumbText(SpriteBatch spriteBatch, Vector2 pos, string dumbText, float multiplier, ColorScale c)
         {
             var aPos = Utilities.Copy(pos);
+            var oldX = aPos.X;
             foreach (var t in dumbText)
             {
-                spriteBatch.Draw(GetLetter(t), aPos, null, c, 0, Vector2.Zero, multiplier, SpriteEffects.None, 0);
-                aPos.X = (int) Math.Round(aPos.X + multiplier * (AlphaSpacer + AlphaWidth));
+                if (t == '\n')
+                {
+                    aPos.Y = (int) Math.Round(aPos.Y + multiplier * (AlphaHeight + LineSpacer));
+                    aPos.X = oldX;
+                }
+                else if (t == ' ')
+                {
+                    aPos.X = (int)Math.Round(aPos.X + multiplier * (AlphaWidth + AlphaSpacer));
+                }
+                else
+                {
+                    spriteBatch.Draw(GetLetter(t), aPos, null, c, 0, Vector2.Zero, multiplier, SpriteEffects.None, 0);
+                    aPos.X = (int) Math.Round(aPos.X + multiplier * (AlphaSpacer + AlphaWidth));
+                }
             }
             return aPos;
         }

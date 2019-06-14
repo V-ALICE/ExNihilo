@@ -66,10 +66,6 @@ namespace ExNihilo.Util
         {
             return new Vector2(b.X + a.X, b.Y + a.Y);
         }
-        public static Vector2 operator +(Vector2 a, Coordinate b)
-        {
-            return new Vector2(b.X + a.X, b.Y + a.Y);
-        }
         public static Vector2 operator -(Vector2 a, Coordinate b)
         {
             return new Vector2(a.X-b.X, a.Y-b.Y);
@@ -83,6 +79,11 @@ namespace ExNihilo.Util
             return new Vector2(a.X * b.X, a.Y * b.Y);
         }
 
+        public static Vector2 operator *(float a, Coordinate b)
+        {
+            return new Vector2(a*b.X, a*b.Y);
+        }
+
         public bool IsRadial(Coordinate coord, int radius)
         {
             return Math.Abs(coord.X - X) <= radius && Math.Abs(coord.Y - Y) <= radius;
@@ -92,6 +93,11 @@ namespace ExNihilo.Util
         {
             return (Math.Abs(coord.X - X) <= 1 && coord.Y == Y) ||
                    (Math.Abs(coord.Y - Y) <= 1 && coord.X == X);
+        }
+
+        public override string ToString()
+        {
+            return "X:" + X + " Y:" + Y;
         }
     }
 }

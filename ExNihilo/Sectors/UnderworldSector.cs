@@ -22,17 +22,12 @@ namespace ExNihilo.Sectors
         {
         }
 
-        public override void Enter()
-        {
-            
-        }
-
         public override void Initialize()
         {
             Handler = new CommandHandler();
-            Handler.Initialize(this);
+            Handler.Initialize(this, false);
             _menuHandler = new CommandHandler();
-            _menuHandler.Initialize(this);
+            _menuHandler.Initialize(this, true);
         }
 
         public override void LoadContent(GraphicsDevice graphicsDevice, ContentManager content)
@@ -45,13 +40,13 @@ namespace ExNihilo.Sectors
             //_menuHandler.UpdateInput();
         }
 
-        protected override void DrawDebugInfo()
+        protected override void DrawDebugInfo(SpriteBatch spriteBatch)
         {
         }
 
         public override void Draw(SpriteBatch spriteBatch, bool drawDebugInfo)
         {  
-            if (drawDebugInfo) DrawDebugInfo();
+            if (drawDebugInfo) DrawDebugInfo(spriteBatch);
         }
 
 /********************************************************************

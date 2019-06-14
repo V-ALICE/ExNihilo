@@ -244,9 +244,9 @@ namespace ExNihilo
             base.Update(gameTime);
         }
 
-        protected void DrawDebugInfo()
+        protected void DrawDebugInfo(SpriteBatch spriteBatch)
         {
-            TextDrawer.DrawDumbText(SpriteBatch, Vector2.One, _currentFrameRate + " FPS", 1, Color.White);
+            TextDrawer.DrawDumbText(spriteBatch, Vector2.One, _currentFrameRate + " FPS", 1, Color.White);
         }
 
         protected override void Draw(GameTime gameTime)
@@ -260,7 +260,7 @@ namespace ExNihilo
             UpdateFPS(); //FPS numbers are calculated based on drawn frames
             Console.Draw(SpriteBatch); //Console will handle when it should draw
             if (!IsMouseVisible) _mouseTexture.Draw(SpriteBatch, _mouseDrawPos, ColorScale.White, _mouseScale);
-            if (ShowDebugInfo) DrawDebugInfo();
+            if (ShowDebugInfo) DrawDebugInfo(SpriteBatch);
 
             SpriteBatch.End();
             base.Draw(gameTime);

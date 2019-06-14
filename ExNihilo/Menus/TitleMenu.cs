@@ -150,8 +150,7 @@ namespace ExNihilo.Menus
                 if (SaveHandler.HasSave(package.Caller))
                 {
                     Container.Unpack(SaveHandler.GetSave(package.Caller));
-                    DoThing(package.Caller, 1);
-                    //Container.RequestSectorChange(GameContainer.SectorID.Loading);
+                    Container.RequestSectorChange(GameContainer.SectorID.Outerworld);
                 }
                 else
                 {
@@ -253,12 +252,6 @@ namespace ExNihilo.Menus
             _optionsUI = new UIPanel("this.MenuKing", new Vector2(0.5f, 0.5f), Vector2.One, TextureUtilities.PositionType.Center);
             _loadUI = new UIPanel("this.MenuKing", new Vector2(0.5f, 0.5f), Vector2.One, TextureUtilities.PositionType.Center);
             _newGameUI = new UIPanel("this.MenuKing", new Vector2(0.5f, 0.5f), Vector2.One, TextureUtilities.PositionType.Center);
-
-            //var g = new UIParallaxElement("backdrop", "t/back/home", new Vector2(0.5f, 0.5f), ColorScale.White, _titleUI, TextureUtilities.PositionType.Center, 0.05f);
-            //_titleUI.AddElements(g);
-            //_optionsUI.AddElements(g);
-            //_loadUI.AddElements(g);
-            //_newGameUI.AddElements(g);
 
             // Title Menu setup
             var titlePanel = new UIPanel("TitleButtonPanel", new Vector2(0.5f, 1), new Vector2(0, 0.5f), TextureUtilities.PositionType.CenterBottom);
