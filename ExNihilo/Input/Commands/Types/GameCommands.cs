@@ -11,7 +11,7 @@ namespace ExNihilo.Input.Commands.Types
 
         public override void Activate()
         {
-            
+            Receiver.Touch();
         }
     }
 

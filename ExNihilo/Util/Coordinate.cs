@@ -30,26 +30,14 @@ namespace ExNihilo.Util
             Y = MathD.RoundDown(v.Y);
         }
 
-        public Coordinate GetUp()
-        {
-            return new Coordinate(X, Y + 1);
-        }
-        public Coordinate GetDown()
-        {
-            return new Coordinate(X, Y - 1);
-        }
-        public Coordinate GetLeft()
-        {
-            return new Coordinate(X - 1, Y);
-        }
-        public Coordinate GetRight()
-        {
-            return new Coordinate(X + 1, Y);
-        }
-
         public bool Equals(Coordinate check)
         {
             return X == check.X && Y == check.Y;
+        }
+
+        public bool Origin()
+        {
+            return X == 0 && Y == 0;
         }
 
         public Coordinate Copy()

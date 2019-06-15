@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Drawing;
+using System.Threading;
 using System.Windows.Forms;
 using ExNihilo.Input.Commands;
 using ExNihilo.Input.Controllers;
@@ -54,6 +55,23 @@ namespace ExNihilo
 /********************************************************************
 ------->Window functions
 ********************************************************************/
+        private void OnResize()
+        {
+            ParticleBackdrop.OnResize(_windowSize);
+            Console.OnResize(GraphicsDevice, _windowSize);
+            _mouseScale = TextureLibrary.DefaultScaleRuleSet.GetScale(_windowSize);
+            foreach (var sector in _sectorDirectory.Values) sector?.OnResize(GraphicsDevice, _windowSize);
+        }
+
+        private void ForceWindowUpdate(int width, int height)
+        {
+            _graphics.PreferredBackBufferWidth = MathHelper.Clamp(width, ScaleRule.MIN_X, ScaleRule.MAX_X);
+            _graphics.PreferredBackBufferHeight = MathHelper.Clamp(height, ScaleRule.MIN_Y, ScaleRule.MAX_Y);
+            _graphics.ApplyChanges();
+            _windowSize = new Coordinate(width, height);
+
+            OnResize();
+        }
         private void CheckForWindowUpdate()
         {
             if (Window.ClientBounds.Width != _windowSize.X || Window.ClientBounds.Height != _windowSize.Y)
@@ -63,10 +81,7 @@ namespace ExNihilo
                 _graphics.ApplyChanges();
                 _windowSize = new Coordinate(Window.ClientBounds.Width, Window.ClientBounds.Height);
 
-                ParticleBackdrop.OnResize(_windowSize);
-                Console.OnResize(GraphicsDevice, _windowSize);
-                _mouseScale = TextureLibrary.DefaultScaleRuleSet.GetScale(_windowSize);
-                foreach (var sector in _sectorDirectory.Values) sector?.OnResize(GraphicsDevice, _windowSize);
+                OnResize();
             }
         }
         public void ToggleFullScreen()
@@ -158,16 +173,16 @@ namespace ExNihilo
                 {SectorID.MainMenu, new TitleSector(this)},
                 {SectorID.Outerworld, new OuterworldSector(this) },
                 {SectorID.Underworld, new UnderworldSector(this) },
-                {SectorID.Loading, null }
+                {SectorID.Loading, new LoadingSector(this) }
             };
             foreach (var sector in _sectorDirectory.Values) sector?.Initialize();
 
             base.Initialize();
+            //ForceWindowUpdate(1920, 1080);
             CheckForWindowUpdate();
             ActiveSector?.Enter();
         }
 
-        private Texture2D a;
         protected override void LoadContent()
         {
             if (Control.FromHandle(Window.Handle) is Form f)
@@ -194,7 +209,6 @@ namespace ExNihilo
             Console.LoadContent(GraphicsDevice, Content);
 
             _mouseTexture = Content.Load<Texture2D>("UI/CURSOR");
-            a = Content.Load<Texture2D>("Backs/abyss");
 
             base.LoadContent();
         }
@@ -216,13 +230,13 @@ namespace ExNihilo
             if (tmp.PositionChange)
             {
                 _mouseDrawPos = tmp.MousePosition.ToVector2();
-                ActiveSector.OnMoveMouse(tmp.MousePosition);
+                ActiveSector?.OnMoveMouse(tmp.MousePosition);
             }
 
             if (!tmp.StateChange) return;
             if (ConsoleActive) Console.CloseConsole();
-            if (tmp.LeftDown) ActiveSector.OnLeftClick(tmp.MousePosition);
-            else if (tmp.LeftUp) ActiveSector.OnLeftRelease(tmp.MousePosition);
+            if (tmp.LeftDown) ActiveSector?.OnLeftClick(tmp.MousePosition);
+            else if (tmp.LeftUp) ActiveSector?.OnLeftRelease(tmp.MousePosition);
         }
 
         protected override void Update(GameTime gameTime)
@@ -305,7 +319,7 @@ namespace ExNihilo
         public void BackOut()
         {
             if (ConsoleActive) Console.CloseConsole();
-            else ActiveSector.BackOut();
+            else ActiveSector?.BackOut();
         }
 
         public void Pack(string id)
@@ -315,9 +329,11 @@ namespace ExNihilo
             foreach (var sector in _sectorDirectory.Values) sector?.Pack(game);
         }
 
-        public void Unpack(PackedGame game)
+        public bool Unpack(PackedGame game)
         {
+            if (game is null) return false;
             foreach (var sector in _sectorDirectory.Values) sector?.Unpack(game);
+            return true;
         }
 
         public void PushParameters(GameParameters param)

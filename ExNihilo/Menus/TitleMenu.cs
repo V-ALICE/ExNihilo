@@ -1,7 +1,7 @@
-﻿using ExNihilo.Input.Controllers;
+﻿using System.Threading.Tasks;
+using ExNihilo.Input.Controllers;
 using ExNihilo.Systems;
 using ExNihilo.UI;
-using ExNihilo.UI.Bases;
 using ExNihilo.Util;
 using ExNihilo.Util.Graphics;
 using Microsoft.Xna.Framework;
@@ -137,6 +137,13 @@ namespace ExNihilo.Menus
             }
         }
 
+        private async void LoadGame(string caller)
+        {
+            Container.RequestSectorChange(GameContainer.SectorID.Loading);
+            var success = await Task.Run(() => Container.Unpack(SaveHandler.GetSave(caller)));
+            Container.RequestSectorChange(success ? GameContainer.SectorID.Outerworld : GameContainer.SectorID.MainMenu);
+        }
+
         private void SelectLoad(UICallbackPackage package)
         {
             if (_deleteMode)
@@ -148,9 +155,8 @@ namespace ExNihilo.Menus
             else
             {
                 if (SaveHandler.HasSave(package.Caller))
-                {
-                    Container.Unpack(SaveHandler.GetSave(package.Caller));
-                    Container.RequestSectorChange(GameContainer.SectorID.Outerworld);
+                { 
+                    LoadGame(package.Caller);
                 }
                 else
                 {
@@ -212,8 +218,8 @@ namespace ExNihilo.Menus
         }
 
 /********************************************************************
-        ------->Menu Functions
-        ********************************************************************/
+------->Menu Functions
+********************************************************************/
         private enum CurrentMenu
         {
             Title, Options, Play, NewGame
@@ -388,29 +394,33 @@ namespace ExNihilo.Menus
 
         public override void Enter()
         {
+            Dead = false;
             _type = CurrentMenu.Title;
             (_newGameUI.GetElement("NewGameInputBoxText") as UIText)?.SetText("");
             UpdateLoadButtonText();
         }
 
-        public override bool BackOut()
+        public override void BackOut()
         {
             if (_textEntryMode)
             {
                 (_newGameUI.GetElement("NewGameInputBox") as UITogglable)?.ForcePush(false);
-                return false;
+                Dead = false;
             }
             switch (_type)
             {
                 case CurrentMenu.NewGame:
                     _type = CurrentMenu.Play;
-                    return false;
+                    Dead = false;
+                    break;
                 case CurrentMenu.Play:
                 case CurrentMenu.Options:
                     _type = CurrentMenu.Title;
-                    return false;
+                    Dead = false;
+                    break;
                 default:
-                    return true;
+                    Dead = true;
+                    break;
             }
         }
 

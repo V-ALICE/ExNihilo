@@ -14,8 +14,7 @@ namespace ExNihilo.Sectors
     public abstract class Sector : IUI, IClickable, ISavable, IPlayer
     {
         protected GameContainer Container;
-        protected CommandHandler Handler;
-        protected Thread LoadingThread;
+        protected CommandHandler MenuHandler;
 
         protected Coordinate CurrentPush;
         protected int CurrentPushMult;
@@ -42,13 +41,9 @@ namespace ExNihilo.Sectors
             Draw(spriteBatch, false);
         }
 
-        public void OnExit()
+        public virtual void OnExit()
         {
-            LoadingThread?.Abort();
-            LoadingThread?.Join();
-            Exit();
         }
-        protected abstract void Exit();
 
         public virtual void BackOut()
         {

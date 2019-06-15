@@ -24,8 +24,8 @@ namespace ExNihilo.Sectors
 
         public override void Initialize()
         {
-            Handler = new CommandHandler();
-            Handler.Initialize(this, false);
+            MenuHandler = new CommandHandler();
+            MenuHandler.Initialize(this, false);
             _menuHandler = new CommandHandler();
             _menuHandler.Initialize(this, true);
         }
@@ -36,7 +36,7 @@ namespace ExNihilo.Sectors
 
         public override void Update()
         {
-            Handler.UpdateInput();
+            MenuHandler.UpdateInput();
             //_menuHandler.UpdateInput();
         }
 
@@ -52,7 +52,7 @@ namespace ExNihilo.Sectors
 /********************************************************************
 ------->Game functions
 ********************************************************************/
-        protected override void Exit()
+        public override void OnExit()
         {
         }
 

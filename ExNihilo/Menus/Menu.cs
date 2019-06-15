@@ -15,17 +15,21 @@ namespace ExNihilo.Menus
         }
 
         protected GameContainer Container;
+        public bool Dead { get; protected set; }
 
         protected Menu(GameContainer container)
         {
             Container = container;
         }
 
-        public abstract void Enter();
-
-        public virtual bool BackOut()
+        public virtual void Enter()
         {
-            return true;
+            Dead = false;
+        }
+
+        public virtual void BackOut()
+        {
+            Dead = true;
         }
 
         protected virtual void MenuDown()

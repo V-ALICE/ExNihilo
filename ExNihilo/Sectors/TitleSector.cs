@@ -31,8 +31,8 @@ namespace ExNihilo.Sectors
 
         public override void Initialize()
         {
-            Handler = new CommandHandler();
-            Handler.Initialize(this, true);
+            MenuHandler = new CommandHandler();
+            MenuHandler.Initialize(this, true);
             _title = new TitleMenu(Container);
         }
 
@@ -43,7 +43,7 @@ namespace ExNihilo.Sectors
 
         public override void Update()
         {
-            if (!TypingKeyboard.Active) Handler.UpdateInput();
+            if (!TypingKeyboard.Active) MenuHandler.UpdateInput();
         }
 
         protected override void DrawDebugInfo(SpriteBatch spriteBatch)
@@ -59,13 +59,14 @@ namespace ExNihilo.Sectors
 /********************************************************************
 ------->Game functions
 ********************************************************************/
-        protected override void Exit()
+        public override void OnExit()
         {
         }
 
         public override void BackOut()
         {
-            if (_title.BackOut()) RequestSectorChange(Container.PreviousSectorID);
+            _title.BackOut();
+            if (_title.Dead) RequestSectorChange(Container.PreviousSectorID);
         }
         public override void ReceiveCommand(Menu.MenuCommand command)
         {

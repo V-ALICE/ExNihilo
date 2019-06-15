@@ -70,8 +70,10 @@
     <Compile Include="Input\Commands\Types\SuperCommands.cs" />
     <Compile Include="Input\Commands\Types\MenuCommands.cs" />
     <Compile Include="Input\Controllers\MouseController.cs" />
+    <Compile Include="Menus\CharacterMenu.cs" />
     <Compile Include="Menus\Menu.cs" />
     <Compile Include="Menus\TitleMenu.cs" />
+    <Compile Include="Sectors\LoadingSector.cs" />
     <Compile Include="Sectors\Sector.cs" />
     <Compile Include="Sectors\UnderworldSector.cs" />
     <Compile Include="Sectors\OuterworldSector.cs" />
@@ -87,7 +89,7 @@
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Systems\Asura.cs" />
-    <Compile Include="Systems\Bases\IInteractable.cs" />
+    <Compile Include="Systems\Bases\Interactable.cs" />
     <Compile Include="Systems\Bases\IPlayer.cs" />
     <Compile Include="Systems\Console.cs" />
     <Compile Include="Systems\Bases\ISavable.cs" />
@@ -96,6 +98,7 @@
     <Compile Include="Systems\ParticleBackdrop.cs" />
     <Compile Include="Systems\PlayerOverlay.cs" />
     <Compile Include="Systems\SaveHandler.cs" />
+    <Compile Include="Systems\World.cs" />
     <Compile Include="UI\Bases\IClickable.cs" />
     <Compile Include="UI\Bases\IScalable.cs" />
     <Compile Include="UI\UIClickable.cs" />
@@ -147,7 +150,7 @@
     <Content Include="Content\Resources\UI.info">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="Content\Resources\BACK.info">
+    <Content Include="Content\Resources\WORLD.info">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <None Include="packages.config" />
