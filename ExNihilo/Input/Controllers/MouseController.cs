@@ -37,7 +37,7 @@ namespace ExNihilo.Input.Controllers
             Left, Right, Middle
         }
 
-        public static MouseState PreviousMouseState;
+        private static MouseState PreviousMouseState;
 
         public MouseController()
         {

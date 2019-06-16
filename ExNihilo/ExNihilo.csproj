@@ -66,12 +66,16 @@
   </PropertyGroup>
   <PropertyGroup />
   <ItemGroup>
+    <Compile Include="Entity\EntityTexture.cs" />
     <Compile Include="Input\Commands\Types\ConsoleCommands.cs" />
     <Compile Include="Input\Commands\Types\SuperCommands.cs" />
     <Compile Include="Input\Commands\Types\MenuCommands.cs" />
     <Compile Include="Input\Controllers\MouseController.cs" />
     <Compile Include="Menus\CharacterMenu.cs" />
+    <Compile Include="Menus\DivineMenu.cs" />
     <Compile Include="Menus\Menu.cs" />
+    <Compile Include="Menus\MultiplayerMenu.cs" />
+    <Compile Include="Menus\NoteMenu.cs" />
     <Compile Include="Menus\TitleMenu.cs" />
     <Compile Include="Sectors\LoadingSector.cs" />
     <Compile Include="Sectors\Sector.cs" />
@@ -102,6 +106,7 @@
     <Compile Include="UI\Bases\IClickable.cs" />
     <Compile Include="UI\Bases\IScalable.cs" />
     <Compile Include="UI\UIClickable.cs" />
+    <Compile Include="UI\UIDynamicElement.cs" />
     <Compile Include="UI\UIElement.cs" />
     <Compile Include="UI\UIExtendable.cs" />
     <Compile Include="UI\UIMovable.cs" />
@@ -151,6 +156,9 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Include="Content\Resources\WORLD.info">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Content\Resources\CHAR.info">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <None Include="packages.config" />

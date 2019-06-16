@@ -28,7 +28,7 @@ namespace ExNihilo.Sectors
 
         public abstract void OnResize(GraphicsDevice graphicsDevice, Coordinate gameWindow);
 
-        public virtual void Enter()
+        public virtual void Enter(Point point)
         {
         }
         public abstract void Initialize();

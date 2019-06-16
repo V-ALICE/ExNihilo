@@ -12,10 +12,11 @@ namespace ExNihilo.Systems
 {
     public static class TextureLibrary
     {
-        public static ScaleRuleSet DefaultScaleRuleSet, ReducedScaleRuleSet, UnscaledScaleRuleSet, HalfScaleRuleSet, DoubleScaleRuleSet;
+        public static ScaleRuleSet DefaultScaleRuleSet, ReducedScaleRuleSet, HalfScaleRuleSet, DoubleScaleRuleSet, GiantScaleRuleSet;
         private static Dictionary<string, Dictionary<string, AnimatableTexture>> _UILookUp;
         private static Dictionary<string, Dictionary<string, AnimatableTexture>> _textureLookUp;
         private static Dictionary<string, Dictionary<string, AnimatableTexture>> _iconLookUp;
+        private static Dictionary<string, Dictionary<string, AnimatableTexture>> _characterLookUp;
         private static AnimatableTexture _null;
         private static Dictionary<string, byte[]> _UIAlphaLookUp;
 
@@ -32,6 +33,8 @@ namespace ExNihilo.Systems
                             return _UILookUp[tmp[1]][tmp[2]];
                         case "Icon":
                             return _iconLookUp[tmp[1]][tmp[2]];
+                        case "Char":
+                            return _characterLookUp[tmp[1]][tmp[2]];
                         default:
                             return _textureLookUp[tmp[1]][tmp[2]];
                     }
@@ -75,12 +78,6 @@ namespace ExNihilo.Systems
                 new ScaleRule(2, ScaleRule.MAX_X, ScaleRule.MAX_Y)
             );
 
-            UnscaledScaleRuleSet = new ScaleRuleSet();
-            UnscaledScaleRuleSet.AddRules
-            (
-                new ScaleRule(1, ScaleRule.MAX_X, ScaleRule.MAX_Y)
-            );
-
             HalfScaleRuleSet = new ScaleRuleSet();
             HalfScaleRuleSet.AddRules
             (
@@ -98,6 +95,16 @@ namespace ExNihilo.Systems
                 new ScaleRule(6, 2800, 2000),
                 new ScaleRule(8, ScaleRule.MAX_X, ScaleRule.MAX_Y)
             );
+
+            GiantScaleRuleSet = new ScaleRuleSet();
+            GiantScaleRuleSet.AddRules
+            (
+                new ScaleRule(4, 1400, 1000),
+                new ScaleRule(8, 2100, 1500),
+                new ScaleRule(12, 2800, 2000),
+                new ScaleRule(16, ScaleRule.MAX_X, ScaleRule.MAX_Y)
+            );
+
         }
 
         private static void LoadLibrary(GraphicsDevice graphics, ContentManager content, Dictionary<string, Dictionary<string, AnimatableTexture>> d, params string[] infoFiles)
@@ -130,7 +137,8 @@ namespace ExNihilo.Systems
 
                         continue;
                     }
-                    else if (trueSegments.Count < 5) continue;
+                    if (trueSegments.Count < 5) continue;
+                    if (sheet is null) continue;
 
                     var name = trueSegments[0].Split('/');
                     if (!d.ContainsKey(name[0])) d.Add(name[0], new Dictionary<string, AnimatableTexture>());
@@ -180,6 +188,27 @@ namespace ExNihilo.Systems
             if (_null is null) _null = new Texture2D(graphics, 1, 1);
             _iconLookUp = new Dictionary<string, Dictionary<string, AnimatableTexture>>();
             LoadLibrary(graphics, content, _iconLookUp, infoFiles);
+        }
+
+        public static void LoadCharacterLibrary(GraphicsDevice graphics, ContentManager content, params string[] infoFiles)
+        {
+            if (_null is null) _null = new Texture2D(graphics, 1, 1);
+            _characterLookUp = new Dictionary<string, Dictionary<string, AnimatableTexture>>();
+            LoadLibrary(graphics, content, _characterLookUp, infoFiles);
+
+            //dumb but probably beats having to make 400 extra lines in the input
+            var colorSets = _characterLookUp["hair"];
+            _characterLookUp["hair"] = new Dictionary<string, AnimatableTexture>();
+            foreach (var c in colorSets)
+            {
+                var sheet = c.Value.TextureStrip;
+                for (int i = 0; i < 10; i++)
+                {
+                    var hairSheet = TextureUtilities.GetSubTexture(graphics, sheet, new Rectangle(i * 96, 0, 96, 144));
+                    var extendedHairSheet = TextureUtilities.Extend3FramesTo4(graphics, hairSheet);
+                    _characterLookUp["hair"].Add(c.Key + "-" + (i+1), extendedHairSheet);
+                }
+            }
         }
     }
 }

@@ -113,8 +113,13 @@ namespace ExNihilo.Util
         //Mark given timers as no longer in use so they can be redistributed 
         public static void SellTimer(params int[] ids)
         {
-            TurnOffTimer(ids);
-            _timersForSale.AddRange(ids);
+            foreach (var id in ids)
+            {
+                if (_timersForSale.Contains(id)) continue;
+                TurnOffTimer(id);
+                _timersForSale.Add(id);
+            }
+            
         }
 
         //Toggle all the non-system timers on or off. Useful for pausing things

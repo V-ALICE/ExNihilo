@@ -18,11 +18,13 @@ namespace ExNihilo.Menus
         private void SwapToLoad(UICallbackPackage package)
         {
             _type = CurrentMenu.Play;
+            _loadUI.OnMoveMouse(_lastMousePosition);
         }
 
         private void SwapToOptions(UICallbackPackage package)
         {
             _type = CurrentMenu.Options;
+            _optionsUI.OnMoveMouse(_lastMousePosition);
         }
 
         private void ExitGame(UICallbackPackage package)
@@ -40,14 +42,14 @@ namespace ExNihilo.Menus
                 ((UITogglable)_loadUI.GetElement("DeleteFileButton"))?.ForcePush(false);
             }
             _type = CurrentMenu.Title;
-            _titleUI.OnMoveMouse(MouseController.PreviousMouseState.Position);
+            _titleUI.OnMoveMouse(_lastMousePosition);
         }
 
         private void SwapToTitleFromOptions(UICallbackPackage package)
         {
             SaveHandler.SaveParameters();
             _type = CurrentMenu.Title;
-            _titleUI.OnMoveMouse(MouseController.PreviousMouseState.Position);
+            _titleUI.OnMoveMouse(_lastMousePosition);
         }
 
         private void ApplyMusicVolume(UICallbackPackage package)
@@ -178,7 +180,7 @@ namespace ExNihilo.Menus
         private void CancelNewGame(UICallbackPackage package)
         {
             _type = CurrentMenu.Play;
-            _loadUI.OnMoveMouse(MouseController.PreviousMouseState.Position);
+            _loadUI.OnMoveMouse(_lastMousePosition);
         }
 
         private void PrepForTextEntry(UICallbackPackage package)
@@ -212,7 +214,7 @@ namespace ExNihilo.Menus
             SaveHandler.Save(_slot, newGame);
             UpdateLoadButtonText();
             _type = CurrentMenu.Play;
-            _loadUI.OnMoveMouse(MouseController.PreviousMouseState.Position);
+            _loadUI.OnMoveMouse(_lastMousePosition);
             _slot = "";
             (_newGameUI.GetElement("NewGameInputBoxText") as UIText)?.SetText(""); //temp until creating a new game closes the menu
         }
@@ -229,6 +231,7 @@ namespace ExNihilo.Menus
         private string _slot;
         private bool _deleteMode, _textEntryMode;
         private readonly UIPanel _titleUI, _optionsUI, _loadUI, _newGameUI;
+        private Point _lastMousePosition;
         private const int MAX_NEWGAME_TEXT_SIZE = 15;
 
         private void DoThing(string caller, float value)
@@ -254,6 +257,8 @@ namespace ExNihilo.Menus
 
         public TitleMenu(GameContainer container) : base(container)
         {
+            _lastMousePosition = new Point();
+
             _titleUI = new UIPanel("this.MenuKing", new Vector2(0.5f, 0.5f), Vector2.One, TextureUtilities.PositionType.Center);
             _optionsUI = new UIPanel("this.MenuKing", new Vector2(0.5f, 0.5f), Vector2.One, TextureUtilities.PositionType.Center);
             _loadUI = new UIPanel("this.MenuKing", new Vector2(0.5f, 0.5f), Vector2.One, TextureUtilities.PositionType.Center);
@@ -392,8 +397,10 @@ namespace ExNihilo.Menus
             _newGameUI.AddElements(cancelButton, cancelButtonText, inputBox, inputBoxText, confirmButton, confirmButtonText);
         }
 
-        public override void Enter()
+        public override void Enter(Point point)
         {
+            _lastMousePosition = point;
+            _titleUI.OnMoveMouse(point);
             Dead = false;
             _type = CurrentMenu.Title;
             (_newGameUI.GetElement("NewGameInputBoxText") as UIText)?.SetText("");
@@ -448,6 +455,7 @@ namespace ExNihilo.Menus
         public override void OnMoveMouse(Point point)
         {
             ActivePanel().OnMoveMouse(point);
+            _lastMousePosition = point;
         }
 
         public override bool OnLeftClick(Point point)

@@ -7,13 +7,13 @@ namespace ExNihilo.Util.Graphics
     {
         private int _frameNow;
         private readonly int _timerID;
-        protected readonly Texture2D TextureStrip;
         private readonly bool _animated;
         private readonly int _frameCount;
         private byte[] _alphaMask;
 
         public int Width { get; }
         public int Height => TextureStrip.Height;
+        public readonly Texture2D TextureStrip;
 
         public AnimatableTexture(Texture2D texture, int frameCount=1, int framesPerSec=1)
         {
@@ -44,6 +44,11 @@ namespace ExNihilo.Util.Graphics
             return t.TextureStrip;
         }
 
+        public void ResetFrame()
+        {
+            UniversalTime.ResetTimer(_timerID);
+            _frameNow = 0;
+        }
         public void AdjustFPS(int newFPS)
         {
             UniversalTime.RecycleTimer(_timerID, 1d / newFPS);

@@ -12,6 +12,7 @@ using ExNihilo.Util.Graphics;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Color = Microsoft.Xna.Framework.Color;
+using Point = Microsoft.Xna.Framework.Point;
 
 namespace ExNihilo
 {
@@ -36,6 +37,7 @@ namespace ExNihilo
         private AnimatableTexture _mouseTexture;
         private MouseController _mouse;
         private CommandHandler _handler, _superHandler;
+        private Point _lastMousePosition;
 
         public ConsoleHandler Console { get; private set; }
         public SectorID PreviousSectorID;
@@ -139,6 +141,7 @@ namespace ExNihilo
             _activeSectorID = SectorID.MainMenu;
             PreviousSectorID = SectorID.MainMenu;
             _mouseScale = 1;
+            _lastMousePosition = new Point();
             _mouse = new MouseController();
             Console = new ConsoleHandler();
             _handler = new CommandHandler();
@@ -180,7 +183,7 @@ namespace ExNihilo
             base.Initialize();
             //ForceWindowUpdate(1920, 1080);
             CheckForWindowUpdate();
-            ActiveSector?.Enter();
+            ActiveSector?.Enter(_lastMousePosition);
         }
 
         protected override void LoadContent()
@@ -202,6 +205,7 @@ namespace ExNihilo
             SpriteBatch = new SpriteBatch(GraphicsDevice);
             TextureLibrary.LoadUILibrary(GraphicsDevice, Content, "LOGO.info", "UI.info");
             TextureLibrary.LoadIconLibrary(GraphicsDevice, Content, "ICON.info");
+            TextureLibrary.LoadCharacterLibrary(GraphicsDevice, Content, "CHAR.info");
             TextureLibrary.LoadTextureLibrary(GraphicsDevice, Content, "BACK.info");
 
             TextDrawer.Initialize(GraphicsDevice, Content.Load<Texture2D>("UI/FONT"));
@@ -227,6 +231,7 @@ namespace ExNihilo
         private void UpdateMouse()
         {
             var tmp = _mouse.UpdateInput();
+            _lastMousePosition = tmp.MousePosition;
             if (tmp.PositionChange)
             {
                 _mouseDrawPos = tmp.MousePosition.ToVector2();
@@ -295,7 +300,7 @@ namespace ExNihilo
 
             PreviousSectorID = _activeSectorID;
             _activeSectorID = newSector;
-            ActiveSector?.Enter();
+            ActiveSector?.Enter(_lastMousePosition);
             return 0; //no issue
         }
 

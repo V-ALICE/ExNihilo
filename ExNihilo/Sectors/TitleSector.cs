@@ -24,9 +24,9 @@ namespace ExNihilo.Sectors
             _title.OnResize(graphicsDevice, gameWindow);
         }
 
-        public override void Enter()
+        public override void Enter(Point point)
         {
-            _title.Enter();
+            _title.Enter(point);
         }
 
         public override void Initialize()

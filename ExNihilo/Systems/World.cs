@@ -26,7 +26,7 @@ namespace ExNihilo.Systems
         public World(int tileSize)
         {
             _tileSize = tileSize;
-            _currentWorldPosition = new Vector2(-200, -350);
+            _currentWorldPosition = new Vector2(-440, -180);//new Vector2(-200, -350);
             _currentWorldScale = 1;
             _overlays = new List<Tuple<AnimatableTexture, Vector2>>();
             _playerCustomHitBox = new Coordinate();
@@ -107,7 +107,8 @@ namespace ExNihilo.Systems
 
         public Interactive CheckForInteraction()
         {
-            var offset = _playerOverlay.PlayerCenterScreen - _currentWorldPosition;
+            var offset = _playerOverlay.PlayerCenterScreen - _currentWorldPosition +
+                         TextureUtilities.GetOffset(TextureUtilities.PositionType.Center, _playerCustomHitBox);
             return _map.GetInteractive((int) (_currentWorldScale * _tileSize), offset, 1);
         }
 

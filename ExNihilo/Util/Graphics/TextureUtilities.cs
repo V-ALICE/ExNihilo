@@ -2,6 +2,7 @@
 using System.Drawing;
 using System.Drawing.Imaging;
 using System.IO;
+using System.Linq;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Rectangle = Microsoft.Xna.Framework.Rectangle; 
@@ -18,7 +19,7 @@ namespace ExNihilo.Util.Graphics
             BottomLeft, BottomRight,
             CenterTop, CenterBottom,
             CenterLeft, CenterRight,
-            Center,
+            Center
         }
 
         public static Vector2 GetOffset(PositionType anchorType, AnimatableTexture texture)
@@ -44,19 +45,19 @@ namespace ExNihilo.Util.Graphics
                     textureOffsetToOrigin = new Vector2(pixelSize.X, pixelSize.Y);
                     break;
                 case PositionType.CenterTop:
-                    textureOffsetToOrigin = new Vector2(pixelSize.X / 2, 0);
+                    textureOffsetToOrigin = new Vector2(pixelSize.X / 2f, 0);
                     break;
                 case PositionType.CenterBottom:
-                    textureOffsetToOrigin = new Vector2(pixelSize.X / 2, pixelSize.Y);
+                    textureOffsetToOrigin = new Vector2(pixelSize.X / 2f, pixelSize.Y);
                     break;
                 case PositionType.CenterLeft:
-                    textureOffsetToOrigin = new Vector2(0, pixelSize.Y / 2);
+                    textureOffsetToOrigin = new Vector2(0, pixelSize.Y / 2f);
                     break;
                 case PositionType.CenterRight:
-                    textureOffsetToOrigin = new Vector2(pixelSize.X, pixelSize.Y / 2);
+                    textureOffsetToOrigin = new Vector2(pixelSize.X, pixelSize.Y / 2f);
                     break;
                 case PositionType.Center:
-                    textureOffsetToOrigin = new Vector2(pixelSize.X / 2, pixelSize.Y / 2);
+                    textureOffsetToOrigin = new Vector2(pixelSize.X / 2f, pixelSize.Y / 2f);
                     break;
                 default:
                     textureOffsetToOrigin = new Vector2();
@@ -66,6 +67,49 @@ namespace ExNihilo.Util.Graphics
             return textureOffsetToOrigin;
         }
 
+        public static Texture2D Extend3FramesTo4(GraphicsDevice graphics, Texture2D a)
+        {
+            //taken directly from the previous project since it works
+            int oldW = a.Width, sing = oldW / 3, newW = sing * 4;
+            var rect = new Rectangle(0, 0, newW, a.Height);
+            var texture = new Texture2D(graphics, rect.Width, rect.Height);
+            var data = new Color[rect.Width * rect.Height];
+            var adata = new Color[a.Width * a.Height];
+            a.GetData(0, new Rectangle(0, 0, a.Width, a.Height), adata, 0, adata.Length);
+            for (var i = 0; i < data.Length; i++)
+            {
+                if (i % newW < oldW) data[i] = adata[oldW * (i / newW) + i % newW];
+                else data[i] = adata[oldW * (i / newW) + sing + (i % newW - oldW)];
+            }
+            texture.SetData(data);
+            return texture;
+        }
+
+        public static Texture2D CombineTextures(GraphicsDevice graphics, params Texture2D[] sheets)
+        {
+            //first sheet given is lowest layer
+            if (sheets.Length == 0) return null;
+            if (sheets.Length == 1) return sheets[0];
+
+            var texture = sheets[0];
+            var rect = new Rectangle(0, 0, texture.Width, texture.Height);
+            var data = new Color[texture.Width * texture.Height];
+            texture.GetData(0, rect, data, 0, data.Length);
+            for (int i = 1; i < sheets.Length; i++)
+            {
+                var topData = new Color[rect.Width * rect.Height];
+                if (topData.Length != data.Length) continue;
+
+                sheets[i].GetData(0, rect, topData, 0, topData.Length);
+                for (var j = 0; j < topData.Length; j++)
+                {
+                    if (topData[j].A != 0) data[j] = topData[j];
+                }
+                texture.SetData(data);
+            }
+
+            return texture;
+        }
 
         public static Texture2D GetSubTexture(GraphicsDevice device, Texture2D sheet, Rectangle rect)
         {

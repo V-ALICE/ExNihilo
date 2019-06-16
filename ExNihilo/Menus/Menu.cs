@@ -22,7 +22,7 @@ namespace ExNihilo.Menus
             Container = container;
         }
 
-        public virtual void Enter()
+        public virtual void Enter(Point point)
         {
             Dead = false;
         }
