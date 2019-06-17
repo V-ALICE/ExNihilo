@@ -18,6 +18,8 @@ namespace ExNihilo
 {
     public class GameContainer : Game
     {
+        public const bool GLOBAL_DEBUG = false;
+
         public enum SectorID
         {
             MainMenu, Outerworld, Underworld, Loading
@@ -38,7 +40,7 @@ namespace ExNihilo
         private MouseController _mouse;
         private CommandHandler _handler, _superHandler;
         private Point _lastMousePosition;
-
+       
         public ConsoleHandler Console { get; private set; }
         public SectorID PreviousSectorID;
 
@@ -183,7 +185,7 @@ namespace ExNihilo
             base.Initialize();
             //ForceWindowUpdate(1920, 1080);
             CheckForWindowUpdate();
-            ActiveSector?.Enter(_lastMousePosition);
+            ActiveSector?.Enter(_lastMousePosition, _windowSize);
         }
 
         protected override void LoadContent()
@@ -300,7 +302,7 @@ namespace ExNihilo
 
             PreviousSectorID = _activeSectorID;
             _activeSectorID = newSector;
-            ActiveSector?.Enter(_lastMousePosition);
+            ActiveSector?.Enter(_lastMousePosition, _windowSize);
             return 0; //no issue
         }
 
@@ -327,16 +329,17 @@ namespace ExNihilo
             else ActiveSector?.BackOut();
         }
 
-        public void Pack(string id)
+        public void Pack()
         {
-            PackedGame game = new PackedGame(id);
-            game.Pack(this);
+            PackedGame game = new PackedGame(this, SaveHandler.GetLastID());
             foreach (var sector in _sectorDirectory.Values) sector?.Pack(game);
+            SaveHandler.Save(SaveHandler.LastLoadedFile, game);
         }
 
         public bool Unpack(PackedGame game)
         {
             if (game is null) return false;
+
             foreach (var sector in _sectorDirectory.Values) sector?.Unpack(game);
             return true;
         }

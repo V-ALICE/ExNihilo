@@ -80,7 +80,7 @@ namespace ExNihilo.UI
         {
             base.LoadContent(graphics, content);
 
-            Alpha = TextureLibrary.AlphaLookup(TexturePath);
+            Alpha = Texture.GetAlphaMask();
             if (DownTexturePath.Length > 0) DownTexture = TextureLibrary.Lookup(DownTexturePath);
             if (OverTexturePath.Length > 0) OverTexture = TextureLibrary.Lookup(OverTexturePath);
         }

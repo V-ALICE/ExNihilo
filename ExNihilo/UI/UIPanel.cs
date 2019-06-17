@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using ExNihilo.Util;
 using ExNihilo.Util.Graphics;
@@ -24,8 +25,8 @@ namespace ExNihilo.UI
             IsRelativeToSuperior = false;
         }
 
-        public UIPanel(string name, Coordinate pixelSize, Vector2 relSize, UIPanel superior, TextureUtilities.PositionType anchorPoint,
-            TextureUtilities.PositionType superAnchorPoint) : base(name, "null", pixelSize, Color.White, superior, anchorPoint, superAnchorPoint)
+        public UIPanel(string name, Coordinate pixelOffset, Vector2 relSize, UIPanel superior, TextureUtilities.PositionType anchorPoint,
+            TextureUtilities.PositionType superAnchorPoint) : base(name, "null", pixelOffset, Color.White, superior, anchorPoint, superAnchorPoint)
         {
             //Absolute offset relative size
             Set = new List<UIElement>();
@@ -46,8 +47,8 @@ namespace ExNihilo.UI
             IsRelativeToSuperior = true;
         }
 
-        public UIPanel(string name, Coordinate pixelSize, Coordinate absoluteSize, UIElement superior, TextureUtilities.PositionType anchorPoint, 
-            TextureUtilities.PositionType superAnchorPoint) : base(name, "null", pixelSize, Color.White, superior, anchorPoint, superAnchorPoint)
+        public UIPanel(string name, Coordinate pixelOffset, Coordinate absoluteSize, UIElement superior, TextureUtilities.PositionType anchorPoint, 
+            TextureUtilities.PositionType superAnchorPoint) : base(name, "null", pixelOffset, Color.White, superior, anchorPoint, superAnchorPoint)
         {
             //Absolute offset absolute size
             Set = new List<UIElement>();
@@ -99,7 +100,7 @@ namespace ExNihilo.UI
             if (!Loaded) return;
             foreach (var item in Set) item.Draw(spriteBatch);
 
-            //LineDrawer.DrawSquare(spriteBatch, OriginPosition, CurrentPixelSize.X, CurrentPixelSize.Y, Color.White, 5);
+            if (GameContainer.GLOBAL_DEBUG) LineDrawer.DrawSquare(spriteBatch, OriginPosition, CurrentPixelSize.X, CurrentPixelSize.Y, Color.White, 5);
         }
 
         public override void OnResize(GraphicsDevice graphics, Coordinate gameWindow)
@@ -157,6 +158,14 @@ namespace ExNihilo.UI
             foreach (var item in Set) item.OnResize(graphics, gameWindow);
         }
 
+        public override bool IsOver(Point mousePos)
+        {
+            if (Disabled) return false;
+            int buttonX = (int)(Math.Round(mousePos.X - OriginPosition.X) / CurrentScale);
+            int buttonY = (int)(Math.Round(mousePos.Y - OriginPosition.Y) / CurrentScale);
+            return buttonX >= 0 && buttonY >= 0 && buttonX < CurrentPixelSize.X / CurrentScale && buttonY < CurrentPixelSize.Y / CurrentScale;
+        }
+
         public override void OnMoveMouse(Point point)
         {
             foreach (var item in Set)
@@ -175,13 +184,13 @@ namespace ExNihilo.UI
                 }
             }
 
-            //return base.OnLeftClick(point);
+            Down = IsOver(point); //don't return this because the top level panel will steal it every time
             return false;
         }
 
         public override void OnLeftRelease(Point point)
         {
-            //base.OnLeftRelease(point);
+            base.OnLeftRelease(point);
             foreach (var item in Set)
             {
                 if (item is UIClickable click) click.OnLeftRelease(point);
@@ -222,5 +231,6 @@ namespace ExNihilo.UI
 
             return null;
         }
+
     }
 }

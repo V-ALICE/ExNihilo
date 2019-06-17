@@ -30,6 +30,11 @@ namespace ExNihilo.Util
             Y = MathD.RoundDown(v.Y);
         }
 
+        public static implicit operator Coordinate(Vector2 v)
+        {
+            return new Coordinate(v);
+        }
+
         public bool Equals(Coordinate check)
         {
             return X == check.X && Y == check.Y;

@@ -34,10 +34,10 @@ namespace ExNihilo.Menus
 
             var textBox = new UIElement("NoteTextBox", "UI/field/SmallEntryBox", new Vector2(0.5f, 0.5f), ColorScale.White, _panelUI, TextureUtilities.PositionType.Center);
             var text = new UIText("Note", new Coordinate(14, 18), note, ColorScale.Black, textBox, TextureUtilities.PositionType.TopLeft, TextureUtilities.PositionType.TopLeft, true);
-            var confirmButton = new UIClickable("ConfirmButton", "UI/button/GreenBulb", new Coordinate(-6, -20), ColorScale.White, textBox, TextureUtilities.PositionType.TopRight, TextureUtilities.PositionType.BottomRight);
-            var confirmButtonIcon = new UIElement("ConfirmButtonIcon", "UI/icon/Yes", new Coordinate(), ColorScale.White, confirmButton, TextureUtilities.PositionType.Center, TextureUtilities.PositionType.Center);
+            var confirmButton = new UIClickable("ConfirmButton", "UI/button/GreenBulb", new Coordinate(-6, -20), ColorScale.White, textBox, TextureUtilities.PositionType.TopRight, TextureUtilities.PositionType.BottomRight, true);
+            var confirmButtonIcon = new UIElement("ConfirmButtonIcon", "UI/icon/Yes", new Coordinate(), ColorScale.Ghost, confirmButton, TextureUtilities.PositionType.Center, TextureUtilities.PositionType.Center);
             var cancelButton = new UIClickable("CancelButton", "UI/button/RedBulb", new Coordinate(-2, 0), ColorScale.White, confirmButton, TextureUtilities.PositionType.TopRight, TextureUtilities.PositionType.TopLeft);
-            var cancelButtonIcon = new UIElement("CancelButtonIcon", "UI/icon/No", new Coordinate(), ColorScale.White, cancelButton, TextureUtilities.PositionType.Center, TextureUtilities.PositionType.Center);
+            var cancelButtonIcon = new UIElement("CancelButtonIcon", "UI/icon/No", new Coordinate(), ColorScale.Ghost, cancelButton, TextureUtilities.PositionType.Center, TextureUtilities.PositionType.Center);
 
             confirmButton.SetExtraStates("UI/button/GreenBulbDown", "UI/button/GreenBulbOver");
             cancelButton.SetExtraStates("UI/button/RedBulbDown", "UI/button/RedBulbOver");

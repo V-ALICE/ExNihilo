@@ -1,13 +1,17 @@
-﻿using ExNihilo.Systems.Bases;
+﻿using System;
+using ExNihilo.Systems;
+using ExNihilo.Systems.Bases;
+using ExNihilo.UI;
 using ExNihilo.UI.Bases;
 using ExNihilo.Util;
+using ExNihilo.Util.Graphics;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
 
 namespace ExNihilo.Menus
 {
-    public abstract class Menu : IUI, IClickable, ITypable
+    public abstract class Menu : IUI, IClickable, ITypable, ISavable
     {
         public enum MenuCommand
         {
@@ -74,6 +78,26 @@ namespace ExNihilo.Menus
             }
         }
 
+        protected void RegisterAll(Action<UICallbackPackage> action, params UIClickable[] elements)
+        {
+            foreach (var element in elements) element.RegisterCallback(action);
+        }
+
+        protected void DisableAll(ColorScale color, params UIClickable[] elements)
+        {
+            foreach (var element in elements) element.Disable(color);
+        }
+
+        protected void SetExtrasAll(string downPath, string overPath, ColorScale down, ColorScale over, params UIClickable[] elements)
+        {
+            foreach (var element in elements) element.SetExtraStates(downPath, overPath, down, over);
+        }
+
+        protected void SetRulesAll(ScaleRuleSet rules, params UIElement[] elements)
+        {
+            foreach (var element in elements) element.SetRules(rules);
+        }
+
         public virtual void Update()
         {
         }
@@ -91,6 +115,14 @@ namespace ExNihilo.Menus
         public abstract void OnLeftRelease(Point point);
         public abstract void ReceiveInput(string input);
         public virtual void Backspace(int len)
+        {
+        }
+
+        public virtual void Pack(PackedGame game)
+        {
+        }
+
+        public virtual void Unpack(PackedGame game)
         {
         }
     }

@@ -66,6 +66,7 @@
   </PropertyGroup>
   <PropertyGroup />
   <ItemGroup>
+    <Compile Include="Entity\EntityContainer.cs" />
     <Compile Include="Entity\EntityTexture.cs" />
     <Compile Include="Input\Commands\Types\ConsoleCommands.cs" />
     <Compile Include="Input\Commands\Types\SuperCommands.cs" />

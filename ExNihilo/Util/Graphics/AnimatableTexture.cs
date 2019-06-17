@@ -6,9 +6,9 @@ namespace ExNihilo.Util.Graphics
     public class AnimatableTexture
     {
         private int _frameNow;
-        private readonly int _timerID;
+        private readonly int _timerID=-1;
         private readonly bool _animated;
-        private readonly int _frameCount;
+        private readonly int _frameCount, _fps;
         private byte[] _alphaMask;
 
         public int Width { get; }
@@ -21,6 +21,7 @@ namespace ExNihilo.Util.Graphics
             TextureStrip = texture;
             Width = TextureStrip.Width / _frameCount;
             _frameNow = 0;
+            _fps = framesPerSec;
             if (frameCount > 1)
             {
                 _timerID = UniversalTime.NewTimer(false, 1d / framesPerSec);
@@ -30,8 +31,7 @@ namespace ExNihilo.Util.Graphics
         }
         ~AnimatableTexture()
         {
-            UniversalTime.SellTimer(_timerID);
-            TextureStrip.Dispose();
+            if (_timerID >= 0) UniversalTime.SellTimer(_timerID);
         }
 
         public static implicit operator AnimatableTexture(Texture2D t)
@@ -44,17 +44,23 @@ namespace ExNihilo.Util.Graphics
             return t.TextureStrip;
         }
 
+        public AnimatableTexture Copy()
+        {
+            return new AnimatableTexture(TextureStrip, _frameCount, _fps);
+        }
+
         public void ResetFrame()
         {
-            UniversalTime.ResetTimer(_timerID);
+            if (_timerID >= 0) UniversalTime.ResetTimer(_timerID);
             _frameNow = 0;
         }
         public void AdjustFPS(int newFPS)
         {
-            UniversalTime.RecycleTimer(_timerID, 1d / newFPS);
+            if (_timerID >= 0) UniversalTime.RecycleTimer(_timerID, 1d / newFPS);
         }
         public void ToggleAnimation(bool on)
         {
+            if (_timerID < 0) return;
             if (on) UniversalTime.TurnOnTimer(_timerID);
             else UniversalTime.TurnOffTimer(_timerID);
         }
@@ -77,7 +83,10 @@ namespace ExNihilo.Util.Graphics
             var originVec = Vector2.Zero;
             if (origin != TextureUtilities.PositionType.TopLeft)
                 originVec = TextureUtilities.GetOffset(origin, new Coordinate(Width, Height));
-
+            if (TextureStrip.GraphicsDevice is null)
+            {
+                int y = 4;
+            }
             if (_animated)
             {
                 var frameShifts = UniversalTime.GetNumberOfFires(_timerID);

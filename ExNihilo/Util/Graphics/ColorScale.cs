@@ -10,6 +10,7 @@ namespace ExNihilo.Util.Graphics
         public static ColorScale White = new ColorScale(Color.White);
         public static ColorScale Black = new ColorScale(Color.Black);
         public static ColorScale Grey = new ColorScale(Color.Gray);
+        public static ColorScale Ghost = new ColorScale(new Color(160, 160, 160, 128));
 
         private readonly bool _random, _oneWay;
         private readonly byte _upper, _lower;

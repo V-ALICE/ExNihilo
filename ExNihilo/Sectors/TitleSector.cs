@@ -24,8 +24,9 @@ namespace ExNihilo.Sectors
             _title.OnResize(graphicsDevice, gameWindow);
         }
 
-        public override void Enter(Point point)
+        public override void Enter(Point point, Coordinate gameWindow)
         {
+            OnResize(Container.GraphicsDevice, gameWindow);
             _title.Enter(point);
         }
 

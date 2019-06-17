@@ -1,4 +1,5 @@
-﻿using ExNihilo.UI.Bases;
+﻿using ExNihilo.Entity;
+using ExNihilo.UI.Bases;
 using ExNihilo.Util;
 using ExNihilo.Util.Graphics;
 using Microsoft.Xna.Framework;
@@ -10,46 +11,51 @@ namespace ExNihilo.Systems
     public class PlayerOverlay : IUI
     {
         private readonly ScaleRuleSet _rules = TextureLibrary.HalfScaleRuleSet;
-        private AnimatableTexture _texture;
+        private EntityContainer _entity;
         private float _currentScale;
-        private readonly string _texturePath;
-        private readonly int _frames, _fps;
 
         public Vector2 PlayerCenterScreen { get; private set; }
 
-        public PlayerOverlay(string texturePath, int frames=1, int fps=1)
+        public PlayerOverlay(EntityContainer entity)
         {
-            _frames = frames;
-            _fps = fps;
-            _texturePath = texturePath;
             _currentScale = 1;
             PlayerCenterScreen = new Vector2();
+            _entity = entity;
         }
 
         public void LoadContent(GraphicsDevice graphics, ContentManager content)
         {
-            _texture = new AnimatableTexture(TextureLibrary.Lookup(_texturePath), _frames, _fps);
         }
 
         public void OnResize(GraphicsDevice graphics, Coordinate gameWindow)
         {
             _currentScale = _rules.GetScale(gameWindow);
-            PlayerCenterScreen = new Vector2(gameWindow.X / 2, gameWindow.Y / 2) - TextureUtilities.GetOffset(TextureUtilities.PositionType.Center, _texture);
+            PlayerCenterScreen = new Vector2(gameWindow.X / 2, gameWindow.Y / 2) - TextureUtilities.GetOffset(TextureUtilities.PositionType.Center, _entity.Texture);
         }
 
         public void Draw(SpriteBatch spriteBatch)
         {
-            _texture.Draw(spriteBatch, PlayerCenterScreen, ColorScale.White, _currentScale);
+            _entity.Texture.Draw(spriteBatch, PlayerCenterScreen, ColorScale.White, _currentScale);
         }
 
-        public Coordinate GetCurrentDimensions()
+        public void Push(Coordinate push)
         {
-            return new Coordinate(_currentScale*_texture.Width, _currentScale*_texture.Height);
+            _entity.Push(push);
         }
 
-        public void ForceTexture(AnimatableTexture texture)
+        public EntityTexture.State GetCurrentState()
         {
-            _texture = texture;
+            return _entity.Entity.CurrentState;
+        }
+        public void Halt()
+        {
+            _entity.Push(new Coordinate());
+
+        }
+
+        public void ForceTexture(EntityContainer entity)
+        {
+            _entity = entity;
         }
     }
 }

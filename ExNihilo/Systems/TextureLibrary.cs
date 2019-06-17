@@ -13,14 +13,14 @@ namespace ExNihilo.Systems
     public static class TextureLibrary
     {
         public static ScaleRuleSet DefaultScaleRuleSet, ReducedScaleRuleSet, HalfScaleRuleSet, DoubleScaleRuleSet, GiantScaleRuleSet;
-        private static Dictionary<string, Dictionary<string, AnimatableTexture>> _UILookUp;
-        private static Dictionary<string, Dictionary<string, AnimatableTexture>> _textureLookUp;
-        private static Dictionary<string, Dictionary<string, AnimatableTexture>> _iconLookUp;
-        private static Dictionary<string, Dictionary<string, AnimatableTexture>> _characterLookUp;
-        private static AnimatableTexture _null;
-        private static Dictionary<string, byte[]> _UIAlphaLookUp;
+        private static Dictionary<string, Dictionary<string, Texture2D>> _UILookUp;
+        private static Dictionary<string, Dictionary<string, Texture2D>> _textureLookUp;
+        private static Dictionary<string, Dictionary<string, Texture2D>> _iconLookUp;
+        private static Dictionary<string, Dictionary<string, Texture2D>> _characterLookUp;
+        private static Texture2D _null;
+        //private static Dictionary<string, byte[]> _UIAlphaLookUp;
 
-        public static AnimatableTexture Lookup(string fullPath)
+        public static Texture2D Lookup(string fullPath)
         {
             var tmp = fullPath.Split('/');
             if (tmp.Length == 3)
@@ -46,18 +46,6 @@ namespace ExNihilo.Systems
             }
 
             return _null;
-        }
-
-        public static byte[] AlphaLookup(string fullPath)
-        {
-            try
-            {
-                return _UIAlphaLookUp[fullPath];
-            }
-            catch (KeyNotFoundException)
-            {
-                return new byte[0];
-            }
         }
 
         public static void LoadRuleSets()
@@ -107,7 +95,7 @@ namespace ExNihilo.Systems
 
         }
 
-        private static void LoadLibrary(GraphicsDevice graphics, ContentManager content, Dictionary<string, Dictionary<string, AnimatableTexture>> d, params string[] infoFiles)
+        private static void LoadLibrary(GraphicsDevice graphics, ContentManager content, Dictionary<string, Dictionary<string, Texture2D>> d, params string[] infoFiles)
         {
             foreach (var file in infoFiles)
             {
@@ -137,11 +125,10 @@ namespace ExNihilo.Systems
 
                         continue;
                     }
-                    if (trueSegments.Count < 5) continue;
-                    if (sheet is null) continue;
+                    if (trueSegments.Count != 5 || sheet is null) continue;
 
                     var name = trueSegments[0].Split('/');
-                    if (!d.ContainsKey(name[0])) d.Add(name[0], new Dictionary<string, AnimatableTexture>());
+                    if (!d.ContainsKey(name[0])) d.Add(name[0], new Dictionary<string, Texture2D>());
                     var sub = d[name[0]];
                     
                     if (sub.ContainsKey(name[1])) continue;
@@ -149,13 +136,7 @@ namespace ExNihilo.Systems
                     if (!int.TryParse(trueSegments[2], out int y)) continue;
                     if (!int.TryParse(trueSegments[3], out int width)) continue;
                     if (!int.TryParse(trueSegments[4], out int height)) continue;
-                    if (trueSegments.Count == 7)
-                    {
-                        if (!int.TryParse(trueSegments[5], out int frames)) continue;
-                        if (!int.TryParse(trueSegments[5], out int fps)) continue;
-                        sub.Add(name[1], new AnimatableTexture(TextureUtilities.GetSubTexture(graphics, sheet, new Rectangle(x, y, width, height)), frames, fps));
-                    }
-                    else sub.Add(name[1], TextureUtilities.GetSubTexture(graphics, sheet, new Rectangle(x, y, width, height)));
+                    sub.Add(name[1], TextureUtilities.GetSubTexture(graphics, sheet, new Rectangle(x, y, width, height)));
                 }
             }
         }
@@ -163,45 +144,36 @@ namespace ExNihilo.Systems
         public static void LoadUILibrary(GraphicsDevice graphics, ContentManager content, params string[] infoFiles)
         {
             if (_null is null) _null = new Texture2D(graphics, 1, 1);
-            _UILookUp = new Dictionary<string, Dictionary<string, AnimatableTexture>>();
+            _UILookUp = new Dictionary<string, Dictionary<string, Texture2D>>();
             LoadLibrary(graphics, content, _UILookUp, infoFiles);
-
-            _UIAlphaLookUp = new Dictionary<string, byte[]>();
-            foreach (var pack in _UILookUp)
-            {
-                foreach (var texture in pack.Value)
-                {
-                    _UIAlphaLookUp.Add("UI/" + pack.Key + "/" + texture.Key, texture.Value.GetAlphaMask());
-                }
-            }
         }
 
         public static void LoadTextureLibrary(GraphicsDevice graphics, ContentManager content, params string[] infoFiles)
         {
             if (_null is null) _null = new Texture2D(graphics, 1, 1);
-            _textureLookUp = new Dictionary<string, Dictionary<string, AnimatableTexture>>();
+            _textureLookUp = new Dictionary<string, Dictionary<string, Texture2D>>();
             LoadLibrary(graphics, content, _textureLookUp, infoFiles);
         }
 
         public static void LoadIconLibrary(GraphicsDevice graphics, ContentManager content, params string[] infoFiles)
         {
             if (_null is null) _null = new Texture2D(graphics, 1, 1);
-            _iconLookUp = new Dictionary<string, Dictionary<string, AnimatableTexture>>();
+            _iconLookUp = new Dictionary<string, Dictionary<string, Texture2D>>();
             LoadLibrary(graphics, content, _iconLookUp, infoFiles);
         }
 
         public static void LoadCharacterLibrary(GraphicsDevice graphics, ContentManager content, params string[] infoFiles)
         {
             if (_null is null) _null = new Texture2D(graphics, 1, 1);
-            _characterLookUp = new Dictionary<string, Dictionary<string, AnimatableTexture>>();
+            _characterLookUp = new Dictionary<string, Dictionary<string, Texture2D>>();
             LoadLibrary(graphics, content, _characterLookUp, infoFiles);
 
             //dumb but probably beats having to make 400 extra lines in the input
             var colorSets = _characterLookUp["hair"];
-            _characterLookUp["hair"] = new Dictionary<string, AnimatableTexture>();
+            _characterLookUp["hair"] = new Dictionary<string, Texture2D>();
             foreach (var c in colorSets)
             {
-                var sheet = c.Value.TextureStrip;
+                var sheet = c.Value;
                 for (int i = 0; i < 10; i++)
                 {
                     var hairSheet = TextureUtilities.GetSubTexture(graphics, sheet, new Rectangle(i * 96, 0, 96, 144));

@@ -1,5 +1,4 @@
-﻿using System.Threading;
-using ExNihilo.Input.Commands;
+﻿using ExNihilo.Input.Commands;
 using ExNihilo.Menus;
 using ExNihilo.Systems;
 using ExNihilo.Systems.Bases;
@@ -28,7 +27,7 @@ namespace ExNihilo.Sectors
 
         public abstract void OnResize(GraphicsDevice graphicsDevice, Coordinate gameWindow);
 
-        public virtual void Enter(Point point)
+        public virtual void Enter(Point point, Coordinate gameWindow)
         {
         }
         public abstract void Initialize();

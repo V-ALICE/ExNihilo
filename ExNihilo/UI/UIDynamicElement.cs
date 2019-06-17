@@ -23,10 +23,10 @@ namespace ExNihilo.UI
 
         public void ChangeTexture(AnimatableTexture texture)
         {
-            Texture = texture;
+            Texture = texture.Copy();
             CurrentPixelSize = new Coordinate((int)(CurrentScale * Texture.Width), (int)(CurrentScale * Texture.Height));
             TextureOffsetToOrigin = TextureUtilities.GetOffset(AnchorType, CurrentPixelSize);
-
+            
             if (AbsoluteOffset)
             {
                 //Position of this element is relative to the origin of its base element in scaled pixels

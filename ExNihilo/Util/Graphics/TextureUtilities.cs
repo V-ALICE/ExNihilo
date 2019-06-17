@@ -91,16 +91,16 @@ namespace ExNihilo.Util.Graphics
             if (sheets.Length == 0) return null;
             if (sheets.Length == 1) return sheets[0];
 
-            var texture = sheets[0];
+            var texture = new Texture2D(graphics, sheets[0].Width, sheets[1].Height);
             var rect = new Rectangle(0, 0, texture.Width, texture.Height);
             var data = new Color[texture.Width * texture.Height];
             texture.GetData(0, rect, data, 0, data.Length);
-            for (int i = 1; i < sheets.Length; i++)
+            foreach (var sheet in sheets)
             {
                 var topData = new Color[rect.Width * rect.Height];
                 if (topData.Length != data.Length) continue;
 
-                sheets[i].GetData(0, rect, topData, 0, topData.Length);
+                sheet.GetData(0, rect, topData, 0, topData.Length);
                 for (var j = 0; j < topData.Length; j++)
                 {
                     if (topData[j].A != 0) data[j] = topData[j];

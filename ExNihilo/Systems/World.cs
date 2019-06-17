@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Windows.Forms;
+using ExNihilo.Entity;
 using ExNihilo.Systems.Bases;
 using ExNihilo.UI.Bases;
 using ExNihilo.Util;
@@ -15,10 +16,10 @@ namespace ExNihilo.Systems
     {
         private readonly List<Tuple<AnimatableTexture, Vector2>> _overlays;
         private readonly ScaleRuleSet _worldRules = TextureLibrary.DefaultScaleRuleSet;
-        private readonly PlayerOverlay _playerOverlay;
+        private PlayerOverlay _playerOverlay;
         private readonly int _timerID, _tileSize;
         private float _currentWorldScale;
-        private Coordinate _playerCustomHitBox;
+        private Coordinate _playerCustomHitBox, _playerCustomHitBoxOffset;
         private InteractionMap _map;
         private Texture2D _world;
         private Vector2 _currentWorldPosition;
@@ -26,30 +27,58 @@ namespace ExNihilo.Systems
         public World(int tileSize)
         {
             _tileSize = tileSize;
-            _currentWorldPosition = new Vector2(-440, -180);//new Vector2(-200, -350);
+            _currentWorldPosition = new Vector2();//new Vector2(-200, -350);
             _currentWorldScale = 1;
             _overlays = new List<Tuple<AnimatableTexture, Vector2>>();
             _playerCustomHitBox = new Coordinate();
-            _playerOverlay = new PlayerOverlay("null");
+            _playerOverlay = null;
             _timerID = UniversalTime.NewTimer(false);
             UniversalTime.TurnOnTimer(_timerID);
         }
 
+        public EntityTexture.State GetCurrentState()
+        {
+            return _playerOverlay.GetCurrentState();
+        }
+        public void Halt()
+        {
+            _playerOverlay.Halt();
+        }
+        public void SwapEntity(EntityContainer entity)
+        {
+            if (entity is null) return;
+            if (_playerOverlay is null) _playerOverlay = new PlayerOverlay(entity);
+            else _playerOverlay.ForceTexture(entity);
+        }
+        public void Reset(EntityContainer entity, Coordinate hitBox, Coordinate hitBoxOffset)
+        {
+            //todo: loading a game during a game makes this go out of bounds
+            _currentWorldPosition = new Vector2(-850, -400);//new Vector2(-200, -350);
+            UniversalTime.ResetTimer(_timerID);
+
+            SwapEntity(entity);
+            _playerCustomHitBox = hitBox.Copy();
+            _playerCustomHitBoxOffset = hitBoxOffset.Copy();
+        }
+
         public void LoadContent(GraphicsDevice graphics, ContentManager content)
         {
+            //TODO: make this universal
             _world = content.Load<Texture2D>("World/world");
             _map = new InteractionMap("WORLD.info");
-            _playerOverlay.LoadContent(graphics, content);
         }
 
         public void OnResize(GraphicsDevice graphics, Coordinate gameWindow)
         {
             var oldScale = _currentWorldScale;
             _currentWorldScale = _worldRules.GetScale(gameWindow);
-            var adjustedOffset = (_playerOverlay.PlayerCenterScreen - _currentWorldPosition) * (_currentWorldScale / oldScale);
-            _playerOverlay.OnResize(graphics, gameWindow);
-            _playerCustomHitBox = _playerOverlay.GetCurrentDimensions();
-            _currentWorldPosition = _playerOverlay.PlayerCenterScreen - adjustedOffset;
+
+            if (_playerOverlay != null)
+            {
+                var adjustedOffset = (_playerOverlay.PlayerCenterScreen - _currentWorldPosition) * (_currentWorldScale / oldScale);
+                _playerOverlay.OnResize(graphics, gameWindow);
+                _currentWorldPosition = _playerOverlay.PlayerCenterScreen - adjustedOffset;
+            }
         }
 
         public void Draw(SpriteBatch spriteBatch)
@@ -59,22 +88,32 @@ namespace ExNihilo.Systems
 
         public void DrawOverlays(SpriteBatch spriteBatch)
         {
-            _playerOverlay.Draw(spriteBatch);
+            _playerOverlay?.Draw(spriteBatch);
             foreach (var item in _overlays)
             {
                 var pos = _currentWorldPosition + _currentWorldScale * item.Item2;
                 item.Item1.Draw(spriteBatch, pos, ColorScale.White, _currentWorldScale);
+            }
+
+            if (GameContainer.GLOBAL_DEBUG && _playerOverlay != null)
+            {
+                LineDrawer.DrawSquare(spriteBatch, _currentWorldScale * _playerCustomHitBoxOffset + _playerOverlay.PlayerCenterScreen, _currentWorldScale * _playerCustomHitBox.X, _currentWorldScale * _playerCustomHitBox.Y, Color.Red);
             }
         }
 
         public void ApplyPush(Coordinate push, float mult)
         {
             //check map and move
+            _playerOverlay.Push(push);
+            if (push.Origin()) return;
+
             var tileSize = (int) (_currentWorldScale * _tileSize);
             var moveOffset = 50 * _currentWorldScale * mult * (float)UniversalTime.GetLastTickTime(_timerID) * push; //offset from current position 
-            var playerOffset = _playerOverlay.PlayerCenterScreen - (_currentWorldPosition - moveOffset); //adjusted position using offset
+            var hitBox = _currentWorldScale * _playerCustomHitBox;
+            var hitBoxOffset = _currentWorldScale * _playerCustomHitBoxOffset + _playerOverlay.PlayerCenterScreen - _currentWorldPosition;
+            var hitBoxMovedOffset = hitBoxOffset + moveOffset;
 
-            if (_map.CheckIllegalPosition(tileSize, _playerCustomHitBox, playerOffset))
+            if (_map.CheckIllegalPosition(tileSize, hitBox, hitBoxMovedOffset))
             {
                 //being here implies that applying the current push failed (player is hitting something)
                 if (push.X == 0 ^ push.Y == 0)
@@ -83,13 +122,11 @@ namespace ExNihilo.Systems
                     return;
                 }
 
-                var playerOffsetX = new Vector2(_playerOverlay.PlayerCenterScreen.X - (_currentWorldPosition.X - moveOffset.X), _playerOverlay.PlayerCenterScreen.Y - _currentWorldPosition.Y);
-                if (_map.CheckIllegalPosition(tileSize, _playerCustomHitBox, playerOffsetX))
+                if (_map.CheckIllegalPosition(tileSize, hitBox, new Vector2(hitBoxMovedOffset.X, hitBoxOffset.Y)))
                 {
                     //being here implies that the current X push is impossible
                     moveOffset.X = 0;
-                    playerOffset = _playerOverlay.PlayerCenterScreen - (_currentWorldPosition - moveOffset); //using the adjusted X value
-                    if (_map.CheckIllegalPosition(tileSize, _playerCustomHitBox, playerOffset))
+                    if (_map.CheckIllegalPosition(tileSize, hitBox, hitBoxOffset + moveOffset))
                     {
                         //being here implies that even stripped of the X push the current Y push is impossible (player is running into a corner)
                         moveOffset.Y = 0;
@@ -122,15 +159,10 @@ namespace ExNihilo.Systems
             _map.AddInteractive(obj, x, y, width, height);
         }
 
-        public void ForcePlayerTexture(AnimatableTexture texture)
-        {
-            _playerOverlay.ForceTexture(texture);
-            _playerCustomHitBox = _playerOverlay.GetCurrentDimensions();
-        }
-
         public override string ToString()
         {
             return "World Pos: X:" + _currentWorldPosition.X + " Y:" + _currentWorldPosition.Y;
         }
+
     }
 }

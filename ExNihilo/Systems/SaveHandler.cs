@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
+using ExNihilo.Entity;
 using ExNihilo.Util;
 
 namespace ExNihilo.Systems
@@ -9,9 +10,17 @@ namespace ExNihilo.Systems
     [Serializable]
     public class PackedGame
     {
+        public const string VERSION = "061719413";
+
+        //configuration
+        private readonly DateTime _lastSaveDate;
+        public readonly string Version;
         public string ID { get; }
         public string TitleCard { get; private set; }
-        private DateTime _lastSaveDate;
+
+        //data
+        public List<PlayerEntityContainer.PackedPlayerEntityContainer> SavedCharacters { get; }
+        public int CurrentPlayer;
 
         private void FormatTitleCard()
         {
@@ -40,18 +49,20 @@ namespace ExNihilo.Systems
 
             TitleCard = paddedID + "\n" + paddedDate;
         }
-        public PackedGame(string id)
+        public PackedGame(GameContainer game, string id)
         {
             //Default game file stuff
             ID = id;
+            Version = VERSION;
             _lastSaveDate = DateTime.Now;
             FormatTitleCard();
+            SavedCharacters = new List<PlayerEntityContainer.PackedPlayerEntityContainer>
+            {
+                new PlayerEntityContainer(game.GraphicsDevice, "Nobody", 0,0,0,0).GetPacked()
+            };
+            CurrentPlayer = 0;
         }
 
-        public void Pack(GameContainer game)
-        {
-            _lastSaveDate = DateTime.Now;
-        }
     }
 
     [Serializable]
@@ -72,10 +83,11 @@ namespace ExNihilo.Systems
 
     public static class SaveHandler
     {
-        public const string FILE_1 = "File1.mem", FILE_2 = "File2.mem", FILE_3 = "File3.mem", PARAMETERS = "Parameters.mem";
-
         private static readonly Dictionary<string, PackedGame> _saveSet = new Dictionary<string, PackedGame>();
-        public static GameParameters Parameters;
+
+        public const string FILE_1 = "File1.mem", FILE_2 = "File2.mem", FILE_3 = "File3.mem", PARAMETERS = "Parameters.mem";
+        public static GameParameters Parameters { get; private set; }
+        public static string LastLoadedFile { get; private set; }
 
         public static void DeleteSave(string file)
         {
@@ -87,7 +99,8 @@ namespace ExNihilo.Systems
         public static void Save(string file, PackedGame game)
         {
             string fileName = Environment.CurrentDirectory + "/Content/" + file;
-            if (!_saveSet.ContainsKey(file)) _saveSet.Add(file, game);
+            if (_saveSet.ContainsKey(file)) _saveSet[file] = game;
+            else _saveSet.Add(file, game);
             EncryptedSerializer.SerializeOut(fileName, game);
         }
 
@@ -95,8 +108,14 @@ namespace ExNihilo.Systems
         {
             return _saveSet.ContainsKey(file);
         }
-        public static PackedGame GetSave(string file)
+        public static string GetLastID()
         {
+            if (!HasSave(LastLoadedFile)) return "";
+            return _saveSet[LastLoadedFile].ID;
+        }
+        public static PackedGame GetSave(string file, bool intentToLoad)
+        {
+            if (intentToLoad) LastLoadedFile = file;
             return _saveSet.ContainsKey(file) ? _saveSet[file] : null;
         }
 
@@ -105,7 +124,10 @@ namespace ExNihilo.Systems
             foreach (var file in files)
             {
                 string fileName = Environment.CurrentDirectory + "/Content/" + file;
-                if (EncryptedSerializer.DeserializeIn(fileName) is PackedGame game) _saveSet.Add(file, game);
+                if (EncryptedSerializer.DeserializeIn(fileName) is PackedGame game)
+                {
+                    if (game.Version == PackedGame.VERSION) _saveSet.Add(file, game);
+                }
             }
         }
 

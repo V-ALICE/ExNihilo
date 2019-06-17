@@ -142,7 +142,7 @@ namespace ExNihilo.Menus
         private async void LoadGame(string caller)
         {
             Container.RequestSectorChange(GameContainer.SectorID.Loading);
-            var success = await Task.Run(() => Container.Unpack(SaveHandler.GetSave(caller)));
+            var success = await Task.Run(() => Container.Unpack(SaveHandler.GetSave(caller, true)));
             Container.RequestSectorChange(success ? GameContainer.SectorID.Outerworld : GameContainer.SectorID.MainMenu);
         }
 
@@ -199,9 +199,9 @@ namespace ExNihilo.Menus
 
         private void UpdateLoadButtonText()
         {
-            var file1Text = SaveHandler.HasSave(SaveHandler.FILE_1) ? SaveHandler.GetSave(SaveHandler.FILE_1).TitleCard : "No File";
-            var file2Text = SaveHandler.HasSave(SaveHandler.FILE_2) ? SaveHandler.GetSave(SaveHandler.FILE_2).TitleCard : "No File";
-            var file3Text = SaveHandler.HasSave(SaveHandler.FILE_3) ? SaveHandler.GetSave(SaveHandler.FILE_3).TitleCard : "No File";
+            var file1Text = SaveHandler.HasSave(SaveHandler.FILE_1) ? SaveHandler.GetSave(SaveHandler.FILE_1, false).TitleCard : "No File";
+            var file2Text = SaveHandler.HasSave(SaveHandler.FILE_2) ? SaveHandler.GetSave(SaveHandler.FILE_2, false).TitleCard : "No File";
+            var file3Text = SaveHandler.HasSave(SaveHandler.FILE_3) ? SaveHandler.GetSave(SaveHandler.FILE_3, false).TitleCard : "No File";
             (_loadUI.GetElement(SaveHandler.FILE_1 + "Text") as UIText)?.SetText(file1Text);
             (_loadUI.GetElement(SaveHandler.FILE_2 + "Text") as UIText)?.SetText(file2Text);
             (_loadUI.GetElement(SaveHandler.FILE_3 + "Text") as UIText)?.SetText(file3Text);
@@ -210,13 +210,13 @@ namespace ExNihilo.Menus
         private void CreateNewGame(UICallbackPackage package)
         {
             if (!(_newGameUI.GetElement("NewGameInputBoxText") is UIText text) || text.Text.Length == 0) return;
-            var newGame = new PackedGame(text.Text);
+            var newGame = new PackedGame(Container, text.Text);
             SaveHandler.Save(_slot, newGame);
             UpdateLoadButtonText();
             _type = CurrentMenu.Play;
             _loadUI.OnMoveMouse(_lastMousePosition);
             _slot = "";
-            (_newGameUI.GetElement("NewGameInputBoxText") as UIText)?.SetText(""); //temp until creating a new game closes the menu
+            (_newGameUI.GetElement("NewGameInputBoxText") as UIText)?.SetText("");
         }
 
 /********************************************************************
@@ -278,9 +278,7 @@ namespace ExNihilo.Menus
             optionsButton.RegisterCallback(SwapToOptions);
             exitButton.RegisterCallback(ExitGame);
             titleDisplay.SetRules(TextureLibrary.HalfScaleRuleSet);
-            playButton.SetExtraStates("UI/button/BigButtonDown", "UI/button/BigButtonOver");
-            optionsButton.SetExtraStates("UI/button/BigButtonDown", "UI/button/BigButtonOver");
-            exitButton.SetExtraStates("UI/button/BigButtonDown", "UI/button/BigButtonOver");
+            SetExtrasAll("UI/button/BigButtonDown", "UI/button/BigButtonOver", null, null, playButton, optionsButton, exitButton);
 
             titlePanel.AddElements(playButton, optionsButton, exitButton, playButtonText, optionsButtonText, exitButtonText);
             _titleUI.AddElements(titleDisplay, titlePanel);
@@ -325,27 +323,10 @@ namespace ExNihilo.Menus
             musicVolumeBarFill.RegisterCallback(ApplyMusicVolume);
             effectVolumeBarFill.ForceValue(new Vector2(AudioManager.EffectVolume, 1));
             musicVolumeBarFill.ForceValue(new Vector2(AudioManager.MusicVolume, 1));
-            noParticles.RegisterCallback(ChangeParticleStyle);
-            rainParticles.RegisterCallback(ChangeParticleStyle);
-            windParticles.RegisterCallback(ChangeParticleStyle);
-            randomParticles.RegisterCallback(ChangeParticleStyle);
-            emberParticles.RegisterCallback(ChangeParticleStyle);
-            defaultColor.RegisterCallback(ChangeParticleColor);
-            pulseColor.RegisterCallback(ChangeParticleColor);
-            whiteColor.RegisterCallback(ChangeParticleColor);
-            techniColor.RegisterCallback(ChangeParticleColor);
-            moodyColor.RegisterCallback(ChangeParticleColor);
+            RegisterAll(ChangeParticleStyle, noParticles, rainParticles, windParticles, randomParticles, emberParticles);
+            RegisterAll(ChangeParticleColor, defaultColor, whiteColor, pulseColor, techniColor, moodyColor);
             backButton.SetExtraStates("UI/button/SmallButtonDown", "UI/button/SmallButtonOver");
-            noParticles.SetExtraStates("UI/button/RadioSelected");
-            rainParticles.SetExtraStates("UI/button/RadioSelected");
-            windParticles.SetExtraStates("UI/button/RadioSelected");
-            randomParticles.SetExtraStates("UI/button/RadioSelected");
-            emberParticles.SetExtraStates("UI/button/RadioSelected");
-            defaultColor.SetExtraStates("UI/button/RadioSelected");
-            whiteColor.SetExtraStates("UI/button/RadioSelected");
-            pulseColor.SetExtraStates("UI/button/RadioSelected");
-            techniColor.SetExtraStates("UI/button/RadioSelected");
-            moodyColor.SetExtraStates("UI/button/RadioSelected");
+            SetExtrasAll("UI/button/RadioSelected", "", null, null, noParticles, rainParticles, windParticles, randomParticles, emberParticles, defaultColor, whiteColor, pulseColor, techniColor, moodyColor);
 
             particleStylePanel.AddElements(noParticles, rainParticles, windParticles, randomParticles, emberParticles, noParticlesText, rainParticlesText, windParticlesText, randomParticlesText, emberwParticlesText, particleStyleText, particleText);
             particleColorPanel.AddElements(defaultColor, pulseColor, whiteColor, techniColor, moodyColor, defaultColorText, whiteColorText, pulseColorText, techniColorText, moodyColorText, particleColorText);
@@ -364,35 +345,29 @@ namespace ExNihilo.Menus
             var backButton2 = new UIClickable("BackButton", "UI/button/SmallButton", new Coordinate(10, -10), ColorScale.White, _loadUI, TextureUtilities.PositionType.BottomLeft, TextureUtilities.PositionType.BottomLeft);
             var backButtonText2 = new UIText("BackButtonText", new Coordinate(), "Back", ColorScale.Black, backButton2, TextureUtilities.PositionType.Center, TextureUtilities.PositionType.Center);
 
-            loadFile1.RegisterCallback(SelectLoad);
-            loadFile2.RegisterCallback(SelectLoad);
-            loadFile3.RegisterCallback(SelectLoad);
             deleteFileButton.RegisterCallback(ToggleDeleteMode);
             backButton2.RegisterCallback(SwapToTitleFromLoad);
-            loadFile1.SetExtraStates("UI/button/BigButtonDown", "UI/button/BigButtonOver");
-            loadFile2.SetExtraStates("UI/button/BigButtonDown", "UI/button/BigButtonOver");
-            loadFile3.SetExtraStates("UI/button/BigButtonDown", "UI/button/BigButtonOver");
-            deleteFileButton.SetExtraStates("UI/button/SmallButtonDown", "UI/button/SmallButtonOver");
-            backButton2.SetExtraStates("UI/button/SmallButtonDown", "UI/button/SmallButtonOver");
+            RegisterAll(SelectLoad, loadFile1, loadFile2, loadFile3);
+            SetExtrasAll("UI/button/BigButtonDown", "UI/button/BigButtonOver", null, null, loadFile1, loadFile2, loadFile3);
+            SetExtrasAll("UI/button/SmallButtonDown", "UI/button/SmallButtonOver", null, null, deleteFileButton, backButton2);
 
             loadPanel.AddElements(loadFile1, loadFile2, loadFile3, loadFile1Text, loadFile2Text, loadFile3Text);
-            _loadUI.AddElements(backButton2, backButtonText2, titleDisplay, deleteFileButton, deleteFileButtonText, loadPanel);
+            _loadUI.AddElements(backButton2, backButtonText2, deleteFileButton, deleteFileButtonText, loadPanel, titleDisplay);
 
             //New Game Menu setup
             var cancelButton = new UIClickable("BackButton", "UI/button/SmallButton", new Coordinate(10, -10), ColorScale.White, _newGameUI, TextureUtilities.PositionType.BottomLeft, TextureUtilities.PositionType.BottomLeft);
             var cancelButtonText = new UIText("BackButtonText", new Coordinate(), "Cancel", ColorScale.Black, cancelButton, TextureUtilities.PositionType.Center, TextureUtilities.PositionType.Center);
             var confirmButton = new UIClickable("ConfirmButton", "UI/button/SmallButton", new Coordinate(-10, -10), ColorScale.White, _newGameUI, TextureUtilities.PositionType.BottomRight, TextureUtilities.PositionType.BottomRight);
             var confirmButtonText = new UIText("ConfirmButtonText", new Coordinate(), "Confirm", ColorScale.Black, confirmButton, TextureUtilities.PositionType.Center, TextureUtilities.PositionType.Center);
-            var inputBox = new UITogglable("NewGameInputBox", "UI/field/SmallEntryBox", new Vector2(0.1f, 0.1f), ColorScale.Grey, _newGameUI, TextureUtilities.PositionType.TopLeft, false, true);
-            var inputBoxText = new UIText("NewGameInputBoxText", new Coordinate(20, 20), "", ColorScale.Black, inputBox, TextureUtilities.PositionType.TopLeft, TextureUtilities.PositionType.TopLeft);
+            var inputBox = new UITogglable("NewGameInputBox", "UI/field/SmallEntryBox", new Vector2(0.1f, 0.1f), ColorScale.Ghost, _newGameUI, TextureUtilities.PositionType.TopLeft, false, true);
+            var inputBoxText = new UIText("NewGameInputBoxText", new Coordinate(20, 20), "New File", ColorScale.Black, inputBox, TextureUtilities.PositionType.TopLeft, TextureUtilities.PositionType.TopLeft);
 
             cancelButton.RegisterCallback(CancelNewGame);
             inputBox.RegisterCallback(PrepForTextEntry);
             confirmButton.RegisterCallback(CreateNewGame);
             inputBoxText.SetRules(TextureLibrary.DoubleScaleRuleSet);
-            cancelButton.SetExtraStates("UI/button/SmallButtonDown", "UI/button/SmallButtonOver");
-            confirmButton.SetExtraStates("UI/button/SmallButtonDown", "UI/button/SmallButtonOver");
             inputBox.SetExtraStates("", "", ColorScale.White);
+            SetExtrasAll("UI/button/SmallButtonDown", "UI/button/SmallButtonOver", null, null, cancelButton, confirmButton);
 
             _newGameUI.AddElements(cancelButton, cancelButtonText, inputBox, inputBoxText, confirmButton, confirmButtonText);
         }
@@ -403,7 +378,7 @@ namespace ExNihilo.Menus
             _titleUI.OnMoveMouse(point);
             Dead = false;
             _type = CurrentMenu.Title;
-            (_newGameUI.GetElement("NewGameInputBoxText") as UIText)?.SetText("");
+            (_newGameUI.GetElement("NewGameInputBoxText") as UIText)?.SetText("New File");
             UpdateLoadButtonText();
         }
 
