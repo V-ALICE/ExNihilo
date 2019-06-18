@@ -115,6 +115,12 @@ namespace ExNihilo.UI
             }
         }
 
+        public virtual void Draw(SpriteBatch spriteBatch, Vector2 rightDownOffset)
+        {
+            if (!Loaded) return;
+            Texture.Draw(spriteBatch, OriginPosition+rightDownOffset, ColorScale?.Get() ?? Color.White, CurrentScale);
+        }
+
         public virtual void Draw(SpriteBatch spriteBatch)
         {
             if (!Loaded) return;

@@ -31,6 +31,11 @@ namespace ExNihilo.Util
     {
         private readonly List<ScaleRule> _rules = new List<ScaleRule>();
 
+        public ScaleRuleSet(params ScaleRule[] rules)
+        {
+            _rules.AddRange(rules);
+        }
+
         public void AddRules(params ScaleRule[] rules)
         {
             _rules.AddRange(rules);

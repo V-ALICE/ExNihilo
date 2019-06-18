@@ -11,9 +11,11 @@ namespace ExNihilo.UI
 {
     public class UIPanel : UIClickable
     {
+        protected UIPanel Tooltip;
         protected List<UIElement> Set;
-        protected Vector2 BaseSizeRel;
+        protected Vector2 BaseSizeRel, TooltipOffset;
         protected Coordinate BasePixelSize;
+        protected Point LastMousePos;
         protected bool IsRelativeToSuperior, VerticalLocked, HorizontalLocked, King;
 
         public UIPanel(string name, Vector2 relPos, Coordinate absoluteSize, UIPanel superior, TextureUtilities.PositionType anchorPoint) : 
@@ -80,6 +82,13 @@ namespace ExNihilo.UI
             Set.AddRange(elements);
         }
 
+        public virtual void AddTooltip(Coordinate size, Vector2 offset, params UIElement[] elements)
+        {
+            Tooltip = new UIPanel(GivenName+"Tooltip", new Coordinate(), size, this, TextureUtilities.PositionType.TopLeft, TextureUtilities.PositionType.TopLeft);
+            Tooltip.AddElements(elements);
+            TooltipOffset = Utilities.Copy(offset);
+        }
+
         public override void ReinterpretScale(Coordinate window)
         {
             //only for non relative sized panels
@@ -92,15 +101,31 @@ namespace ExNihilo.UI
         public override void LoadContent(GraphicsDevice graphics, ContentManager content)
         {
             base.LoadContent(graphics, content);
+            Tooltip?.LoadContent(graphics, content);
             foreach (var item in Set) item.LoadContent(graphics, content);
+        }
+
+        public override void Draw(SpriteBatch spriteBatch, Vector2 rightDownOffset)
+        {
+            if (!Loaded) return;
+            foreach (var item in Set) item.Draw(spriteBatch, rightDownOffset);
+
+            if (GameContainer.GLOBAL_DEBUG) LineDrawer.DrawSquare(spriteBatch, OriginPosition+ rightDownOffset, CurrentPixelSize.X, CurrentPixelSize.Y, Color.White, 5);
         }
 
         public override void Draw(SpriteBatch spriteBatch)
         {
             if (!Loaded) return;
             foreach (var item in Set) item.Draw(spriteBatch);
+            if (King) DrawFinal(spriteBatch);
 
             if (GameContainer.GLOBAL_DEBUG) LineDrawer.DrawSquare(spriteBatch, OriginPosition, CurrentPixelSize.X, CurrentPixelSize.Y, Color.White, 5);
+        }
+
+        public void DrawFinal(SpriteBatch spriteBatch)
+        {
+            foreach (var item in Set) (item as UIPanel)?.DrawFinal(spriteBatch);
+            if (Over) Tooltip?.Draw(spriteBatch, CurrentScale * TooltipOffset + new Vector2(LastMousePos.X - OriginPosition.X, LastMousePos.Y - OriginPosition.Y));
         }
 
         public override void OnResize(GraphicsDevice graphics, Coordinate gameWindow)
@@ -155,6 +180,7 @@ namespace ExNihilo.UI
             }
             else base.OnResize(graphics, gameWindow);
 
+            Tooltip?.OnResize(graphics, gameWindow);
             foreach (var item in Set) item.OnResize(graphics, gameWindow);
         }
 
@@ -168,6 +194,11 @@ namespace ExNihilo.UI
 
         public override void OnMoveMouse(Point point)
         {
+            if (!Disabled && Tooltip != null)
+            {
+                LastMousePos = point;
+                Over = IsOver(point);
+            }
             foreach (var item in Set)
             {
                 if (item is UIClickable click) click.OnMoveMouse(point);
@@ -190,7 +221,7 @@ namespace ExNihilo.UI
 
         public override void OnLeftRelease(Point point)
         {
-            base.OnLeftRelease(point);
+            if (!Disabled) base.OnLeftRelease(point);
             foreach (var item in Set)
             {
                 if (item is UIClickable click) click.OnLeftRelease(point);
@@ -203,6 +234,7 @@ namespace ExNihilo.UI
             {
                 if (item is UIClickable click) click.Enable();
             }
+            Tooltip?.Enable();
         }
 
         public override void Disable(ColorScale c)
@@ -211,6 +243,7 @@ namespace ExNihilo.UI
             {
                 if (item is UIClickable click) click.Disable(c);
             }
+            Tooltip?.Disable(c);
         }
 
         public virtual UIElement GetElement(string title)
@@ -229,7 +262,7 @@ namespace ExNihilo.UI
                 }
             }
 
-            return null;
+            return Tooltip?.GetElement(title);
         }
 
     }

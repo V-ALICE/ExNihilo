@@ -50,8 +50,7 @@ namespace ExNihilo.Systems
 
         public static void LoadRuleSets()
         {
-            DefaultScaleRuleSet = new ScaleRuleSet();
-            DefaultScaleRuleSet.AddRules
+            DefaultScaleRuleSet = new ScaleRuleSet
             (
                 new ScaleRule(1, 1400, 1000),
                 new ScaleRule(2, 2100, 1500),
@@ -59,15 +58,13 @@ namespace ExNihilo.Systems
                 new ScaleRule(4, ScaleRule.MAX_X, ScaleRule.MAX_Y)
             );
 
-            ReducedScaleRuleSet = new ScaleRuleSet();
-            ReducedScaleRuleSet.AddRules
+            ReducedScaleRuleSet = new ScaleRuleSet
             (
                 new ScaleRule(1, 2100, 1500),
                 new ScaleRule(2, ScaleRule.MAX_X, ScaleRule.MAX_Y)
             );
 
-            HalfScaleRuleSet = new ScaleRuleSet();
-            HalfScaleRuleSet.AddRules
+            HalfScaleRuleSet = new ScaleRuleSet
             (
                 new ScaleRule(0.5f, 1400, 1000),
                 new ScaleRule(1, 2100, 1500),
@@ -75,8 +72,7 @@ namespace ExNihilo.Systems
                 new ScaleRule(2, ScaleRule.MAX_X, ScaleRule.MAX_Y)
             );
 
-            DoubleScaleRuleSet = new ScaleRuleSet();
-            DoubleScaleRuleSet.AddRules
+            DoubleScaleRuleSet = new ScaleRuleSet
             (
                 new ScaleRule(2, 1400, 1000),
                 new ScaleRule(4, 2100, 1500),
@@ -84,8 +80,7 @@ namespace ExNihilo.Systems
                 new ScaleRule(8, ScaleRule.MAX_X, ScaleRule.MAX_Y)
             );
 
-            GiantScaleRuleSet = new ScaleRuleSet();
-            GiantScaleRuleSet.AddRules
+            GiantScaleRuleSet = new ScaleRuleSet
             (
                 new ScaleRule(4, 1400, 1000),
                 new ScaleRule(8, 2100, 1500),

@@ -161,7 +161,7 @@ namespace ExNihilo.Systems
 
         public override string ToString()
         {
-            return "World Pos: X:" + _currentWorldPosition.X + " Y:" + _currentWorldPosition.Y;
+            return "World Pos: X:" + _currentWorldPosition.X.ToString("0.00") + " Y:" + _currentWorldPosition.Y.ToString("0.00");
         }
 
     }

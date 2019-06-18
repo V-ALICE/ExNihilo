@@ -83,10 +83,7 @@ namespace ExNihilo.Util.Graphics
             var originVec = Vector2.Zero;
             if (origin != TextureUtilities.PositionType.TopLeft)
                 originVec = TextureUtilities.GetOffset(origin, new Coordinate(Width, Height));
-            if (TextureStrip.GraphicsDevice is null)
-            {
-                int y = 4;
-            }
+
             if (_animated)
             {
                 var frameShifts = UniversalTime.GetNumberOfFires(_timerID);

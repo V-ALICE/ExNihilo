@@ -266,8 +266,7 @@ namespace ExNihilo.Menus
         public CharacterMenu(GameContainer container, World world) : base(container)
         {
             _world = world;
-            var rules = new ScaleRuleSet();
-            rules.AddRules
+            var rules = new ScaleRuleSet
             (
                 new ScaleRule(1.5f, 1400, 1000),
                 new ScaleRule(3, 2100, 1500),
@@ -321,6 +320,30 @@ namespace ExNihilo.Menus
             var deleteButton5Icon = new UIElement("Delete5Icon", "UI/icon/No", new Coordinate(), ColorScale.Ghost, deleteButton5, TextureUtilities.PositionType.Center, TextureUtilities.PositionType.Center);
             var deleteButton6Icon = new UIElement("Delete6Icon", "UI/icon/No", new Coordinate(), ColorScale.Ghost, deleteButton6, TextureUtilities.PositionType.Center, TextureUtilities.PositionType.Center);
             var deleteButton7Icon = new UIElement("Delete7Icon", "UI/icon/No", new Coordinate(), ColorScale.Ghost, deleteButton7, TextureUtilities.PositionType.Center, TextureUtilities.PositionType.Center);
+
+            var charInfo1 = new UIElement("CharInfo1", "UI/field/LargeEntryBox", new Coordinate(), ColorScale.White, charPanel1, TextureUtilities.PositionType.BottomLeft, TextureUtilities.PositionType.TopLeft);
+            var charInfo2 = new UIElement("CharInfo2", "UI/field/LargeEntryBox", new Coordinate(), ColorScale.White, charPanel2, TextureUtilities.PositionType.CenterBottom, TextureUtilities.PositionType.TopLeft);
+            var charInfo3 = new UIElement("CharInfo3", "UI/field/LargeEntryBox", new Coordinate(), ColorScale.White, charPanel3, TextureUtilities.PositionType.CenterBottom, TextureUtilities.PositionType.TopLeft);
+            var charInfo4 = new UIElement("CharInfo4", "UI/field/LargeEntryBox", new Coordinate(), ColorScale.White, charPanel4, TextureUtilities.PositionType.CenterBottom, TextureUtilities.PositionType.TopLeft);
+            var charInfo5 = new UIElement("CharInfo5", "UI/field/LargeEntryBox", new Coordinate(), ColorScale.White, charPanel5, TextureUtilities.PositionType.CenterBottom, TextureUtilities.PositionType.TopLeft);
+            var charInfo6 = new UIElement("CharInfo6", "UI/field/LargeEntryBox", new Coordinate(), ColorScale.White, charPanel6, TextureUtilities.PositionType.CenterBottom, TextureUtilities.PositionType.TopLeft);
+            var charInfo7 = new UIElement("CharInfo7", "UI/field/LargeEntryBox", new Coordinate(), ColorScale.White, charPanel7, TextureUtilities.PositionType.BottomRight, TextureUtilities.PositionType.TopLeft);
+
+            var charInfoText1 = new UIText("CharInfoText1", new Coordinate(14, 14), "Box1", ColorScale.Black, charInfo1, TextureUtilities.PositionType.TopLeft, TextureUtilities.PositionType.TopLeft);
+            var charInfoText2 = new UIText("CharInfoText2", new Coordinate(14, 14), "Box2", ColorScale.Black, charInfo2, TextureUtilities.PositionType.TopLeft, TextureUtilities.PositionType.TopLeft);
+            var charInfoText3 = new UIText("CharInfoText3", new Coordinate(14, 14), "Box3", ColorScale.Black, charInfo3, TextureUtilities.PositionType.TopLeft, TextureUtilities.PositionType.TopLeft);
+            var charInfoText4 = new UIText("CharInfoText4", new Coordinate(14, 14), "Box4", ColorScale.Black, charInfo4, TextureUtilities.PositionType.TopLeft, TextureUtilities.PositionType.TopLeft);
+            var charInfoText5 = new UIText("CharInfoText5", new Coordinate(14, 14), "Box5", ColorScale.Black, charInfo5, TextureUtilities.PositionType.TopLeft, TextureUtilities.PositionType.TopLeft);
+            var charInfoText6 = new UIText("CharInfoText6", new Coordinate(14, 14), "Box6", ColorScale.Black, charInfo6, TextureUtilities.PositionType.TopLeft, TextureUtilities.PositionType.TopLeft);
+            var charInfoText7 = new UIText("CharInfoText7", new Coordinate(14, 14), "Box7", ColorScale.Black, charInfo7, TextureUtilities.PositionType.TopLeft, TextureUtilities.PositionType.TopLeft);
+
+            charPanel1.AddTooltip(new Coordinate(60, 60), new Vector2(0, -17), charInfo1, charInfoText1);
+            charPanel2.AddTooltip(new Coordinate(60, 60), new Vector2(0, -17), charInfo2, charInfoText2);
+            charPanel3.AddTooltip(new Coordinate(60, 60), new Vector2(0, -17), charInfo3, charInfoText3);
+            charPanel4.AddTooltip(new Coordinate(60, 60), new Vector2(0, -17), charInfo4, charInfoText4);
+            charPanel5.AddTooltip(new Coordinate(60, 60), new Vector2(0, -17), charInfo5, charInfoText5);
+            charPanel6.AddTooltip(new Coordinate(60, 60), new Vector2(0, -17), charInfo6, charInfoText6);
+            charPanel7.AddTooltip(new Coordinate(60, 60), new Vector2(0, -17), charInfo7, charInfoText7);
 
             backButton.RegisterCallback(CloseMenu);
             newCharButton.RegisterCallback(MakeNewChar);

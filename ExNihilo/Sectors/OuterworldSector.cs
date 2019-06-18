@@ -18,6 +18,7 @@ namespace ExNihilo.Sectors
         private Point _lastMousePosition;
         private World _world;
 
+        //Present Menus (since they never change)
         private CharacterMenu _characterMenu;
         private DivineMenu _divineMenu;
         private MultiplayerMenu _multiplayerMenu;

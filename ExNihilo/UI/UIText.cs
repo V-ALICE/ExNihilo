@@ -73,6 +73,12 @@ namespace ExNihilo.UI
             LastResizeWindow = new Coordinate();
         }
 
+        public override void Draw(SpriteBatch spriteBatch, Vector2 rightDownOffset)
+        {
+            if (!Loaded) return;
+            TextDrawer.DrawSmartText(spriteBatch, OriginPosition+ rightDownOffset, Text, CurrentScale, param, Colors);
+        }
+
         public override void Draw(SpriteBatch spriteBatch)
         {
             if (!Loaded) return;
