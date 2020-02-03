@@ -84,7 +84,7 @@ namespace ExNihilo
                 _graphics.PreferredBackBufferHeight = MathHelper.Clamp(Window.ClientBounds.Height, ScaleRule.MIN_Y, ScaleRule.MAX_Y);
                 _graphics.ApplyChanges();
                 _windowSize = new Coordinate(Window.ClientBounds.Width, Window.ClientBounds.Height);
-
+                System.Console.WriteLine(_windowSize.X + " " + _windowSize.Y);
                 OnResize();
             }
         }

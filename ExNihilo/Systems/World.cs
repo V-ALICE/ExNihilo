@@ -23,11 +23,13 @@ namespace ExNihilo.Systems
         private InteractionMap _map;
         private Texture2D _world;
         private Vector2 _currentWorldPosition;
+        private bool _resetWorldPos;
 
         public World(int tileSize)
         {
+            _resetWorldPos = true;
             _tileSize = tileSize;
-            _currentWorldPosition = new Vector2();//new Vector2(-200, -350);
+            _currentWorldPosition = new Vector2();
             _currentWorldScale = 1;
             _overlays = new List<Tuple<AnimatableTexture, Vector2>>();
             _playerCustomHitBox = new Coordinate();
@@ -52,8 +54,8 @@ namespace ExNihilo.Systems
         }
         public void Reset(EntityContainer entity, Coordinate hitBox, Coordinate hitBoxOffset)
         {
-            //todo: loading a game during a game makes this go out of bounds
-            _currentWorldPosition = new Vector2(-850, -400);//new Vector2(-200, -350);
+            _resetWorldPos = true; //Screen size is required to calculate this which isn't available here
+            _currentWorldPosition = new Vector2();
             UniversalTime.ResetTimer(_timerID);
 
             SwapEntity(entity);
@@ -63,7 +65,7 @@ namespace ExNihilo.Systems
 
         public void LoadContent(GraphicsDevice graphics, ContentManager content)
         {
-            //TODO: make this universal
+            //TODO: make this universal (what does universal mean?)
             _world = content.Load<Texture2D>("World/world");
             _map = new InteractionMap("WORLD.info");
         }
@@ -75,9 +77,18 @@ namespace ExNihilo.Systems
 
             if (_playerOverlay != null)
             {
-                var adjustedOffset = (_playerOverlay.PlayerCenterScreen - _currentWorldPosition) * (_currentWorldScale / oldScale);
-                _playerOverlay.OnResize(graphics, gameWindow);
-                _currentWorldPosition = _playerOverlay.PlayerCenterScreen - adjustedOffset;
+                if (_resetWorldPos)
+                {
+                    _resetWorldPos = false;
+                    _playerOverlay.OnResize(graphics, gameWindow);
+                    _currentWorldPosition = _playerOverlay.PlayerCenterScreen - _currentWorldScale * new Vector2(400, 200);
+                }
+                else
+                {
+                    var adjustedOffset = (_playerOverlay.PlayerCenterScreen - _currentWorldPosition) * (_currentWorldScale / oldScale);
+                    _playerOverlay.OnResize(graphics, gameWindow); //this is specifically warped between these measurements 
+                    _currentWorldPosition = _playerOverlay.PlayerCenterScreen - adjustedOffset;
+                }
             }
         }
 

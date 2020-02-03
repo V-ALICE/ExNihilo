@@ -50,6 +50,7 @@ namespace ExNihilo.Systems
 
         public static void LoadRuleSets()
         {
+            // 700 x 500 base only works for fullscreen
             DefaultScaleRuleSet = new ScaleRuleSet
             (
                 new ScaleRule(1, 1400, 1000),
