@@ -1,34 +1,47 @@
-﻿using System.IO;
+﻿using System.Collections.Generic;
+using System.IO;
 using ExNihilo.Systems.Bases;
 using ExNihilo.Util;
 using Microsoft.Xna.Framework;
 
 namespace ExNihilo.Systems
 {
-    public class InteractionMap
+    public class TypeMatrix
     {
         public enum Type
         {
             None, Air, Ground, Wall
         }
 
-        private readonly int _x, _y;
-        private readonly Type[][] _map;
-        private readonly Interactive[][] _interactive;
+        public readonly int X, Y;
+        protected Type[][] _map;
 
-        public InteractionMap(string fileName)
+        public TypeMatrix(List<List<Type>> dynamicSet)
+        {
+            X = dynamicSet[0].Count;
+            Y = dynamicSet.Count;
+            _map = new Type[Y][];
+            for (int i = 0; i < Y; i++)
+            {
+                _map[i] = new Type[X];
+                for (int j = 0; j < X; j++)
+                {
+                    _map[i][j] = dynamicSet[i][j];
+                }
+            }
+        }
+
+        public TypeMatrix(string fileName)
         {
             var map = File.ReadAllLines("Content/Resources/" + fileName);
             if (map.Length == 0) return;
-            _x = map[0].Length;
-            _y = map.Length;
-            _map = new Type[_y][];
-            _interactive = new Interactive[_y][];
-            for (int i = 0; i < _y; i++)
+            X = map[0].Length;
+            Y = map.Length;
+            _map = new Type[Y][];
+            for (int i = 0; i < Y; i++)
             {
-                _map[i] = new Type[_x];
-                _interactive[i] = new Interactive[_x];
-                for (int j = 0; j < _x; j++)
+                _map[i] = new Type[X];
+                for (int j = 0; j < X; j++)
                 {
                     switch (map[i][j])
                     {
@@ -45,6 +58,46 @@ namespace ExNihilo.Systems
                             _map[i][j] = Type.None;
                             break;
                     }
+                }
+            }
+        }
+
+        public Type Get(int x, int y)
+        {
+            return _map[y][x];
+        }
+    }
+
+    public class InteractionMap
+    {
+        public readonly TypeMatrix Map;
+        private readonly Interactive[][] _interactive;
+        private int _x => Map.X;
+        private int _y => Map.Y;
+
+        public InteractionMap(TypeMatrix mapIndex)
+        {
+            Map = mapIndex;
+            _interactive = new Interactive[_y][];
+            for (int i = 0; i < _y; i++)
+            {
+                _interactive[i] = new Interactive[_x];
+                for (int j = 0; j < _x; j++)
+                {
+                    _interactive[i][j] = null;
+                }
+            }
+        }
+
+        public InteractionMap(string fileName)
+        {
+            Map = new TypeMatrix(fileName);
+            _interactive = new Interactive[_y][];
+            for (int i = 0; i < _y; i++)
+            {
+                _interactive[i] = new Interactive[_x];
+                for (int j = 0; j < _x; j++)
+                {
                     _interactive[i][j] = null;
                 }
             }
@@ -73,7 +126,7 @@ namespace ExNihilo.Systems
             {
                 for (int j = minX; j <= maxX && j < _x && j >= 0; j++)
                 {
-                    if (_map[i][j] != Type.Ground) return true;
+                    if (Map.Get(j, i) != TypeMatrix.Type.Ground) return true;
                 }
             }
 

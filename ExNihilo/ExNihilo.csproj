@@ -100,6 +100,8 @@
     <Compile Include="Systems\Bases\ISavable.cs" />
     <Compile Include="Systems\Bases\ITypable.cs" />
     <Compile Include="Systems\InteractionMap.cs" />
+    <Compile Include="Systems\Level.cs" />
+    <Compile Include="Systems\MapGenerator.cs" />
     <Compile Include="Systems\ParticleBackdrop.cs" />
     <Compile Include="Systems\PlayerOverlay.cs" />
     <Compile Include="Systems\SaveHandler.cs" />

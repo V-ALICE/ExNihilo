@@ -14,117 +14,117 @@ namespace ExNihilo.Systems
 {
     public class World : IUI
     {
-        private readonly List<Tuple<AnimatableTexture, Vector2>> _overlays;
-        private readonly ScaleRuleSet _worldRules = TextureLibrary.DefaultScaleRuleSet;
-        private PlayerOverlay _playerOverlay;
-        private readonly int _timerID, _tileSize;
-        private float _currentWorldScale;
-        private Coordinate _playerCustomHitBox, _playerCustomHitBoxOffset;
-        private InteractionMap _map;
-        private Texture2D _world;
-        private Vector2 _currentWorldPosition;
-        private bool _resetWorldPos;
+        protected readonly List<Tuple<AnimatableTexture, Vector2>> Overlays;
+        protected readonly ScaleRuleSet WorldRules = TextureLibrary.DefaultScaleRuleSet;
+        protected PlayerOverlay PlayerOverlay;
+        protected readonly int TimerID, TileSize;
+        protected float CurrentWorldScale;
+        protected Coordinate PlayerCustomHitBox, PlayerCustomHitBoxOffset;
+        protected InteractionMap Map;
+        protected Texture2D WorldTexture;
+        protected Vector2 CurrentWorldPosition;
+        protected bool ResetWorldPos;
 
         public World(int tileSize)
         {
-            _resetWorldPos = true;
-            _tileSize = tileSize;
-            _currentWorldPosition = new Vector2();
-            _currentWorldScale = 1;
-            _overlays = new List<Tuple<AnimatableTexture, Vector2>>();
-            _playerCustomHitBox = new Coordinate();
-            _playerOverlay = null;
-            _timerID = UniversalTime.NewTimer(false);
-            UniversalTime.TurnOnTimer(_timerID);
+            ResetWorldPos = true;
+            TileSize = tileSize;
+            CurrentWorldPosition = new Vector2();
+            CurrentWorldScale = 1;
+            Overlays = new List<Tuple<AnimatableTexture, Vector2>>();
+            PlayerCustomHitBox = new Coordinate();
+            PlayerOverlay = null;
+            TimerID = UniversalTime.NewTimer(false);
+            UniversalTime.TurnOnTimer(TimerID);
         }
 
         public EntityTexture.State GetCurrentState()
         {
-            return _playerOverlay.GetCurrentState();
+            return PlayerOverlay.GetCurrentState();
         }
         public void Halt()
         {
-            _playerOverlay.Halt();
+            PlayerOverlay.Halt();
         }
         public void SwapEntity(EntityContainer entity)
         {
             if (entity is null) return;
-            if (_playerOverlay is null) _playerOverlay = new PlayerOverlay(entity);
-            else _playerOverlay.ForceTexture(entity);
+            if (PlayerOverlay is null) PlayerOverlay = new PlayerOverlay(entity);
+            else PlayerOverlay.ForceTexture(entity);
         }
-        public void Reset(EntityContainer entity, Coordinate hitBox, Coordinate hitBoxOffset)
+        public virtual void Reset(EntityContainer entity, Coordinate hitBox, Coordinate hitBoxOffset)
         {
-            _resetWorldPos = true; //Screen size is required to calculate this which isn't available here
-            _currentWorldPosition = new Vector2();
-            UniversalTime.ResetTimer(_timerID);
+            ResetWorldPos = true; //Screen size is required to calculate this which isn't available here
+            CurrentWorldPosition = new Vector2();
+            UniversalTime.ResetTimer(TimerID);
 
             SwapEntity(entity);
-            _playerCustomHitBox = hitBox.Copy();
-            _playerCustomHitBoxOffset = hitBoxOffset.Copy();
+            PlayerCustomHitBox = hitBox.Copy();
+            PlayerCustomHitBoxOffset = hitBoxOffset.Copy();
         }
 
-        public void LoadContent(GraphicsDevice graphics, ContentManager content)
+        public virtual void LoadContent(GraphicsDevice graphics, ContentManager content)
         {
             //TODO: make this universal (what does universal mean?)
-            _world = content.Load<Texture2D>("World/world");
-            _map = new InteractionMap("WORLD.info");
+            WorldTexture = content.Load<Texture2D>("World/world");
+            Map = new InteractionMap("WORLD.info");
         }
 
-        public void OnResize(GraphicsDevice graphics, Coordinate gameWindow)
+        public virtual void OnResize(GraphicsDevice graphics, Coordinate gameWindow)
         {
-            var oldScale = _currentWorldScale;
-            _currentWorldScale = _worldRules.GetScale(gameWindow);
+            var oldScale = CurrentWorldScale;
+            CurrentWorldScale = WorldRules.GetScale(gameWindow);
 
-            if (_playerOverlay != null)
+            if (PlayerOverlay != null)
             {
-                if (_resetWorldPos)
+                if (ResetWorldPos)
                 {
-                    _resetWorldPos = false;
-                    _playerOverlay.OnResize(graphics, gameWindow);
-                    _currentWorldPosition = _playerOverlay.PlayerCenterScreen - _currentWorldScale * new Vector2(400, 200);
+                    ResetWorldPos = false;
+                    PlayerOverlay.OnResize(graphics, gameWindow);
+                    CurrentWorldPosition = PlayerOverlay.PlayerCenterScreen - CurrentWorldScale * new Vector2(400, 200);
                 }
                 else
                 {
-                    var adjustedOffset = (_playerOverlay.PlayerCenterScreen - _currentWorldPosition) * (_currentWorldScale / oldScale);
-                    _playerOverlay.OnResize(graphics, gameWindow); //this is specifically warped between these measurements 
-                    _currentWorldPosition = _playerOverlay.PlayerCenterScreen - adjustedOffset;
+                    var adjustedOffset = (PlayerOverlay.PlayerCenterScreen - CurrentWorldPosition) * (CurrentWorldScale / oldScale);
+                    PlayerOverlay.OnResize(graphics, gameWindow); //this is specifically warped between these measurements 
+                    CurrentWorldPosition = PlayerOverlay.PlayerCenterScreen - adjustedOffset;
                 }
             }
         }
 
-        public void Draw(SpriteBatch spriteBatch)
+        public virtual void Draw(SpriteBatch spriteBatch)
         {
-            spriteBatch.Draw(_world, _currentWorldPosition, null, Color.White, 0, Vector2.Zero, _currentWorldScale, SpriteEffects.None, 0);
+            spriteBatch.Draw(WorldTexture, CurrentWorldPosition, null, Color.White, 0, Vector2.Zero, CurrentWorldScale, SpriteEffects.None, 0);
         }
 
-        public void DrawOverlays(SpriteBatch spriteBatch)
+        public virtual void DrawOverlays(SpriteBatch spriteBatch)
         {
-            _playerOverlay?.Draw(spriteBatch);
-            foreach (var item in _overlays)
+            PlayerOverlay?.Draw(spriteBatch);
+            foreach (var item in Overlays)
             {
-                var pos = _currentWorldPosition + _currentWorldScale * item.Item2;
-                item.Item1.Draw(spriteBatch, pos, ColorScale.White, _currentWorldScale);
+                var pos = CurrentWorldPosition + CurrentWorldScale * item.Item2;
+                item.Item1.Draw(spriteBatch, pos, ColorScale.White, CurrentWorldScale);
             }
 
-            if (GameContainer.GLOBAL_DEBUG && _playerOverlay != null)
+            if (GameContainer.GLOBAL_DEBUG && PlayerOverlay != null)
             {
-                LineDrawer.DrawSquare(spriteBatch, _currentWorldScale * _playerCustomHitBoxOffset + _playerOverlay.PlayerCenterScreen, _currentWorldScale * _playerCustomHitBox.X, _currentWorldScale * _playerCustomHitBox.Y, Color.Red);
+                LineDrawer.DrawSquare(spriteBatch, CurrentWorldScale * PlayerCustomHitBoxOffset + PlayerOverlay.PlayerCenterScreen, CurrentWorldScale * PlayerCustomHitBox.X, CurrentWorldScale * PlayerCustomHitBox.Y, Color.Red);
             }
         }
 
-        public void ApplyPush(Coordinate push, float mult)
+        public virtual void ApplyPush(Coordinate push, float mult)
         {
             //check map and move
-            _playerOverlay.Push(push);
+            PlayerOverlay.Push(push);
             if (push.Origin()) return;
 
-            var tileSize = (int) (_currentWorldScale * _tileSize);
-            var moveOffset = 50 * _currentWorldScale * mult * (float)UniversalTime.GetLastTickTime(_timerID) * push; //offset from current position 
-            var hitBox = _currentWorldScale * _playerCustomHitBox;
-            var hitBoxOffset = _currentWorldScale * _playerCustomHitBoxOffset + _playerOverlay.PlayerCenterScreen - _currentWorldPosition;
+            var tileSize = (int) (CurrentWorldScale * TileSize);
+            var moveOffset = 50 * CurrentWorldScale * mult * (float)UniversalTime.GetLastTickTime(TimerID) * push; //offset from current position 
+            var hitBox = CurrentWorldScale * PlayerCustomHitBox;
+            var hitBoxOffset = CurrentWorldScale * PlayerCustomHitBoxOffset + PlayerOverlay.PlayerCenterScreen - CurrentWorldPosition;
             var hitBoxMovedOffset = hitBoxOffset + moveOffset;
 
-            if (_map.CheckIllegalPosition(tileSize, hitBox, hitBoxMovedOffset))
+            if (Map.CheckIllegalPosition(tileSize, hitBox, hitBoxMovedOffset))
             {
                 //being here implies that applying the current push failed (player is hitting something)
                 if (push.X == 0 ^ push.Y == 0)
@@ -133,11 +133,11 @@ namespace ExNihilo.Systems
                     return;
                 }
 
-                if (_map.CheckIllegalPosition(tileSize, hitBox, new Vector2(hitBoxMovedOffset.X, hitBoxOffset.Y)))
+                if (Map.CheckIllegalPosition(tileSize, hitBox, new Vector2(hitBoxMovedOffset.X, hitBoxOffset.Y)))
                 {
                     //being here implies that the current X push is impossible
                     moveOffset.X = 0;
-                    if (_map.CheckIllegalPosition(tileSize, hitBox, hitBoxOffset + moveOffset))
+                    if (Map.CheckIllegalPosition(tileSize, hitBox, hitBoxOffset + moveOffset))
                     {
                         //being here implies that even stripped of the X push the current Y push is impossible (player is running into a corner)
                         moveOffset.Y = 0;
@@ -150,29 +150,29 @@ namespace ExNihilo.Systems
                 }
             }
 
-            _currentWorldPosition -= moveOffset;
+            CurrentWorldPosition -= moveOffset;
         }
 
         public Interactive CheckForInteraction()
         {
-            var offset = _playerOverlay.PlayerCenterScreen - _currentWorldPosition +
-                         TextureUtilities.GetOffset(TextureUtilities.PositionType.Center, _playerCustomHitBox);
-            return _map.GetInteractive((int) (_currentWorldScale * _tileSize), offset, 1);
+            var offset = PlayerOverlay.PlayerCenterScreen - CurrentWorldPosition +
+                         TextureUtilities.GetOffset(TextureUtilities.PositionType.Center, PlayerCustomHitBox);
+            return Map.GetInteractive((int) (CurrentWorldScale * TileSize), offset, 1);
         }
 
         public void AddOverlay(AnimatableTexture texture, int x, int y)
         {
-            var pos = new Vector2(x * _tileSize, y * _tileSize);
-            _overlays.Add(new Tuple<AnimatableTexture, Vector2>(texture, pos));
+            var pos = new Vector2(x * TileSize, y * TileSize);
+            Overlays.Add(new Tuple<AnimatableTexture, Vector2>(texture, pos));
         }
         public void AddInteractive(Interactive obj, int x, int y, int width=1, int height=1)
         {
-            _map.AddInteractive(obj, x, y, width, height);
+            Map.AddInteractive(obj, x, y, width, height);
         }
 
         public override string ToString()
         {
-            return "World Pos: X:" + _currentWorldPosition.X.ToString("0.00") + " Y:" + _currentWorldPosition.Y.ToString("0.00");
+            return "World Pos: X:" + CurrentWorldPosition.X.ToString("0.00") + " Y:" + CurrentWorldPosition.Y.ToString("0.00");
         }
 
     }
