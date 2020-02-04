@@ -8,27 +8,19 @@ namespace ExNihilo.Systems
 {
     public class TypeMatrix
     {
-        public enum Type
+        public enum Type: byte
         {
-            None, Air, Ground, Wall
+            None, Wall, Ground
         }
 
         public readonly int X, Y;
         protected Type[][] _map;
 
-        public TypeMatrix(List<List<Type>> dynamicSet)
+        public TypeMatrix(Type[][] set)
         {
-            X = dynamicSet[0].Count;
-            Y = dynamicSet.Count;
-            _map = new Type[Y][];
-            for (int i = 0; i < Y; i++)
-            {
-                _map[i] = new Type[X];
-                for (int j = 0; j < X; j++)
-                {
-                    _map[i][j] = dynamicSet[i][j];
-                }
-            }
+            X = set[0].Length;
+            Y = set.Length;
+            _map = set;
         }
 
         public TypeMatrix(string fileName)
@@ -45,9 +37,6 @@ namespace ExNihilo.Systems
                 {
                     switch (map[i][j])
                     {
-                        case 'A':
-                            _map[i][j] = Type.Air;
-                            break;
                         case 'G':
                             _map[i][j] = Type.Ground;
                             break;

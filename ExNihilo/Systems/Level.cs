@@ -1,10 +1,7 @@
 ﻿
 using System.Collections.Generic;
 using ExNihilo.Entity;
-using ExNihilo.Systems;
-using ExNihilo.UI.Bases;
 using ExNihilo.Util;
-using ExNihilo.Util.Graphics;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
@@ -21,6 +18,7 @@ namespace ExNihilo.Systems
         private List<Texture2D> _subLevelMaps;
         private List<EntityContainer> _mobSet;
         private GraphicsDevice _graphics; //for stitching level maps
+        private int _curLevel;
 
         public Level(int tileSize) : base(tileSize)
         {
@@ -28,10 +26,10 @@ namespace ExNihilo.Systems
             _mobSet = new List<EntityContainer>();
         }
 
-        public void GenerateLevel(MapGenerator.Type type)
+        public void GenerateLevel(MapGenerator.Type type, int seed, int level)
         {
-            Map = new InteractionMap(new TypeMatrix(MapGenerator.Get(type)));
-            WorldTexture = MapGenerator.StitchMap(_graphics, Map.Map, TileSize);
+            Map = new InteractionMap(new TypeMatrix(MapGenerator.Get(seed, level, type)));
+            WorldTexture = MapStitcher.StitchMap(_graphics, Map.Map, TileSize);
         }
 
         public override void Reset(EntityContainer entity, Coordinate hitBox, Coordinate hitBoxOffset)

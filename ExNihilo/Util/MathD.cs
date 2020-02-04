@@ -29,5 +29,10 @@ namespace ExNihilo.Util
         {
             return (r.Next(0, 2) == 0 ? -1 : 1)*r.Next(min, max);
         }
+
+        public static bool Chance(Random r, int chance, int total=100)
+        {
+            return r.Next(total) < chance;
+        }
     }
 }

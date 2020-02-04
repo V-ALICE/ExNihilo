@@ -136,6 +136,13 @@ namespace ExNihilo.Util.Graphics
             return new Color[0];
         }
 
+        public static void SetSubTexture(Texture2D main, Texture2D sub, int x, int y)
+        {
+            Color[] subData = new Color[sub.Width*sub.Height];
+            sub.GetData(subData);
+            main.SetData(0, new Rectangle(x, y, sub.Width, sub.Height), subData, 0, subData.Length);
+        }
+
         public static Texture2D CreateSingleColorTexture(GraphicsDevice device, int width, int height, Color color)
         {
             var texture = new Texture2D(device, width, height);

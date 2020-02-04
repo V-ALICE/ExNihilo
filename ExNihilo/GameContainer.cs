@@ -84,7 +84,7 @@ namespace ExNihilo
                 _graphics.PreferredBackBufferHeight = MathHelper.Clamp(Window.ClientBounds.Height, ScaleRule.MIN_Y, ScaleRule.MAX_Y);
                 _graphics.ApplyChanges();
                 _windowSize = new Coordinate(Window.ClientBounds.Width, Window.ClientBounds.Height);
-                System.Console.WriteLine(_windowSize.X + " " + _windowSize.Y);
+
                 OnResize();
             }
         }
@@ -136,8 +136,8 @@ namespace ExNihilo
         }
 
 /********************************************************************
-        ------->Game loop
-        ********************************************************************/
+------->Game loop
+********************************************************************/
         protected override void Initialize()
         {
             _activeSectorID = SectorID.MainMenu;
@@ -181,6 +181,7 @@ namespace ExNihilo
                 {SectorID.Loading, new LoadingSector(this) }
             };
             foreach (var sector in _sectorDirectory.Values) sector?.Initialize();
+            Asura.Ascend(this, _sectorDirectory[SectorID.Underworld] as UnderworldSector, _sectorDirectory[SectorID.Outerworld] as OuterworldSector);
 
             base.Initialize();
             //ForceWindowUpdate(1920, 1080);
@@ -348,6 +349,14 @@ namespace ExNihilo
         {
             AudioManager.MusicVolume = param.MusicVolume;
             AudioManager.EffectVolume = param.EffectVolume;
+        }
+
+        public void GLOBAL_DEBUG_COMMAND(string input)
+        {
+            //Do anything here
+            Level a = new Level(16);
+            a.LoadContent(GraphicsDevice, Content);
+            a.GenerateLevel(MapGenerator.Type.Random, int.Parse(input), 1);
         }
     }
 }

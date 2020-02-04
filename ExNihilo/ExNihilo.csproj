@@ -102,6 +102,7 @@
     <Compile Include="Systems\InteractionMap.cs" />
     <Compile Include="Systems\Level.cs" />
     <Compile Include="Systems\MapGenerator.cs" />
+    <Compile Include="Systems\MapStitcher.cs" />
     <Compile Include="Systems\ParticleBackdrop.cs" />
     <Compile Include="Systems\PlayerOverlay.cs" />
     <Compile Include="Systems\SaveHandler.cs" />

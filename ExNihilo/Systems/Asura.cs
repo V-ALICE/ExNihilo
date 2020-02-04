@@ -130,7 +130,7 @@ namespace ExNihilo.Systems
                         "\nlevel ranges from 1 to 9999");
                     break;
                 default:
-                    g.ForceMessage("", "<No such command \"" + com + "\". Use /help to see available commands>");
+                    g.ForceMessage("<Failure>", "No such command \"" + com + "\". Use /help to see available commands");
                     break;
             }
         }
@@ -206,6 +206,11 @@ namespace ExNihilo.Systems
             if (command.StartsWith("help "))
             {
                 PostHelp(g, command.Substring(5));
+            }
+            else if (command.StartsWith("trigger "))
+            {
+                _game.GLOBAL_DEBUG_COMMAND(command.Substring(8));
+                g.ForceMessage("<admin>", "Activating debug commands");
             }
             else if (command.StartsWith("giveitem "))
             {

@@ -91,7 +91,7 @@ namespace ExNihilo.Sectors
         public override void Update()
         {
             if (_menuActive) MenuHandler.UpdateInput();
-            else
+            else if (!TypingKeyboard.Active)
             {
                 _world.ApplyPush(CurrentPush, CurrentPushMult);
                 _playerHandler.UpdateInput();
