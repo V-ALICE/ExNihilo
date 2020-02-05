@@ -1,4 +1,5 @@
 ﻿
+using System;
 using System.Collections.Generic;
 using ExNihilo.Entity;
 using ExNihilo.Util;
@@ -15,26 +16,72 @@ namespace ExNihilo.Systems
      */
     public class Level : World
     {
-        private List<Texture2D> _subLevelMaps;
-        private List<EntityContainer> _mobSet;
+        private List<Texture2D> _subLevelTextures;
+        private List<InteractionMap> _subLevelMaps;
+
+        //private List<EntityContainer> _mobSet;
         private GraphicsDevice _graphics; //for stitching level maps
-        private int _curLevel;
+        private int _curLevel, _seed, _parallax;
 
         public Level(int tileSize) : base(tileSize)
         {
-            _subLevelMaps = new List<Texture2D>();
-            _mobSet = new List<EntityContainer>();
+            _subLevelTextures = new List<Texture2D>();
+            _subLevelMaps = new List<InteractionMap>();
+            //_mobSet = new List<EntityContainer>();
+            _curLevel = 1;
         }
 
-        public void GenerateLevel(MapGenerator.Type type, int seed, int level)
+        public void GenerateLevel(MapGenerator.Type type, int level=-1)
         {
-            Map = new InteractionMap(new TypeMatrix(MapGenerator.Get(seed, level, type)));
-            WorldTexture = MapStitcher.StitchMap(_graphics, Map.Map, TileSize);
+            _curLevel = level == -1 ? _curLevel+1 : level;
+            if (_subLevelMaps.Count > 0)
+            {
+                //Replace old level if already generated
+                Map = _subLevelMaps[0];
+                WorldTexture = _subLevelTextures[0];
+                _subLevelMaps.RemoveAt(0);
+                _subLevelTextures.RemoveAt(0);
+            }
+            else
+            {
+                //First time generation or zero parallax
+                Map = new InteractionMap(new TypeMatrix(MapGenerator.Get(_seed, _curLevel, type)));
+                WorldTexture = MapStitcher.StitchMap(_graphics, Map.Map, TileSize);
+            }
+
+            //Add new parallax levels as needed
+            while (_subLevelMaps.Count < _parallax)
+            {
+                var floor = _curLevel + _subLevelMaps.Count + 1;
+                var newMap = new InteractionMap(new TypeMatrix(MapGenerator.Get(_seed, floor, type)));
+                _subLevelMaps.Add(newMap);
+                _subLevelTextures.Add(MapStitcher.StitchMap(_graphics, newMap.Map, TileSize));
+            }
+        }
+
+        public void ChangeParallax(int parallax)
+        {
+            _parallax = parallax;
+            while (_subLevelMaps.Count > _parallax)
+            {
+                _subLevelMaps.RemoveAt(_subLevelMaps.Count - 1);
+                _subLevelTextures.RemoveAt(_subLevelTextures.Count - 1);
+            }
+        }
+
+        public void ChangeSeed(int seed)
+        {
+            _seed = seed;
+            _subLevelMaps.Clear();
+            _subLevelTextures.Clear();
         }
 
         public override void Reset(EntityContainer entity, Coordinate hitBox, Coordinate hitBoxOffset)
         {
             base.Reset(entity, hitBox, hitBoxOffset);
+            _subLevelTextures.Clear();
+            _subLevelMaps.Clear();
+            //_mobSet.Clear();
         }
 
         public override void LoadContent(GraphicsDevice graphics, ContentManager content)
@@ -44,23 +91,41 @@ namespace ExNihilo.Systems
 
         public override void OnResize(GraphicsDevice graphics, Coordinate gameWindow)
         {
-            base.OnResize(graphics, gameWindow);
+            var oldScale = CurrentWorldScale;
+            CurrentWorldScale = WorldRules.GetScale(gameWindow);
+
+            if (PlayerOverlay != null)
+            {
+                if (ResetWorldPos)
+                {
+                    ResetWorldPos = false;
+                    PlayerOverlay.OnResize(graphics, gameWindow);
+                    CurrentWorldPosition = PlayerOverlay.PlayerCenterScreen - CurrentWorldScale * TileSize * Map.GetAnyFloor(new Random());
+                    CurrentWorldPosition.Y += 0.5f * CurrentWorldScale * TileSize; //TODO: less magic way to do this
+                }
+                else
+                {
+                    var adjustedOffset = (PlayerOverlay.PlayerCenterScreen - CurrentWorldPosition) * (CurrentWorldScale / oldScale);
+                    PlayerOverlay.OnResize(graphics, gameWindow); //this is specifically warped between these measurements 
+                    CurrentWorldPosition = PlayerOverlay.PlayerCenterScreen - adjustedOffset;
+                }
+            }
         }
 
-        public void Update(GameTime gameTime)
+        public void Update()
         {
-            //TODO: update _mobSet
+            
         }
 
         public override void Draw(SpriteBatch spriteBatch)
         {
+            //TODO: draw parallax here
             base.Draw(spriteBatch);
         }
 
         public override void DrawOverlays(SpriteBatch spriteBatch)
         {
             base.DrawOverlays(spriteBatch);
-            //TODO: draw _mobSet
         }
 
         public override void ApplyPush(Coordinate push, float mult)

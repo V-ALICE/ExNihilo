@@ -253,7 +253,7 @@ namespace ExNihilo.Systems
             if (_activeText.StartsWith("/")) Asura.Handle(this, _activeText);
             else _console.AddMessage("<Player>", _activeText);
 
-            //Active = false;
+            CloseConsole();
             _lastMessage = _activeText;
             _activeText = "";
         }

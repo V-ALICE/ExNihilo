@@ -82,6 +82,7 @@ namespace ExNihilo.Sectors
 
         public override void OnResize(GraphicsDevice graphicsDevice, Coordinate gameWindow)
         {
+            //TODO: this seems to be wrong at some resolutions (might be all but more noticeable on some)
             _loadingScale = _rules.GetScale(gameWindow);
             _loadingDrawPos = new Vector2(gameWindow.X / 2, gameWindow.Y / 2) - TextureUtilities.GetOffset(TextureUtilities.PositionType.Center, _loadingTexture);
             if (_loadingCycle != null)

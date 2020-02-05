@@ -51,11 +51,12 @@ namespace ExNihilo.Input.Commands
             
         }
 
-        public void Initialize(Sector game, bool menuType)
+
+        public void Initialize(Sector game, bool isMenu)
         {
             if (_bucket.Count > 0) return;
 
-            if (menuType)
+            if (isMenu)
             {
                 _bucket.Add(new KeyBlock(new MenuUp(game), true, Keys.Up, Keys.W, Buttons.DPadUp, Buttons.LeftThumbstickUp));
                 _bucket.Add(new KeyBlock(new MenuDown(game), true, Keys.Down, Keys.S, Buttons.DPadDown, Buttons.LeftThumbstickDown));

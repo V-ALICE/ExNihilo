@@ -1,15 +1,19 @@
-﻿using ExNihilo.Input.Commands;
+﻿using ExNihilo.Entity;
+using ExNihilo.Menus;
 using ExNihilo.Systems;
 using ExNihilo.Util;
-using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
 
 namespace ExNihilo.Sectors
 {
-    public class UnderworldSector : Sector
-    {       
-        private CommandHandler _menuHandler;
+    public class UnderworldSector : PlayerBasedSector
+    {
+        //TODO: add inventory, entityList
+
+        //private Menu _inventoryMenu;
+
+        private Level _activeLevel => _world as Level;
 
         public UnderworldSector(GameContainer container) : base(container)
         {
@@ -20,61 +24,61 @@ namespace ExNihilo.Sectors
 ********************************************************************/
         public override void OnResize(GraphicsDevice graphicsDevice, Coordinate gameWindow)
         {
+            base.OnResize(graphicsDevice, gameWindow);
+            //_inventoryMenu.OnResize(graphicsDevice, gameWindow);
         }
 
         public override void Initialize()
         {
-            MenuHandler = new CommandHandler();
-            MenuHandler.Initialize(this, false);
-            _menuHandler = new CommandHandler();
-            _menuHandler.Initialize(this, true);
+            base.Initialize();
+            _world = new Level(16);
+            //_inventoryMenu = new InventoryMenu(Container, _inventory);
         }
 
         public override void LoadContent(GraphicsDevice graphicsDevice, ContentManager content)
         {
+            base.LoadContent(graphicsDevice, content);
+            //_inventory.LoadContent(graphicsDevice, content);
         }
 
         public override void Update()
         {
-            MenuHandler.UpdateInput();
-            //_menuHandler.UpdateInput();
+            base.Update();
+            _activeLevel.Update();
         }
 
         protected override void DrawDebugInfo(SpriteBatch spriteBatch)
         {
+            base.DrawDebugInfo(spriteBatch);
         }
 
         public override void Draw(SpriteBatch spriteBatch, bool drawDebugInfo)
         {  
+            _world.Draw(spriteBatch);
+            _world.DrawOverlays(spriteBatch);
+            _menuPoint?.Draw(spriteBatch);
             if (drawDebugInfo) DrawDebugInfo(spriteBatch);
         }
 
 /********************************************************************
 ------->Game functions
 ********************************************************************/
-        public override void OnExit()
-        {
-        }
-
-        public override void OnMoveMouse(Point point)
-        { 
-        }
-
-        public override bool OnLeftClick(Point point)
-        {
-            return false;
-        }
-
-        public override void OnLeftRelease(Point point)
-        {
-        }
-
         public override void Pack(PackedGame game)
         {
+            //_inventoryMenu.Pack(game);
         }
 
         public override void Unpack(PackedGame game)
         {
+            //_inventoryMenu.Unpack(game);
+        }
+
+        public bool StartNewGame(EntityContainer player, int seed)
+        {
+            _activeLevel.ChangeSeed(seed);
+            _activeLevel.GenerateLevel(MapGenerator.Type.Random, 1);
+            _activeLevel.Reset(player, new Coordinate(10, 10), new Coordinate(3, 10));
+            return true;
         }
     }
 }

@@ -1,5 +1,7 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.IO;
+using System.Resources;
 using ExNihilo.Systems.Bases;
 using ExNihilo.Util;
 using Microsoft.Xna.Framework;
@@ -89,6 +91,18 @@ namespace ExNihilo.Systems
                 {
                     _interactive[i][j] = null;
                 }
+            }
+        }
+
+        public Coordinate GetAnyFloor(Random rand)
+        {
+            //TODO: this can get unlucky and spin for a long time potentially, find a better way to do it
+            while (true)
+            {
+                var x = rand.Next(_x);
+                var y = rand.Next(_y);
+                var t = Map.Get(x, y);
+                if (t == TypeMatrix.Type.Ground) return new Coordinate(x, y);
             }
         }
 

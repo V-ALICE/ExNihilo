@@ -6,7 +6,7 @@ namespace ExNihilo.Systems
     {
         private static bool _cheatyMode;
         private static GameContainer _game;
-        private static OuterworldSector _theTown;
+        private static OverworldSector _theTown;
         private static UnderworldSector _theVoid;
 
         private static void PostHelp(ConsoleHandler g, string com)
@@ -282,7 +282,7 @@ namespace ExNihilo.Systems
             else HandleNoArgCommands(g, command);
         }
 
-        public static void Ascend(GameContainer g, UnderworldSector u, OuterworldSector o)
+        public static void Ascend(GameContainer g, UnderworldSector u, OverworldSector o)
         {
             _game = g;
             _theTown = o;

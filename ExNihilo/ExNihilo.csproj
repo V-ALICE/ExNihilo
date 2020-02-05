@@ -80,8 +80,9 @@
     <Compile Include="Menus\TitleMenu.cs" />
     <Compile Include="Sectors\LoadingSector.cs" />
     <Compile Include="Sectors\Sector.cs" />
+    <Compile Include="Sectors\PlayerBasedSector.cs" />
     <Compile Include="Sectors\UnderworldSector.cs" />
-    <Compile Include="Sectors\OuterworldSector.cs" />
+    <Compile Include="Sectors\OverworldSector.cs" />
     <Compile Include="Sectors\TitleSector.cs" />
     <Compile Include="GameContainer.cs" />
     <Compile Include="Input\Commands\CommandHandler.cs" />

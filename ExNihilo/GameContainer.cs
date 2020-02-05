@@ -2,7 +2,9 @@
 using System.Collections.Generic;
 using System.Drawing;
 using System.Threading;
+using System.Threading.Tasks;
 using System.Windows.Forms;
+using ExNihilo.Entity;
 using ExNihilo.Input.Commands;
 using ExNihilo.Input.Controllers;
 using ExNihilo.Sectors;
@@ -176,12 +178,12 @@ namespace ExNihilo
             _sectorDirectory = new Dictionary<SectorID, Sector>
             {
                 {SectorID.MainMenu, new TitleSector(this)},
-                {SectorID.Outerworld, new OuterworldSector(this) },
+                {SectorID.Outerworld, new OverworldSector(this) },
                 {SectorID.Underworld, new UnderworldSector(this) },
                 {SectorID.Loading, new LoadingSector(this) }
             };
             foreach (var sector in _sectorDirectory.Values) sector?.Initialize();
-            Asura.Ascend(this, _sectorDirectory[SectorID.Underworld] as UnderworldSector, _sectorDirectory[SectorID.Outerworld] as OuterworldSector);
+            Asura.Ascend(this, _sectorDirectory[SectorID.Underworld] as UnderworldSector, _sectorDirectory[SectorID.Outerworld] as OverworldSector);
 
             base.Initialize();
             //ForceWindowUpdate(1920, 1080);
@@ -345,6 +347,14 @@ namespace ExNihilo
             return true;
         }
 
+        public async void StartNewGame(EntityContainer player, int seed)
+        {
+            RequestSectorChange(SectorID.Loading);
+            var v = _sectorDirectory[SectorID.Underworld] as UnderworldSector;
+            var success = await Task.Run(() => v != null && v.StartNewGame(player, seed));
+            RequestSectorChange(success ? SectorID.Underworld : SectorID.Outerworld);
+        }
+
         public void PushParameters(GameParameters param)
         {
             AudioManager.MusicVolume = param.MusicVolume;
@@ -354,9 +364,7 @@ namespace ExNihilo
         public void GLOBAL_DEBUG_COMMAND(string input)
         {
             //Do anything here
-            Level a = new Level(16);
-            a.LoadContent(GraphicsDevice, Content);
-            a.GenerateLevel(MapGenerator.Type.Random, int.Parse(input), 1);
+            StartNewGame(new PlayerEntityContainer(GraphicsDevice, "bilbo", 1, 2, 3, 4), int.Parse(input));
         }
     }
 }
