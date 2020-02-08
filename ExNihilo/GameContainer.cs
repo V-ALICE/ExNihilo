@@ -27,8 +27,7 @@ namespace ExNihilo
             MainMenu, Outerworld, Underworld, Loading
         }
 
-        private SectorID _activeSectorID;
-        private Sector ActiveSector => _sectorDirectory[_activeSectorID];
+        private Sector ActiveSector => _sectorDirectory[ActiveSectorID];
         private FormWindowState _currentForm;
         private float _mouseScale;
         private int _frameTimeID;
@@ -44,7 +43,7 @@ namespace ExNihilo
         private Point _lastMousePosition;
        
         public ConsoleHandler Console { get; private set; }
-        public SectorID PreviousSectorID;
+        public SectorID PreviousSectorID, ActiveSectorID;
 
         protected bool ShowDebugInfo, FormTouched;
         protected bool ConsoleActive => Console.Active;
@@ -142,7 +141,7 @@ namespace ExNihilo
 ********************************************************************/
         protected override void Initialize()
         {
-            _activeSectorID = SectorID.MainMenu;
+            ActiveSectorID = SectorID.MainMenu;
             PreviousSectorID = SectorID.MainMenu;
             _mouseScale = 1;
             _lastMousePosition = new Point();
@@ -297,14 +296,14 @@ namespace ExNihilo
         {
             if (newSector == SectorID.Loading) //Transitioning to loading
             {
-                if (_activeSectorID == SectorID.Loading)
+                if (ActiveSectorID == SectorID.Loading)
                 {
                     return -1; //already loading; wait
                 }
             }
 
-            PreviousSectorID = _activeSectorID;
-            _activeSectorID = newSector;
+            PreviousSectorID = ActiveSectorID;
+            ActiveSectorID = newSector;
             ActiveSector?.Enter(_lastMousePosition, _windowSize);
             return 0; //no issue
         }
@@ -347,24 +346,22 @@ namespace ExNihilo
             return true;
         }
 
-        public async void StartNewGame(EntityContainer player, int seed)
-        {
-            RequestSectorChange(SectorID.Loading);
-            var v = _sectorDirectory[SectorID.Underworld] as UnderworldSector;
-            var success = await Task.Run(() => v != null && v.StartNewGame(player, seed));
-            RequestSectorChange(success ? SectorID.Underworld : SectorID.Outerworld);
-        }
-
         public void PushParameters(GameParameters param)
         {
             AudioManager.MusicVolume = param.MusicVolume;
             AudioManager.EffectVolume = param.EffectVolume;
         }
 
+        public void StartNewGame(PlayerEntityContainer p, int seed)
+        {
+            //This exists solely so that the overworld can tell the underworld to start a new game
+            var a = _sectorDirectory[SectorID.Underworld] as UnderworldSector;
+            a?.StartNewGame(p, seed);
+        }
+
         public void GLOBAL_DEBUG_COMMAND(string input)
         {
-            //Do anything here
-            StartNewGame(new PlayerEntityContainer(GraphicsDevice, "bilbo", 1, 2, 3, 4), int.Parse(input));
+
         }
     }
 }

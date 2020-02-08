@@ -16,6 +16,8 @@ namespace ExNihilo.Sectors
         protected Vector2 _debugPosition;
         protected Point _lastMousePosition;
         protected World _world;
+        protected bool _disableCollisions;
+        protected float _systemPushSpeed = 1.0f;
 
         protected bool _menuActive => _menuPoint != null;
         protected Menu _menuPoint;
@@ -59,7 +61,7 @@ namespace ExNihilo.Sectors
             if (_menuActive) MenuHandler.UpdateInput();
             else if (!TypingKeyboard.Active)
             {
-                _world.ApplyPush(CurrentPush, CurrentPushMult);
+                _world.ApplyPush(CurrentPush, _systemPushSpeed*CurrentPushMult, _disableCollisions);
                 _playerHandler.UpdateInput();
             }
         }
@@ -128,6 +130,16 @@ namespace ExNihilo.Sectors
                         break;
                 }
             }
+        }
+
+        public void ToggleCollisions(bool collisionOn)
+        {
+            _disableCollisions = !collisionOn;
+        }
+
+        public void SetSpeedMultiplier(float mult)
+        {
+            _systemPushSpeed = mult;
         }
     }
 }

@@ -31,7 +31,7 @@ namespace ExNihilo.Systems
             _curLevel = 1;
         }
 
-        public void GenerateLevel(MapGenerator.Type type, int level=-1)
+        public void GenerateLevel(int level=-1, MapGenerator.Type type=MapGenerator.Type.Random)
         {
             _curLevel = level == -1 ? _curLevel+1 : level;
             if (_subLevelMaps.Count > 0)
@@ -57,6 +57,8 @@ namespace ExNihilo.Systems
                 _subLevelMaps.Add(newMap);
                 _subLevelTextures.Add(MapStitcher.StitchMap(_graphics, newMap.Map, TileSize));
             }
+
+            SetPlayerAnyTile();
         }
 
         public void ChangeParallax(int parallax)
@@ -89,6 +91,11 @@ namespace ExNihilo.Systems
             _graphics = graphics;
         }
 
+        private void SetPlayerAnyTile()
+        {
+            CurrentWorldPosition = PlayerOverlay.PlayerCenterScreen - CurrentWorldScale * TileSize * Map.GetAnyFloor(MathD.urand);
+            CurrentWorldPosition.Y += 0.5f * CurrentWorldScale * TileSize; //TODO: less magic way to do this
+        }
         public override void OnResize(GraphicsDevice graphics, Coordinate gameWindow)
         {
             var oldScale = CurrentWorldScale;
@@ -96,19 +103,9 @@ namespace ExNihilo.Systems
 
             if (PlayerOverlay != null)
             {
-                if (ResetWorldPos)
-                {
-                    ResetWorldPos = false;
-                    PlayerOverlay.OnResize(graphics, gameWindow);
-                    CurrentWorldPosition = PlayerOverlay.PlayerCenterScreen - CurrentWorldScale * TileSize * Map.GetAnyFloor(new Random());
-                    CurrentWorldPosition.Y += 0.5f * CurrentWorldScale * TileSize; //TODO: less magic way to do this
-                }
-                else
-                {
-                    var adjustedOffset = (PlayerOverlay.PlayerCenterScreen - CurrentWorldPosition) * (CurrentWorldScale / oldScale);
-                    PlayerOverlay.OnResize(graphics, gameWindow); //this is specifically warped between these measurements 
-                    CurrentWorldPosition = PlayerOverlay.PlayerCenterScreen - adjustedOffset;
-                }
+                var adjustedOffset = (PlayerOverlay.PlayerCenterScreen - CurrentWorldPosition) * (CurrentWorldScale / oldScale);
+                PlayerOverlay.OnResize(graphics, gameWindow); //this is warped between these measurements purposefully
+                CurrentWorldPosition = PlayerOverlay.PlayerCenterScreen - adjustedOffset;
             }
         }
 
@@ -128,9 +125,14 @@ namespace ExNihilo.Systems
             base.DrawOverlays(spriteBatch);
         }
 
-        public override void ApplyPush(Coordinate push, float mult)
+        public override void ApplyPush(Coordinate push, float mult, bool ignoreWalls=false)
         {
-            base.ApplyPush(push, mult);
+            base.ApplyPush(push, mult, ignoreWalls);
+        }
+
+        public Texture2D GetCurrentMapImage()
+        {
+            return WorldTexture;
         }
     }
 }

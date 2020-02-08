@@ -157,6 +157,8 @@ namespace ExNihilo.Util.Graphics
 
         public static void WriteTextureToPNG(Texture2D texture, string filename, string directory = "")
         {
+            if (texture is null) return;
+
             if (directory.Length > 0)
             {
                 if (!Directory.Exists(directory)) Directory.CreateDirectory(directory);

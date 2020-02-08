@@ -1,4 +1,7 @@
-﻿using ExNihilo.Sectors;
+﻿using System;
+using ExNihilo.Sectors;
+using ExNihilo.Util.Graphics;
+using Microsoft.Xna.Framework;
 
 namespace ExNihilo.Systems
 {
@@ -14,123 +17,51 @@ namespace ExNihilo.Systems
             switch (com)
             {
                 case "help":
-                    g.ForceMessage("<Help>",
+                    g.ForceMessage("<help>",
                         "\n/help           -> Display all available commands" +
-                        "\n/help [command] -> Display info about given command");
+                        "\n/help [command] -> Display info about given command", Color.DarkOrange, Color.White);
                     break;
                 case "exportmap":
-                    g.ForceMessage("<ExportMap>",
-                        "\n/exportmap -> Save the current level as a PNG file");
+                    g.ForceMessage("<help>",
+                        "\n/exportmap [filename] -> Save the current level as a PNG file", Color.DarkOrange, Color.White);
                     break;
-                case "kick":
-                    g.ForceMessage("<Kick>", 
-                        "\n/kick [player] -> Kick given player from game (Host only)");
+                case "ascend":
+                    g.ForceMessage("<help>",
+                        "\n/ascend          -> Set self to privileged mode" +
+                        "\n/ascend [player] -> Set given player to privileged mode", Color.DarkOrange, Color.White);
                     break;
-                case "op":
-                    g.ForceMessage("<OP>",
-                        "\n/op          -> Set self to debug mode" +
-                        "\n/op [player] -> Set given player to debug mode");
+                case "descend":
+                    g.ForceMessage("<help>",
+                        "\n/descend          -> Set self to default mode" +
+                        "\n/descend [player] -> Set given player to default mode", Color.DarkOrange, Color.White);
                     break;
-                case "deop":
-                    g.ForceMessage("<DeOP>",
-                        "\n/deop          -> Set self to default mode" +
-                        "\n/deop [player] -> Set given player to default mode");
+                case "set":
+                    g.ForceMessage("<help>",
+                        "\n/set <param> [value] -> set an environment parameter." + 
+                        "\nPossible parameters: Floor, NoClip, Seed, Speed" +
+                        "\nUse \"/help set <param>\" to see how a certain parameter works", Color.DarkOrange, Color.White);
                     break;
-                case "tgm":
-                    g.ForceMessage("<TGM>", 
-                        "\n/tgm -> Toggle self invincibility");
+                case "set speed":
+                    g.ForceMessage("<help>",
+                        "\n/set speed [multiplier] -> Set own movement speed with the given multiplier" +
+                        "\nMultiplier must be greater than zero. High values will behave erratically.", Color.DarkOrange, Color.White);
                     break;
-                case "tai":
-                    g.ForceMessage("<TAI>",
-                        "\n/tai -> Toggle enemy AI" +
-                        "\nEnemies will not move and combat will not trigger");
+                case "set seed":
+                    g.ForceMessage("<help>",
+                        "\n/set seed [value] -> Set current active seed to the given numeric value", Color.DarkOrange, Color.White);
                     break;
-                case "tp":
-                    g.ForceMessage("<TP>", 
-                        "\n/tp [player] -> Teleport self to given player");
+                case "set floor":
+                    g.ForceMessage("<help>",
+                        "\n/set floor [value] -> Set current floor to given value" +
+                        "\nValue must be greater than zero. This will trigger a loading sequence.", Color.DarkOrange, Color.White);
                     break;
-                case "noclip":
-                    g.ForceMessage("<NoClip>",
-                        "\n/noclip -> Toggle own collisions" +
-                        "\ntoggling noclip off while outside the map area will automatically teleport the player back in");
-                    break;
-                case "restore":
-                    g.ForceMessage("<Restore>", 
-                        "\n/restore -> Restore own HP and SP to max");
-                    break;
-                case "clearinv":
-                    g.ForceMessage("<ClearInv>",
-                        "\n/clearinv -> Clears own inventory" +
-                        "\nThis does not affect player gold");
-                    break;
-                case "stairs":
-                    g.ForceMessage("<Stairs>", 
-                        "\n/stairs -> Teleport self to the entrance to the next floor");
-                    break;
-                case "die":
-                    g.ForceMessage("<Die>",
-                        "\n/die -> Set self to dead state" +
-                        "\nUsing this in single player will end the game");
-                    break;
-                case "revive":
-                    g.ForceMessage("<Revive>", 
-                        "\n/revive -> Revive self from dead state");
-                    break;
-                case "giveitem":
-                    g.ForceMessage("<GiveItem>",
-                        "\n/giveitem [type] [rank] -> Add item to own inventory" +
-                        "\nPossible types: health, poison, fire, freeze, teleport" +
-                        "\nrank ranges from 1 to 3");
-                    break;
-                case "giveequip":
-                    g.ForceMessage("<GiveEquip>",
-                        "\n/giveequip [type] [level]          -> Add equipment to own inventory" +
-                        "\n/giveequip [type] [level] [rarity] -> Add equipment of given rarity to own inventory" +
-                        "\nPossible types: weapon, head, chest, hands, legs, feet, trinket" +
-                        "\nRarity is 4 letters consisting only of C B A S X" +
-                        "\nlevel ranges from 1 to 9999");
-                    break;
-                case "givegold":
-                    g.ForceMessage("<GiveGold>",
-                        "\n/givegold [amount] -> Add given amount of gold to own inventory" +
-                        "\namount ranges from 1 to 9999");
-                    break;
-                case "giveskill":
-                    g.ForceMessage("<GiveSkill>",
-                        "\n/giveskill [slot] [level] -> Add skill to own skills in given slot" +
-                        "\nslot ranges from 1 to 4" +
-                        "\nlevel ranges from 1 to 9999");
-                    break;
-                case "levelup":
-                    g.ForceMessage("<LevelUp>", 
-                        "\n/levelup [amount] -> Increase own level by given amount");
-                    break;
-                case "giveexp":
-                    g.ForceMessage("<GiveExp>", 
-                        "\n/giveexp [amount] -> Give self given amount of experience");
-                    break;
-                case "setspeed":
-                    g.ForceMessage("<SetSpeed>",
-                        "\n/setspeed [percent] -> Set own character movement speed to given percentage" +
-                        "\npercent ranges from 1 to 900");
-                    break;
-                case "spawnmob":
-                    g.ForceMessage("<SpawnMob>",
-                        "\n/spawnmob [level] -> Spawn an enemy" +
-                        "\nlevel ranges from 1 to 9999");
-                    break;
-                case "spawnnpc":
-                    g.ForceMessage("<SpawnNPC>",
-                        "\n/spawnnpc [type] -> Spawn an NPC of given type" +
-                        "\nPossible types: talk, shop, bank, forge, relapse");
-                    break;
-                case "gotofloor":
-                    g.ForceMessage("<GoToFloor>",
-                        "\n/gotofloor [level] -> Teleport to given floor" +
-                        "\nlevel ranges from 1 to 9999");
+                case "set noclip":
+                    g.ForceMessage("<help>",
+                        "\n/set noclip [value] -> Set own collisions on or off" +
+                        "\nValue must be \"on\" or \"off\"", Color.DarkOrange, Color.White);
                     break;
                 default:
-                    g.ForceMessage("<Failure>", "No such command \"" + com + "\". Use /help to see available commands");
+                    g.ForceMessage("<error>", "No such command \"" + com + "\". Use /help to see available commands", Color.DarkRed, Color.White);
                     break;
             }
         }
@@ -138,14 +69,83 @@ namespace ExNihilo.Systems
         {
             if (_cheatyMode)
             {
-                g.ForceMessage("<Possible commands>",
-                    "help, kick, op, deop, exportmap, tgm, tai, noclip, restore, clearinv, stairs, die, revive, " +
-                    "giveitem, giveequip, givegold, giveexp, giveskill, levelup, setspeed, spawnmob, spawnnpc, gotofloor");
+                g.ForceMessage("<help>",
+                    "Possible commands: help, ascend, descend, exportmap, noclip, set" +
+                    "\nUse \"/help <command>\" to see how a certain command works", Color.DarkOrange, Color.White);
             }
             else
             {
-                g.ForceMessage("<Possible commands>", 
-                    "help, op, deop, exportmap");
+                g.ForceMessage("<help>",
+                    "Possible commands: help, ascend, exportmap" +
+                    "\nUse \"/help <command>\" to see how a certain command works", Color.DarkOrange, Color.White);
+            }
+        }
+
+        private static void SetParameter(ConsoleHandler g, string command)
+        {
+            if (command.IndexOf(' ') <= 0)
+            {
+                g.ForceMessage("<error>", "Set command requires a value. \"/set <param> [value]\"", Color.DarkRed, Color.White);
+            }
+            else if (command.StartsWith("speed "))
+            {
+                var extra = command.Substring(6);
+                if (float.TryParse(extra, out float num) && num > 0)
+                {
+                    _theTown.SetSpeedMultiplier(num);
+                    _theVoid.SetSpeedMultiplier(num);
+                    g.ForceMessage("<Asura>", "Setting speed multiplier to " + extra, Color.Purple, Color.White);
+                }
+                else g.ForceMessage("<error>", "\"" + extra + "\" is not a valid speed value", Color.DarkRed, Color.White);
+            }
+            else if (command.StartsWith("seed "))
+            {
+                var extra = command.Substring(5);
+                if (int.TryParse(extra, out int num))
+                {
+                    _theVoid.SetSeed(num);
+                    g.ForceMessage("<Asura>", "Setting active seed to " + extra, Color.Purple, Color.White);
+                }
+                else g.ForceMessage("<error>", "\"" + extra + "\" is not a valid seed value", Color.DarkRed, Color.White);
+            }
+            else if (command.StartsWith("floor "))
+            {
+                if (_game.ActiveSectorID != GameContainer.SectorID.Underworld)
+                {
+                    g.ForceMessage("<error>", "Can only change floors from within the void", Color.Purple, Color.White);
+                    return;
+                }
+
+                var extra = command.Substring(6);
+                if (int.TryParse(extra, out int num) && num > 0)
+                {
+                    g.ForceMessage("<Asura>", "Swapping to floor " + extra, Color.Purple, Color.White);
+                    _theVoid.SetFloor(num);
+                }
+                else g.ForceMessage("<error>", "\"" + extra + "\" is not a valid floor value", Color.DarkRed, Color.White);
+            }
+            else if (command.StartsWith("noclip "))
+            {
+                var extra = command.Substring(7);
+                switch (extra)
+                {
+                    case "on":
+                        _theVoid.ToggleCollisions(true);
+                        _theTown.ToggleCollisions(true);
+                        break;
+                    case "off":
+                        _theVoid.ToggleCollisions(false);
+                        _theTown.ToggleCollisions(false);
+                        break;
+                    default:
+                        g.ForceMessage("<error>", "\"" + extra + "\" is not valid. Value must be \"on\" or \"off\"", Color.DarkRed, Color.White);
+                        break;
+                }
+            }
+            else
+            {
+                var param = command.Substring(command.IndexOf(' '));
+                g.ForceMessage("<error>", "No such parameter \"" + param + "\". Use \"/help set\" to see available parameters", Color.DarkRed, Color.White);
             }
         }
 
@@ -155,48 +155,29 @@ namespace ExNihilo.Systems
             {
                 PostHelp(g);
             }
-            else if (command.Equals("op"))
+            else if (command.Equals("ascend"))
             {
                 _cheatyMode = true;
+                g.ForceMessage("<Asura>", "Your privileges have been extended", Color.Purple, Color.White);
             }
-            else if (command.Equals("deop"))
+            else if (command.Equals("descend"))
             {
                 _cheatyMode = false;
+                g.ForceMessage("<Asura>", "Your privileges have been revoked", Color.Purple, Color.White);
             }
-            else if (command.Equals("exportmap"))
+            else if (!_cheatyMode)
             {
-                //ExportMap(g);
+                g.ForceMessage("<error>", "You do not have permission to use this command, or it does not exist", Color.DarkRed, Color.White);
             }
             else
             {
                 switch (command)
                 {
-                    case "tgm":
-                        //GodMode(g);
-                        break;
-                    case "restore":
-                        //Restore(g);
-                        break;
-                    case "clearinv":
-                        //ClearInventory(g);
-                        break;
-                    case "tai":
-                        //ToggleAI(g);
-                        break;
-                    case "stairs":
-                        //GoToStairs(g);
-                        break;
-                    case "die":
-                        //Die(g);
-                        break;
-                    case "revive":
-                        //Revive(g);
-                        break;
-                    case "noclip":
-                        //NoClip(g);
+                    case "hello":
+                        g.ForceMessage("<Asura>", "salutations", Color.Purple, Color.White);
                         break;
                     default:
-                        PostHelp(g, command);
+                        g.ForceMessage("<error>", "No such command \"" + command + "\". Use /help to see available commands", Color.DarkRed, Color.White);
                         break;
                 }
             }
@@ -207,69 +188,40 @@ namespace ExNihilo.Systems
             {
                 PostHelp(g, command.Substring(5));
             }
+            else if (!_cheatyMode)
+            {
+                g.ForceMessage("<error>", "You do not have permission to use this command, or it does not exist", Color.DarkRed, Color.White);
+            }
             else if (command.StartsWith("trigger "))
             {
                 _game.GLOBAL_DEBUG_COMMAND(command.Substring(8));
-                g.ForceMessage("<admin>", "Activating debug commands");
+                g.ForceMessage("<Asura>", "Activating debug commands", Color.Purple, Color.White);
             }
-            else if (command.StartsWith("giveitem "))
+            else if (command.StartsWith("echo "))
             {
-                var extra = command.Substring(9);
-                //GiveItem(g, extra);
+                var extra = command.Substring(5);
+                g.ForceMessage("<Asura>", extra, Color.Purple, Color.White);
             }
-            else if (command.StartsWith("giveequip "))
-            {
-                var extra = command.Substring(10);
-                //GiveEquip(g, extra);
-            }
-            else if (command.StartsWith("givegold "))
-            {
-                var extra = command.Substring(9);
-                //GiveGold(g, extra);
-            }
-            else if (command.StartsWith("setspeed "))
-            {
-                var extra = command.Substring(9);
-                //SetSpeed(g, extra);
-            }
-            else if (command.StartsWith("giveskill "))
+            else if (command.StartsWith("exportmap "))
             {
                 var extra = command.Substring(10);
-                //GiveSkill(g, extra);
+                try
+                {
+                    _theVoid.PrintMap(extra);
+                    g.ForceMessage("<Asura>", "Outputting current map to maps/" + extra, Color.Purple, Color.White);
+                }
+                catch (Exception e)
+                {
+                    g.ForceMessage("<error>", e.Message, Color.DarkRed, Color.White);
+                }
             }
-            else if (command.StartsWith("gotofloor "))
+            else if (command.StartsWith("set "))
             {
-                var extra = command.Substring(10);
-                //GoToFloor(g, extra);
-            }
-            else if (command.StartsWith("spawnnpc "))
-            {
-                var extra = command.Substring(9);
-                //SpawnNPC(g, extra);
-            }
-            else if (command.StartsWith("spawnmob "))
-            {
-                var extra = command.Substring(9);
-                //SpawnMob(g, extra);
-            }
-            else if (command.StartsWith("levelup "))
-            {
-                var extra = command.Substring(8);
-                //LevelUp(g, extra);
-            }
-            else if (command.StartsWith("giveexp "))
-            {
-                var extra = command.Substring(8);
-                //GainExp(g, extra);
-            }
-            else if (command.StartsWith("tp "))
-            {
-                var extra = command.Substring(3);
-                //TeleportToFriend(g, extra);
+                SetParameter(g, command.Substring(4));
             }
             else
             {
-                PostHelp(g, command.Substring(0, command.IndexOf(' ')));
+                g.ForceMessage("<error>", "No such command \"" + command + "\". Use /help to see available commands", Color.DarkRed, Color.White);
             }
         }
 

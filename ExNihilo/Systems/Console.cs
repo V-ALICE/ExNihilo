@@ -20,12 +20,13 @@ namespace ExNihilo.Systems
         public readonly string Text;
         public string SplitMessage;
         public bool Dead;
-        public readonly bool Command;
+        public readonly ColorScale StarterColor, MessageColor;
         public int LineCount { get; private set; }
 
-        public Message(string message, float timeToLive, string header, bool command)
+        public Message(string message, float timeToLive, string header, ColorScale startColor, ColorScale messageColor)
         {
-            Command = command;
+            StarterColor = startColor;
+            MessageColor = messageColor;
             _maxLiveTime = timeToLive;
             Text = message;
             _starter = header;
@@ -47,7 +48,7 @@ namespace ExNihilo.Systems
             LineCount = 0;
             var lengthOfCompare = maxLength - _starter.Length;
             var fakeStarter = new string(' ', _starter.Length+1);
-            var initialBuffer = Command ? " " : "@c1 ";
+            var initialBuffer = "@c1 ";
 
             //Single line messages
             if (fullText.Length <= lengthOfCompare && !fullText.Contains("\n"))
@@ -108,9 +109,9 @@ namespace ExNihilo.Systems
             _messages.Clear();
         }
 
-        public void AddMessage(string starter, string text, bool command=false)
+        public void AddMessage(string starter, string text, ColorScale startColor, ColorScale messageColor)
         {
-            var tmp = new Message(text, _lineLiveTime, starter, command);
+            var tmp = new Message(text, _lineLiveTime, starter, startColor, messageColor);
             tmp.SmartSplit(_maxLineLength);
             _messages.Add(tmp);
             while (_messages.Count > _memoryMax) _messages.RemoveAt(0);
@@ -227,8 +228,7 @@ namespace ExNihilo.Systems
                     continue;
                 }
 
-                var c = message.Command ? new ColorScale[] {Color.DarkOrange} : new ColorScale[] { Color.DeepSkyBlue, Color.White };
-                pos = TextDrawer.DrawSmartText(spriteBatch, pos, message.SplitMessage, _currentScale, null, c);
+                pos = TextDrawer.DrawSmartText(spriteBatch, pos, message.SplitMessage, _currentScale, null, message.StarterColor, message.MessageColor);
             }
         }
 
@@ -246,21 +246,21 @@ namespace ExNihilo.Systems
             TypingKeyboard.Unlock(this);
         }
 
-        public void PushConsole()
+        public void PushConsole(string name="Player")
         {
             if (_activeText.Length == 0) return;
 
             if (_activeText.StartsWith("/")) Asura.Handle(this, _activeText);
-            else _console.AddMessage("<Player>", _activeText);
+            else _console.AddMessage("<"+name+">", _activeText, Color.DeepSkyBlue, Color.White);
 
             CloseConsole();
             _lastMessage = _activeText;
             _activeText = "";
         }
 
-        public void ForceMessage(string starter, string message)
+        public void ForceMessage(string starter, string message, ColorScale startColor, ColorScale messageColor)
         {
-            _console.AddMessage(starter, message, true);
+            _console.AddMessage(starter, message, startColor, messageColor);
         }
 
         public void GetLastMessage()

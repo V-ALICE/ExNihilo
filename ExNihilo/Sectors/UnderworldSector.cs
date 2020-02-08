@@ -1,7 +1,9 @@
-﻿using ExNihilo.Entity;
+﻿using System.Threading.Tasks;
+using ExNihilo.Entity;
 using ExNihilo.Menus;
 using ExNihilo.Systems;
 using ExNihilo.Util;
+using ExNihilo.Util.Graphics;
 using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
 
@@ -13,7 +15,7 @@ namespace ExNihilo.Sectors
 
         //private Menu _inventoryMenu;
 
-        private Level _activeLevel => _world as Level;
+        private Level ActiveLevel => _world as Level;
 
         public UnderworldSector(GameContainer container) : base(container)
         {
@@ -44,7 +46,7 @@ namespace ExNihilo.Sectors
         public override void Update()
         {
             base.Update();
-            _activeLevel.Update();
+            ActiveLevel.Update();
         }
 
         protected override void DrawDebugInfo(SpriteBatch spriteBatch)
@@ -73,12 +75,30 @@ namespace ExNihilo.Sectors
             //_inventoryMenu.Unpack(game);
         }
 
-        public bool StartNewGame(EntityContainer player, int seed)
+        public async void StartNewGame(EntityContainer player, int seed)
         {
-            _activeLevel.ChangeSeed(seed);
-            _activeLevel.GenerateLevel(MapGenerator.Type.Random, 1);
-            _activeLevel.Reset(player, new Coordinate(10, 10), new Coordinate(3, 10));
-            return true;
+            ActiveLevel.ChangeSeed(seed);
+            ActiveLevel.Reset(player, new Coordinate(10, 10), new Coordinate(3, 10));
+            RequestSectorChange(GameContainer.SectorID.Loading);
+            await Task.Run(() => ActiveLevel.GenerateLevel(1));
+            RequestSectorChange(GameContainer.SectorID.Underworld);
+        }
+
+        public void PrintMap(string name)
+        {
+            TextureUtilities.WriteTextureToPNG(ActiveLevel?.GetCurrentMapImage(), name, "maps");
+        }
+
+        public async void SetFloor(int floor)
+        {
+            RequestSectorChange(GameContainer.SectorID.Loading);
+            await Task.Run(() => ActiveLevel.GenerateLevel(floor));
+            RequestSectorChange(GameContainer.SectorID.Underworld);
+        }
+
+        public void SetSeed(int seed)
+        {
+            ActiveLevel.ChangeSeed(seed);
         }
     }
 }

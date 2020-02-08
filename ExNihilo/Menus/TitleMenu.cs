@@ -235,10 +235,6 @@ namespace ExNihilo.Menus
         private Point _lastMousePosition;
         private const int MAX_NEWGAME_TEXT_SIZE = 15;
 
-        private void DoThing(string caller, float value)
-        {
-            Container.Console.ForceMessage("<Console>", caller + " pressed with value " + value);
-        }
 
         private UIPanel ActivePanel()
         {

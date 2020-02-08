@@ -112,7 +112,7 @@ namespace ExNihilo.Systems
             }
         }
 
-        public virtual void ApplyPush(Coordinate push, float mult)
+        public virtual void ApplyPush(Coordinate push, float mult, bool ignoreWalls=false)
         {
             //check map and move
             PlayerOverlay.Push(push);
@@ -124,7 +124,7 @@ namespace ExNihilo.Systems
             var hitBoxOffset = CurrentWorldScale * PlayerCustomHitBoxOffset + PlayerOverlay.PlayerCenterScreen - CurrentWorldPosition;
             var hitBoxMovedOffset = hitBoxOffset + moveOffset;
 
-            if (Map.CheckIllegalPosition(tileSize, hitBox, hitBoxMovedOffset))
+            if (!ignoreWalls && Map.CheckIllegalPosition(tileSize, hitBox, hitBoxMovedOffset))
             {
                 //being here implies that applying the current push failed (player is hitting something)
                 if (push.X == 0 ^ push.Y == 0)

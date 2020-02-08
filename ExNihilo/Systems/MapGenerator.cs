@@ -107,7 +107,7 @@ namespace ExNihilo.Systems
             //TODO
         }
 
-        public static Tile[][] Get(int key, int subKey, Type type=Type.Random, int setSize=1024)
+        public static Tile[][] Get(int key, int subKey, Type type, int setSize=1024)
         {
             var map = new TileNodeSet(setSize);
             var rand = new Random(key + subKey);
