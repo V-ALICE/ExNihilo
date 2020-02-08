@@ -106,7 +106,7 @@ namespace ExNihilo.Systems
                 item.Item1.Draw(spriteBatch, pos, ColorScale.White, CurrentWorldScale);
             }
 
-            if (GameContainer.GLOBAL_DEBUG && PlayerOverlay != null)
+            if (D.Bug && PlayerOverlay != null)
             {
                 LineDrawer.DrawSquare(spriteBatch, CurrentWorldScale * PlayerCustomHitBoxOffset + PlayerOverlay.PlayerCenterScreen, CurrentWorldScale * PlayerCustomHitBox.X, CurrentWorldScale * PlayerCustomHitBox.Y, Color.Red);
             }

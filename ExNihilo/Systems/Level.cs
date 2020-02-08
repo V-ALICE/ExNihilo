@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using ExNihilo.Entity;
 using ExNihilo.Util;
+using ExNihilo.Util.Graphics;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
@@ -21,7 +22,7 @@ namespace ExNihilo.Systems
 
         //private List<EntityContainer> _mobSet;
         private GraphicsDevice _graphics; //for stitching level maps
-        private int _curLevel, _seed, _parallax;
+        private int _curLevel, _seed=1, _parallax=2;
 
         public Level(int tileSize) : base(tileSize)
         {
@@ -77,6 +78,10 @@ namespace ExNihilo.Systems
             _subLevelMaps.Clear();
             _subLevelTextures.Clear();
         }
+        public int GetSeed()
+        {
+            return _seed;
+        }
 
         public override void Reset(EntityContainer entity, Coordinate hitBox, Coordinate hitBoxOffset)
         {
@@ -116,8 +121,18 @@ namespace ExNihilo.Systems
 
         public override void Draw(SpriteBatch spriteBatch)
         {
-            //TODO: draw parallax here
+            for (int i=_subLevelTextures.Count-1; i>=0; i--)
+            {
+                //Parallax -> offset from center of main map applied to sub maps with reduction
+                var pos = PlayerOverlay.PlayerCenterScreen + (CurrentWorldPosition - PlayerOverlay.PlayerCenterScreen) / (i+2);
+                var value = 1.0f/(i+2);
+                var color = new Color(value, value, value);
+                var scale = CurrentWorldScale/(i+2);
+                spriteBatch.Draw(_subLevelTextures[i], pos, null, color, 0, Vector2.Zero, scale, SpriteEffects.None, 0);
+                if (D.Bug) LineDrawer.DrawSquare(spriteBatch, pos, scale*_subLevelTextures[i].Width, scale*_subLevelTextures[i].Height, ColorScale.White);
+            }
             base.Draw(spriteBatch);
+            if (D.Bug) LineDrawer.DrawSquare(spriteBatch, CurrentWorldPosition, CurrentWorldScale * WorldTexture.Width, CurrentWorldScale * WorldTexture.Height, ColorScale.White);
         }
 
         public override void DrawOverlays(SpriteBatch spriteBatch)
@@ -130,9 +145,9 @@ namespace ExNihilo.Systems
             base.ApplyPush(push, mult, ignoreWalls);
         }
 
-        public Texture2D GetCurrentMapImage()
+        public void PrintMap()
         {
-            return WorldTexture;
+            TextureUtilities.WriteTextureToPNG(WorldTexture, "s"+_seed+"-f"+_curLevel+".png", "maps");
         }
     }
 }

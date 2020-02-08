@@ -73,20 +73,20 @@ namespace ExNihilo.Sectors
         public override void Unpack(PackedGame game)
         {
             //_inventoryMenu.Unpack(game);
+            //TODO: pack and unpack current seed and parallax 
         }
 
-        public async void StartNewGame(EntityContainer player, int seed)
+        public async void StartNewGame(EntityContainer player)
         {
-            ActiveLevel.ChangeSeed(seed);
             ActiveLevel.Reset(player, new Coordinate(10, 10), new Coordinate(3, 10));
             RequestSectorChange(GameContainer.SectorID.Loading);
             await Task.Run(() => ActiveLevel.GenerateLevel(1));
             RequestSectorChange(GameContainer.SectorID.Underworld);
         }
 
-        public void PrintMap(string name)
+        public void PrintMap()
         {
-            TextureUtilities.WriteTextureToPNG(ActiveLevel?.GetCurrentMapImage(), name, "maps");
+            ActiveLevel?.PrintMap();
         }
 
         public async void SetFloor(int floor)
@@ -96,9 +96,19 @@ namespace ExNihilo.Sectors
             RequestSectorChange(GameContainer.SectorID.Underworld);
         }
 
+        public void SetParallax(int levels)
+        {
+            ActiveLevel.ChangeParallax(levels);
+        }
+
         public void SetSeed(int seed)
         {
             ActiveLevel.ChangeSeed(seed);
+        }
+
+        public int GetSeed()
+        {
+            return ActiveLevel.GetSeed();
         }
     }
 }

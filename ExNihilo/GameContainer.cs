@@ -18,10 +18,12 @@ using Point = Microsoft.Xna.Framework.Point;
 
 namespace ExNihilo
 {
+    public static class D
+    {
+        public static bool Bug = false;
+    }
     public class GameContainer : Game
     {
-        public const bool GLOBAL_DEBUG = false;
-
         public enum SectorID
         {
             MainMenu, Outerworld, Underworld, Loading
@@ -315,6 +317,7 @@ namespace ExNihilo
 
         public void OpenConsole(string initMessage="")
         {
+            if (ActiveSectorID == SectorID.Loading) return;
             Console.OpenConsole(initMessage);
         }
 
@@ -352,16 +355,16 @@ namespace ExNihilo
             AudioManager.EffectVolume = param.EffectVolume;
         }
 
-        public void StartNewGame(PlayerEntityContainer p, int seed)
+        public void StartNewGame(PlayerEntityContainer p)
         {
             //This exists solely so that the overworld can tell the underworld to start a new game
             var a = _sectorDirectory[SectorID.Underworld] as UnderworldSector;
-            a?.StartNewGame(p, seed);
+            a?.StartNewGame(p);
         }
 
         public void GLOBAL_DEBUG_COMMAND(string input)
         {
-
+            
         }
     }
 }

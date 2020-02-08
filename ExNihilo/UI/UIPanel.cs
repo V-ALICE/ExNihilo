@@ -110,7 +110,7 @@ namespace ExNihilo.UI
             if (!Loaded) return;
             foreach (var item in Set) item.Draw(spriteBatch, rightDownOffset);
 
-            if (GameContainer.GLOBAL_DEBUG) LineDrawer.DrawSquare(spriteBatch, OriginPosition+ rightDownOffset, CurrentPixelSize.X, CurrentPixelSize.Y, Color.White, 5);
+            if (D.Bug) LineDrawer.DrawSquare(spriteBatch, OriginPosition+ rightDownOffset, CurrentPixelSize.X, CurrentPixelSize.Y, Color.White, 5);
         }
 
         public override void Draw(SpriteBatch spriteBatch)
@@ -119,7 +119,7 @@ namespace ExNihilo.UI
             foreach (var item in Set) item.Draw(spriteBatch);
             if (King) DrawFinal(spriteBatch);
 
-            if (GameContainer.GLOBAL_DEBUG) LineDrawer.DrawSquare(spriteBatch, OriginPosition, CurrentPixelSize.X, CurrentPixelSize.Y, Color.White, 5);
+            if (D.Bug) LineDrawer.DrawSquare(spriteBatch, OriginPosition, CurrentPixelSize.X, CurrentPixelSize.Y, Color.White, 5);
         }
 
         public void DrawFinal(SpriteBatch spriteBatch)

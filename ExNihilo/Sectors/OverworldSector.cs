@@ -98,7 +98,7 @@ namespace ExNihilo.Sectors
                 if (ReferenceEquals(_menuPoint, _voidMenu) && _voidMenu.Confirmed) //TODO: this is not a great way/place to detect this
                 {
                     _voidMenu.BackOut();
-                    Container.StartNewGame(_characterMenu.GetCurrentChar(), 1); //TODO: get actual seed from somewhere
+                    Container.StartNewGame(_characterMenu.GetCurrentChar());
                 }
                 if (_menuPoint.Dead) _menuPoint = null;
             }

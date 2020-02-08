@@ -24,6 +24,16 @@ namespace ExNihilo.Systems
             public readonly bool Up, Down, Left, Right;
             public readonly bool Real;
 
+            public TileNode(int x, int y)
+            {
+                Real = true;
+                X = x;
+                Y = y;
+                Up = false;
+                Down = false;
+                Left = false;
+                Right = false;
+            }
             public TileNode(int x, int y, int proc, Random rand)
             {
                 Real = true;
@@ -56,6 +66,15 @@ namespace ExNihilo.Systems
                 return _map[y][x];
             }
 
+            public TileNode Add(int x, int y)
+            {
+                if (x < MinX) MinX = x;
+                if (x > MaxX) MaxX = x;
+                if (y < MinY) MinY = y;
+                if (y > MaxY) MaxY = y;
+                _map[y][x] = new TileNode(x, y);
+                return _map[y][x];
+            }
             public TileNode Add(int x, int y, int proc, Random rand)
             {
                 if (x < MinX) MinX = x;
@@ -69,12 +88,12 @@ namespace ExNihilo.Systems
             public int Length => _map.Length;
         }
 
-        private static void GetRandomRoom(TileNodeSet map, Random rand, int proc=40)
+        private static void GetRandomChunk(TileNodeSet map, Random rand, Rectangle space, int proc=40)
         {
             void Push(TileNode point, int xDiff, int yDiff)
             {
-                if (point.X + xDiff <= 1 || point.X + xDiff >= map.Length-1) return;
-                if (point.Y + yDiff <= 1 || point.Y + yDiff >= map.Length-1) return;
+                if (point.X + xDiff <= space.Left || point.X + xDiff >= space.Right) return;
+                if (point.Y + yDiff <= space.Top || point.Y + yDiff >= space.Bottom) return;
                 if (map.Get(point.X + xDiff, point.Y + yDiff).Real) return;
 
                 var next = map.Add(point.X + xDiff, point.Y+yDiff, proc, rand);
@@ -84,17 +103,23 @@ namespace ExNihilo.Systems
                 if (next.Right) Push(next, 1, 0);
             }
 
-            var origin = map.Add(map.Length / 2, map.Length / 2, proc, rand);
+            var origin = map.Add(space.Width / 2, space.Height / 2);
             Push(origin, 0, 1);
             Push(origin, 0, -1);
             Push(origin, -1, 0);
             Push(origin, 1, 0);
         }
 
-        private static void GetRandom(TileNodeSet map, Random rand)
+        private static void GetRandom(TileNodeSet map, Random rand, int chunkSize=128)
         {
-            GetRandomRoom(map, rand);
-            //TODO
+            var count = map.Length / chunkSize;
+            for (int i = 0; i < count; i++)
+            {
+                for (int j = 0; j < count; j++)
+                {
+                    GetRandomChunk(map, rand, new Rectangle(j*chunkSize, i*chunkSize, chunkSize, chunkSize));
+                }
+            }
         }
 
         private static void GetBoxes(TileNodeSet map, Random rand)
