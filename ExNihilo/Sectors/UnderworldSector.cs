@@ -76,12 +76,10 @@ namespace ExNihilo.Sectors
             //TODO: pack and unpack current seed and parallax 
         }
 
-        public async void StartNewGame(EntityContainer player)
+        public void StartNewGame(EntityContainer player)
         {
             ActiveLevel.Reset(player, new Coordinate(10, 10), new Coordinate(3, 10));
-            RequestSectorChange(GameContainer.SectorID.Loading);
-            await Task.Run(() => ActiveLevel.GenerateLevel(1));
-            RequestSectorChange(GameContainer.SectorID.Underworld);
+            SetFloor(1);
         }
 
         public void PrintMap()
@@ -89,11 +87,9 @@ namespace ExNihilo.Sectors
             ActiveLevel?.PrintMap();
         }
 
-        public async void SetFloor(int floor)
+        public void SetFloor(int floor)
         {
-            RequestSectorChange(GameContainer.SectorID.Loading);
-            await Task.Run(() => ActiveLevel.GenerateLevel(floor));
-            RequestSectorChange(GameContainer.SectorID.Underworld);
+            ActiveLevel.DoGenerationQueue(Container, floor);
         }
 
         public void SetParallax(int levels)

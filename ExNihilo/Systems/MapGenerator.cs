@@ -34,7 +34,7 @@ namespace ExNihilo.Systems
                 Left = false;
                 Right = false;
             }
-            public TileNode(int x, int y, int proc, Random rand)
+            public TileNode(int x, int y, int proc, SubKeyRandom rand)
             {
                 Real = true;
                 X = x;
@@ -75,7 +75,7 @@ namespace ExNihilo.Systems
                 _map[y][x] = new TileNode(x, y);
                 return _map[y][x];
             }
-            public TileNode Add(int x, int y, int proc, Random rand)
+            public TileNode Add(int x, int y, int proc, SubKeyRandom rand)
             {
                 if (x < MinX) MinX = x;
                 if (x > MaxX) MaxX = x;
@@ -88,12 +88,12 @@ namespace ExNihilo.Systems
             public int Length => _map.Length;
         }
 
-        private static void GetRandomChunk(TileNodeSet map, Random rand, Rectangle space, int proc=40)
+        private static void GetRandomChunk(TileNodeSet map, SubKeyRandom rand, Rectangle space, int proc=49)
         {
             void Push(TileNode point, int xDiff, int yDiff)
             {
-                if (point.X + xDiff <= space.Left || point.X + xDiff >= space.Right) return;
-                if (point.Y + yDiff <= space.Top || point.Y + yDiff >= space.Bottom) return;
+                if (point.X + xDiff <= space.Left || point.X + xDiff >= space.Right-1) return;
+                if (point.Y + yDiff <= space.Top || point.Y + yDiff >= space.Bottom-1) return;
                 if (map.Get(point.X + xDiff, point.Y + yDiff).Real) return;
 
                 var next = map.Add(point.X + xDiff, point.Y+yDiff, proc, rand);
@@ -103,14 +103,14 @@ namespace ExNihilo.Systems
                 if (next.Right) Push(next, 1, 0);
             }
 
-            var origin = map.Add(space.Width / 2, space.Height / 2);
+            var origin = map.Add(space.X+space.Width / 2, space.Y+space.Height / 2);
             Push(origin, 0, 1);
             Push(origin, 0, -1);
             Push(origin, -1, 0);
             Push(origin, 1, 0);
         }
 
-        private static void GetRandom(TileNodeSet map, Random rand, int chunkSize=128)
+        private static void GetRandom(TileNodeSet map, SubKeyRandom rand, int chunkSize=32)
         {
             var count = map.Length / chunkSize;
             for (int i = 0; i < count; i++)
@@ -122,20 +122,21 @@ namespace ExNihilo.Systems
             }
         }
 
-        private static void GetBoxes(TileNodeSet map, Random rand)
+        private static void GetBoxes(TileNodeSet map, SubKeyRandom rand)
         {
             //TODO
         }
 
-        private static void GetInverted(TileNodeSet map, Random rand)
+        private static void GetInverted(TileNodeSet map, SubKeyRandom rand)
         {
             //TODO
         }
 
-        public static Tile[][] Get(int key, int subKey, Type type, int setSize=1024)
+        public static Tile[][] Get(int key, int subKey, Type type, int setSize)
         {
+            if (setSize > 256) setSize = 256;
             var map = new TileNodeSet(setSize);
-            var rand = new Random(key + subKey);
+            var rand = new SubKeyRandom(key, subKey);
             switch (type)
             {
                 case Type.Random:
@@ -162,6 +163,7 @@ namespace ExNihilo.Systems
                         {
                             for (int y = -1; y <= 1; y++)
                             {
+                                if (j+x < 0 || j+x >= map.Length || i+y < 0 || i+y >= map.Length) continue;
                                 if (map.Get(j+x, i+y).Real) set[i-map.MinY+1][j-map.MinX+1] = Tile.Wall;
                             }
                         }

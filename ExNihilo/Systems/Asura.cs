@@ -64,12 +64,8 @@ namespace ExNihilo.Systems
             //Set currently active seed for map generation
             void SetSeed(ConsoleHandler g, string args)
             {
-                if (int.TryParse(args, out int num))
-                {
-                    _theVoid.SetSeed(num);
-                    g.ForceMessage("<Asura>", "Setting active seed to " + args, Color.Purple, Color.White);
-                }
-                else g.ForceMessage("<error>", "\"" + args + "\" is not a valid seed value", Color.DarkRed, Color.White);
+                _theVoid.SetSeed(args.GetHashCode());
+                g.ForceMessage("<Asura>", "Setting active seed to " + args, Color.Purple, Color.White);
             }
             _paramSet.Add("seed", SetSeed);
 
@@ -158,7 +154,7 @@ namespace ExNihilo.Systems
                 "\nMultiplier must be greater than zero. High values will behave erratically.");
 
             _helpInfo.Add("set seed",
-                "\n/set seed [value] -> Set current active seed to the given numeric value");
+                "\n/set seed [value] -> Set current active seed based on the input value");
 
             _helpInfo.Add("set floor",
                 "\n/set floor [value] -> Set current floor to given value" +

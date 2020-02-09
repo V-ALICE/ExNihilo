@@ -81,6 +81,7 @@ namespace ExNihilo
         }
         private void CheckForWindowUpdate()
         {
+            if (ActiveSectorID == SectorID.Loading) return;
             if (Window.ClientBounds.Width != _windowSize.X || Window.ClientBounds.Height != _windowSize.Y)
             {
                 _graphics.PreferredBackBufferWidth = MathHelper.Clamp(Window.ClientBounds.Width, ScaleRule.MIN_X, ScaleRule.MAX_X);
@@ -93,7 +94,7 @@ namespace ExNihilo
         }
         public void ToggleFullScreen()
         {
-            //if (Loading) return;
+            if (ActiveSectorID==SectorID.Loading) return;
             if (Window.IsBorderless)
             {
                 Window.IsBorderless = false;
@@ -294,20 +295,20 @@ namespace ExNihilo
 /********************************************************************
 ------->Game functions
 ********************************************************************/
-        public int RequestSectorChange(SectorID newSector)
+        public void RequestSectorChange(SectorID newSector)
         {
             if (newSector == SectorID.Loading) //Transitioning to loading
             {
-                if (ActiveSectorID == SectorID.Loading)
-                {
-                    return -1; //already loading; wait
-                }
+                
+            }
+            else if (ActiveSectorID == SectorID.Loading) //Transitioning from loading
+            {
+                CheckForWindowUpdate();
             }
 
             PreviousSectorID = ActiveSectorID;
             ActiveSectorID = newSector;
             ActiveSector?.Enter(_lastMousePosition, _windowSize);
-            return 0; //no issue
         }
 
         public void ToggleShowDebugInfo()

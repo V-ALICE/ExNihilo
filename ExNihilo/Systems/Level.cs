@@ -1,6 +1,8 @@
 ﻿
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.Threading.Tasks;
 using ExNihilo.Entity;
 using ExNihilo.Util;
 using ExNihilo.Util.Graphics;
@@ -24,42 +26,81 @@ namespace ExNihilo.Systems
         private GraphicsDevice _graphics; //for stitching level maps
         private int _curLevel, _seed=1, _parallax=2;
 
+        private int _fCount;
+        private object _fLock = new object();
+
         public Level(int tileSize) : base(tileSize)
         {
             _subLevelTextures = new List<Texture2D>();
             _subLevelMaps = new List<InteractionMap>();
             //_mobSet = new List<EntityContainer>();
-            _curLevel = 1;
         }
 
-        public void GenerateLevel(int level=-1, MapGenerator.Type type=MapGenerator.Type.Random)
+        private async void GenerateLevel(GameContainer g, int slot, int level, MapGenerator.Type type)
         {
-            _curLevel = level == -1 ? _curLevel+1 : level;
-            if (_subLevelMaps.Count > 0)
+            Tuple<InteractionMap, Texture2D> DoAll()
             {
-                //Replace old level if already generated
-                Map = _subLevelMaps[0];
-                WorldTexture = _subLevelTextures[0];
-                _subLevelMaps.RemoveAt(0);
-                _subLevelTextures.RemoveAt(0);
+                var m = new InteractionMap(new TypeMatrix(MapGenerator.Get(_seed, level, type, 128)));
+                var t = MapStitcher.StitchMap(_graphics, m.Map, TileSize);
+                return Tuple.Create(m, t);
+            }
+            var levelSet = await Task.Run(() => DoAll());
+
+            if (slot == -1)
+            {
+                Map = levelSet.Item1;
+                WorldTexture = levelSet.Item2;
+                SetPlayerAnyTile();
             }
             else
             {
-                //First time generation or zero parallax
-                Map = new InteractionMap(new TypeMatrix(MapGenerator.Get(_seed, _curLevel, type)));
-                WorldTexture = MapStitcher.StitchMap(_graphics, Map.Map, TileSize);
+                _subLevelMaps[slot] = levelSet.Item1;
+                _subLevelTextures[slot] = levelSet.Item2;
             }
 
-            //Add new parallax levels as needed
-            while (_subLevelMaps.Count < _parallax)
+            lock (_fLock)
             {
-                var floor = _curLevel + _subLevelMaps.Count + 1;
-                var newMap = new InteractionMap(new TypeMatrix(MapGenerator.Get(_seed, floor, type)));
-                _subLevelMaps.Add(newMap);
-                _subLevelTextures.Add(MapStitcher.StitchMap(_graphics, newMap.Map, TileSize));
+                if (++_fCount >= 1 + _parallax)
+                {
+                    g.RequestSectorChange(GameContainer.SectorID.Underworld);
+                }
+            }
+        }
+
+        public void DoGenerationQueue(GameContainer g, int level, MapGenerator.Type type = MapGenerator.Type.Random)
+        {
+            _fCount = 0;
+            var offset = level - _curLevel;
+            if (offset == 0 && _subLevelMaps.Count == _parallax) return;
+            g.RequestSectorChange(GameContainer.SectorID.Loading);
+            if (offset > 0 && offset <= _subLevelMaps.Count)
+            {
+                //If the requested level was pregenerated use it
+                Map = _subLevelMaps[offset-1];
+                WorldTexture = _subLevelTextures[offset-1];
+                for (int i = 0; i < offset; i++)
+                {
+                    _subLevelMaps.RemoveAt(0);
+                    _subLevelTextures.RemoveAt(0);
+                }
+            }
+            else if (offset != 0)
+            {
+                //Either no pregenerated levels or this is first start
+                GenerateLevel(g, -1, level, type);
+                _subLevelMaps.Clear();
+                _subLevelTextures.Clear();
+            }
+  
+            //Add new parallax levels as needed
+            for (int i = _subLevelMaps.Count; i < _parallax; i++)
+            {
+                _subLevelMaps.Add(null);
+                _subLevelTextures.Add(null);
+                GenerateLevel(g, i, level+i+1, type);
             }
 
-            SetPlayerAnyTile();
+            _curLevel = level;
         }
 
         public void ChangeParallax(int parallax)
@@ -128,6 +169,8 @@ namespace ExNihilo.Systems
                 var value = 1.0f/(i+2);
                 var color = new Color(value, value, value);
                 var scale = CurrentWorldScale/(i+2);
+                pos.X = (float)Math.Round(pos.X);
+                pos.Y = (float)Math.Round(pos.Y);
                 spriteBatch.Draw(_subLevelTextures[i], pos, null, color, 0, Vector2.Zero, scale, SpriteEffects.None, 0);
                 if (D.Bug) LineDrawer.DrawSquare(spriteBatch, pos, scale*_subLevelTextures[i].Width, scale*_subLevelTextures[i].Height, ColorScale.White);
             }
@@ -143,6 +186,8 @@ namespace ExNihilo.Systems
         public override void ApplyPush(Coordinate push, float mult, bool ignoreWalls=false)
         {
             base.ApplyPush(push, mult, ignoreWalls);
+            CurrentWorldPosition.X = (float)Math.Round(CurrentWorldPosition.X);
+            CurrentWorldPosition.Y = (float)Math.Round(CurrentWorldPosition.Y);
         }
 
         public void PrintMap()
