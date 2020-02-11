@@ -248,10 +248,8 @@ namespace ExNihilo.Systems
 
         public void PushConsole(string name="Player")
         {
-            if (_activeText.Length == 0) return;
-
             if (_activeText.StartsWith("/")) Asura.Handle(this, _activeText);
-            else _console.AddMessage("<"+name+">", _activeText, Color.DeepSkyBlue, Color.White);
+            else if (_activeText.Length != 0) _console.AddMessage("<"+name+">", _activeText, Color.DeepSkyBlue, Color.White);
 
             CloseConsole();
             _lastMessage = _activeText;

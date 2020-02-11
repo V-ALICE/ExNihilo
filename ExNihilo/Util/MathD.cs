@@ -3,31 +3,6 @@ using Microsoft.Xna.Framework;
 
 namespace ExNihilo.Util
 {
-    public class SubKeyRandom : Random
-    {
-        private readonly int _off;
-
-        public SubKeyRandom(int seed, int offset) : base(seed)
-        {
-            _off = offset;
-        }
-
-        public override int Next(int minValue, int maxValue)
-        {
-            return (base.Next(minValue, maxValue) + _off) % maxValue + minValue;
-        }
-
-        public override int Next(int maxValue)
-        {
-            return (base.Next(maxValue) + _off) % maxValue;
-        }
-
-        public override int Next()
-        {
-            return base.Next() + _off;
-        }
-    }
-
     public static class MathD
     {
         //Universal random for any non-seeded non-strict operations

@@ -1,6 +1,9 @@
 ﻿
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.Linq;
+using System.Windows.Forms;
 using ExNihilo.Util;
 using ExNihilo.Util.Graphics;
 using Microsoft.Xna.Framework;
@@ -13,162 +16,279 @@ namespace ExNihilo.Systems
     {
         public enum Type
         {
-            Random,   // Rooms like the previous version with no particular shape
-            Boxes,    // Rectangular rooms
-            Inverted, // Big open space with random holes
-        }
-
-        private struct TileNode
-        {
-            public readonly int X, Y;
-            public readonly bool Up, Down, Left, Right;
-            public readonly bool Real;
-
-            public TileNode(int x, int y)
-            {
-                Real = true;
-                X = x;
-                Y = y;
-                Up = false;
-                Down = false;
-                Left = false;
-                Right = false;
-            }
-            public TileNode(int x, int y, int proc, SubKeyRandom rand)
-            {
-                Real = true;
-                X = x;
-                Y = y;
-                Up = MathD.Chance(rand, proc);
-                Down = MathD.Chance(rand, proc);
-                Left = MathD.Chance(rand, proc);
-                Right = MathD.Chance(rand, proc);
-            }
+            Random,       // Rooms like the previous version with no particular shape
+            MessyBoxes,   // Rectangular rooms
+            Standard1,    // MessyBoxes with some clean up applied
+            Standard2,    // Standard1 with wider halls and less spaced out rooms 
         }
 
         private class TileNodeSet
         {
-            private TileNode[][] _map;
+            private readonly bool[][] _map;
             public int MinX, MinY, MaxX, MaxY;
 
             public TileNodeSet(int size)
             {
-                _map = new TileNode[size][];
-                for (int i = 0; i < size; i++) _map[i] = new TileNode[size];
+                _map = new bool[size][];
+                for (int i = 0; i < size; i++) _map[i] = new bool[size];
                 MinX = size - 1;
                 MinY = size - 1;
                 MaxX = 0;
                 MaxY = 0;
             }
 
-            public TileNode Get(int x, int y)
+            public bool Get(int x, int y)
             {
+                if (x < 0 || y < 0 || x >= _map.Length || y >= _map.Length) return false;
                 return _map[y][x];
             }
 
-            public TileNode Add(int x, int y)
+            public void Add(int x, int y)
             {
                 if (x < MinX) MinX = x;
                 if (x > MaxX) MaxX = x;
                 if (y < MinY) MinY = y;
                 if (y > MaxY) MaxY = y;
-                _map[y][x] = new TileNode(x, y);
-                return _map[y][x];
+                _map[y][x] = true;
             }
-            public TileNode Add(int x, int y, int proc, SubKeyRandom rand)
+            public void AddAll(int x, int y, int dx, int dy)
             {
-                if (x < MinX) MinX = x;
-                if (x > MaxX) MaxX = x;
-                if (y < MinY) MinY = y;
-                if (y > MaxY) MaxY = y;
-                _map[y][x] = new TileNode(x, y, proc, rand);
-                return _map[y][x];
+                var xDir = Math.Sign(dx);
+                var yDir = Math.Sign(dy);
+                if (dx == 0)
+                {
+                    for (int j = y; j != y + dy + yDir; j += yDir)
+                    {
+                        Add(x, j);
+                    }
+                }
+                else if (dy == 0)
+                {
+                    for (int i = x; i != x + dx + xDir; i += xDir)
+                    {
+                        Add(i, y);
+                    }
+                }
+                else
+                {
+                    for (int i = x; i != x + dx + xDir; i += xDir)
+                    {
+                        for (int j = y; j != y + dy + yDir; j += yDir)
+                        {
+                            Add(i, j);
+                        }
+                    }
+                }
+            }
+
+            public bool IsAreaClear(int x, int y, int dx, int dy)
+            {
+                var xDir = Math.Sign(dx);
+                var yDir = Math.Sign(dy);
+                if (dx == 0)
+                {
+                    for (int j = y; j != y + dy + yDir; j += yDir)
+                    {
+                        if (_map[j][x]) return false;
+                    }
+                }
+                else if (dy == 0)
+                {
+                    for (int i = x; i != x + dx + xDir; i += xDir)
+                    {
+                        if (_map[y][i]) return false;
+                    }
+                }
+                else
+                {
+                    for (int i = x; i != x + dx + xDir; i += xDir)
+                    {
+                        for (int j = y; j != y + dy + yDir; j += yDir)
+                        {
+                            if (_map[j][i]) return false;
+                        }
+                    }
+                }
+
+                return true;
             }
 
             public int Length => _map.Length;
         }
 
-        private static void GetRandomChunk(TileNodeSet map, SubKeyRandom rand, Rectangle space, int proc=49)
+        private static void GetRandom(TileNodeSet map, Random rand, int chunkSize, int proc=49)
         {
-            void Push(TileNode point, int xDiff, int yDiff)
+            void GetRandomChunk(int ix, int iy)
             {
-                if (point.X + xDiff <= space.Left || point.X + xDiff >= space.Right-1) return;
-                if (point.Y + yDiff <= space.Top || point.Y + yDiff >= space.Bottom-1) return;
-                if (map.Get(point.X + xDiff, point.Y + yDiff).Real) return;
+                void Push(int x, int y, int dx, int dy)
+                {
+                    if (map.Get(x + dx, y + dy)) return;
+                    if (x + dx <= x || x + dx >= x + dx - 1) return;
+                    if (y + dy <= y || y + dy >= y + dy - 1) return;
 
-                var next = map.Add(point.X + xDiff, point.Y+yDiff, proc, rand);
-                if (next.Up) Push(next, 0, 1);
-                if (next.Down) Push(next, 0, -1);
-                if (next.Left) Push(next, -1, 0);
-                if (next.Right) Push(next, 1, 0);
+                    map.Add(x + dx, y + dy);
+                    if (MathD.Chance(rand, proc)) Push(x + dx, y + dy, 0, 1);
+                    if (MathD.Chance(rand, proc)) Push(x + dx, y + dy, 0, -1);
+                    if (MathD.Chance(rand, proc)) Push(x + dx, y + dy, -1, 0);
+                    if (MathD.Chance(rand, proc)) Push(x + dx, y + dy, 1, 0);
+                }
+
+                map.Add(ix + chunkSize / 2, iy + chunkSize / 2);
+                Push(ix + chunkSize / 2, iy + chunkSize / 2, 0, 1);
+                Push(ix + chunkSize / 2, iy + chunkSize / 2, 0, -1);
+                Push(ix + chunkSize / 2, iy + chunkSize / 2, -1, 0);
+                Push(ix + chunkSize / 2, iy + chunkSize / 2, 1, 0);
             }
 
-            var origin = map.Add(space.X+space.Width / 2, space.Y+space.Height / 2);
-            Push(origin, 0, 1);
-            Push(origin, 0, -1);
-            Push(origin, -1, 0);
-            Push(origin, 1, 0);
-        }
-
-        private static void GetRandom(TileNodeSet map, SubKeyRandom rand, int chunkSize=32)
-        {
             var count = map.Length / chunkSize;
             for (int i = 0; i < count; i++)
             {
-                for (int j = 0; j < count; j++)
+                int x, y;
+                do
                 {
-                    GetRandomChunk(map, rand, new Rectangle(j*chunkSize, i*chunkSize, chunkSize, chunkSize));
+                    x = rand.Next(map.Length - chunkSize);
+                    y = rand.Next(map.Length - chunkSize);
+                } while (map.Get(x, y));
+                GetRandomChunk(x, y);
+            }
+        }
+
+        private static void GetBoxes(TileNodeSet map, Random rand, int minSize, int maxSize, int totalRooms, int roomSepMin, int hallWidth)
+        {
+            // up=0, down=1, left=2, right=3
+            void ConnectRooms(Rectangle a, Rectangle b, int width=2)
+            {
+                var w = MathHelper.Clamp(width - 1, 1, minSize-2);
+                var start = new Coordinate(rand.Next(a.Left, a.Right-w), rand.Next(a.Top, a.Bottom-w));
+                var end = new Coordinate(rand.Next(b.Left, b.Right-w), rand.Next(b.Top, b.Bottom-w));
+                var xw = end.X - start.X < 0 ? 0 : w;
+
+                if (start.X != end.X) map.AddAll(start.X, start.Y, end.X - start.X + xw, w);
+                if (start.Y != end.Y) map.AddAll(end.X, start.Y, w, end.Y - start.Y);
+            }
+
+            var todoList = new List<Rectangle>();
+            var attempts = 0;
+            while (todoList.Count < totalRooms && attempts++ < totalRooms*10)
+            {
+                var x = rand.Next(roomSepMin, map.Length - maxSize - roomSepMin);
+                var y = rand.Next(roomSepMin, map.Length - maxSize - roomSepMin);
+                var width = rand.Next(minSize, maxSize);
+                var height = rand.Next(minSize, maxSize);
+                if (map.IsAreaClear(x - roomSepMin, y - roomSepMin, width + 2 * roomSepMin, height + 2 * roomSepMin))
+                {
+                    todoList.Add(new Rectangle(x, y, width, height));
+                    map.AddAll(x, y, width, height);
+                }
+            }
+
+            for (int i = 0; i < todoList.Count; i++)
+            {
+                int another;
+                do another = rand.Next(todoList.Count);
+                while (i == another);
+                ConnectRooms(todoList[i], todoList[another], hallWidth);
+            }
+        }
+
+        private static void CleanWallBits(Tile[][] set)
+        {
+            for (int x = 1; x < set[0].Length - 2; x++)
+            {
+                for (int y = 1; y < set.Length - 2; y++)
+                {
+                    if (x < 1) x = 1;
+                    if (y < 1) y = 1;
+                    if (set[y][x] == Tile.Wall)
+                    {
+                        if (set[y][x - 1] == Tile.Ground)
+                        {
+                            if (set[y][x + 1] == Tile.Ground)
+                            {
+                                // ground wall ground horizontal
+                                set[y--][x--] = Tile.Ground;
+                                continue;
+                            }
+                            if (set[y][x + 1] == Tile.Wall && set[y][x + 2] == Tile.Ground)
+                            {
+                                // ground wall wall ground horizontal
+                                set[y][x] = Tile.Ground;
+                                set[y--][x-- + 1] = Tile.Ground;
+                                continue;
+                            }
+                        }
+
+                        if (set[y - 1][x] == Tile.Ground)
+                        {
+                            if (set[y + 1][x] == Tile.Ground)
+                            {
+                                // ground wall ground vertical
+                                set[y--][x--] = Tile.Ground;
+                                continue;
+                            }
+                            if (set[y + 1][x] == Tile.Wall && set[y + 2][x] == Tile.Ground)
+                            {
+                                // ground wall wall ground vertical
+                                set[y][x] = Tile.Ground;
+                                set[y-- + 1][x--] = Tile.Ground;
+                            }
+                        }
+                    }
                 }
             }
         }
 
-        private static void GetBoxes(TileNodeSet map, SubKeyRandom rand)
-        {
-            //TODO
-        }
-
-        private static void GetInverted(TileNodeSet map, SubKeyRandom rand)
-        {
-            //TODO
-        }
-
+        private static volatile int _gTotal;
         public static Tile[][] Get(int key, int subKey, Type type, int setSize)
         {
             if (setSize > 256) setSize = 256;
             var map = new TileNodeSet(setSize);
-            var rand = new SubKeyRandom(key, subKey);
+            var rand = new Random(key);
+
+            //Prep random with subKey
+            for (int i = 0; i < subKey; i++) _gTotal += rand.Next(1) + _gTotal;
+
             switch (type)
             {
                 case Type.Random:
-                    GetRandom(map, rand);
+                    GetRandom(map, rand, setSize/2);
                     break;
-                case Type.Boxes:
-                    GetBoxes(map, rand);
+                case Type.MessyBoxes:
+                case Type.Standard1:
+                    GetBoxes(map, rand, setSize/10, setSize/5, setSize/10, 3, 2);
                     break;
-                case Type.Inverted:
-                    GetInverted(map, rand);
+                case Type.Standard2:
+                    GetBoxes(map, rand, setSize / 10, setSize / 5, setSize / 10, 0, 4);
                     break;
             }
 
-            var set = new Tile[map.MaxY - map.MinY+3][];
-            for (int i = map.MinY-1; i <= map.MaxY+1; i++)
+            //Transfer bitmap into constricted tile map and add walls 
+            var set = new Tile[map.MaxY - map.MinY + 3][];
+            for (int i = map.MinY - 1; i <= map.MaxY + 1; i++)
             {
-                set[i-map.MinY+1] = new Tile[map.MaxX - map.MinX+3];
-                for (int j = map.MinX-1; j <= map.MaxX+1; j++)
+                var curY = i - map.MinY + 1;
+                set[curY] = new Tile[map.MaxX - map.MinX + 3];
+                for (int j = map.MinX - 1; j <= map.MaxX + 1; j++)
                 {
-                    if (map.Get(j, i).Real) set[i-map.MinY+1][j-map.MinX+1] = Tile.Ground;
+                    var curX = j - map.MinX + 1;
+                    if (map.Get(j, i)) set[curY][curX] = Tile.Ground;
                     else
                     {
                         for (int x = -1; x <= 1; x++)
                         {
                             for (int y = -1; y <= 1; y++)
                             {
-                                if (j+x < 0 || j+x >= map.Length || i+y < 0 || i+y >= map.Length) continue;
-                                if (map.Get(j+x, i+y).Real) set[i-map.MinY+1][j-map.MinX+1] = Tile.Wall;
+                                if (map.Get(j + x, i + y)) set[curY][curX] = Tile.Wall;
                             }
                         }
                     }
                 }
+            }
+
+            //Post processing
+            if (type == Type.Standard1 || type == Type.Standard2)
+            {
+                CleanWallBits(set);
             }
 
             return set;

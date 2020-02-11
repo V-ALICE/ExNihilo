@@ -48,26 +48,27 @@ namespace ExNihilo.Systems
         //Initial setup
         private static void SetupParams()
         {
-            //Set speed multiplier for player movement
-            void SetSpeed(ConsoleHandler g, string args)
+            //Sets player collisions on or off
+            void SetCollisions(ConsoleHandler g, string args)
             {
-                if (float.TryParse(args, out float num) && num > 0)
+                if (args == "on")
                 {
-                    _theTown.SetSpeedMultiplier(num);
-                    _theVoid.SetSpeedMultiplier(num);
-                    g.ForceMessage("<Asura>", "Setting speed multiplier to " + args, Color.Purple, Color.White);
+                    g.ForceMessage("<Asura>", "Enabling collisions", Color.Purple, Color.White);
+                    _theVoid.ToggleCollisions(true);
+                    _theTown.ToggleCollisions(true);
                 }
-                else g.ForceMessage("<error>", "\"" + args + "\" is not a valid speed value", Color.DarkRed, Color.White);
+                else if (args == "off")
+                {
+                    g.ForceMessage("<Asura>", "Disabling collisions", Color.Purple, Color.White);
+                    _theVoid.ToggleCollisions(false);
+                    _theTown.ToggleCollisions(false);
+                }
+                else
+                {
+                    g.ForceMessage("<error>", "\"" + args + "\" is not valid. Value must be \"on\" or \"off\"", Color.DarkRed, Color.White);
+                }
             }
-            _paramSet.Add("speed", SetSpeed);
-
-            //Set currently active seed for map generation
-            void SetSeed(ConsoleHandler g, string args)
-            {
-                _theVoid.SetSeed(args.GetHashCode());
-                g.ForceMessage("<Asura>", "Setting active seed to " + args, Color.Purple, Color.White);
-            }
-            _paramSet.Add("seed", SetSeed);
+            _paramSet.Add("collisions", SetCollisions);
 
             //Changes to the given floor
             void SetFloor(ConsoleHandler g, string args)
@@ -87,6 +88,51 @@ namespace ExNihilo.Systems
             }
             _paramSet.Add("floor", SetFloor);
 
+            //Sets level generation type
+            void SetGenType(ConsoleHandler g, string args)
+            {
+                switch (args)
+                {
+                    case "standard1":
+                        g.ForceMessage("<Asura>", "Changing generation algorithm to standard1", Color.Purple, Color.White);
+                        _theVoid.SetGenType(MapGenerator.Type.Standard1);
+                        if (_game.ActiveSectorID == GameContainer.SectorID.Underworld) _theVoid.SetFloor();
+                        break;
+                    case "standard2":
+                        g.ForceMessage("<Asura>", "Changing generation algorithm to standard2", Color.Purple, Color.White);
+                        _theVoid.SetGenType(MapGenerator.Type.Standard2);
+                        if (_game.ActiveSectorID == GameContainer.SectorID.Underworld) _theVoid.SetFloor();
+                        break;
+                    case "abstract":
+                        g.ForceMessage("<Asura>", "Changing generation algorithm to abstract", Color.Purple, Color.White);
+                        _theVoid.SetGenType(MapGenerator.Type.Random);
+                        if (_game.ActiveSectorID == GameContainer.SectorID.Underworld) _theVoid.SetFloor();
+                        break;
+                    case "messy":
+                        g.ForceMessage("<Asura>", "Changing generation algorithm to messy", Color.Purple, Color.White);
+                        _theVoid.SetGenType(MapGenerator.Type.MessyBoxes);
+                        if (_game.ActiveSectorID == GameContainer.SectorID.Underworld) _theVoid.SetFloor();
+                        break;
+                    default:
+                        g.ForceMessage("<error>", "\"" + args + "\" is not a valid gentype value", Color.DarkRed, Color.White);
+                        break;
+                }
+            }
+            _paramSet.Add("gentype", SetGenType);
+
+            //Set map generation size
+            void SetMapSize(ConsoleHandler g, string args)
+            {
+                if (int.TryParse(args, out int num) && num >= 64 && num <= 256)
+                {
+                    _theVoid.SetMapSize(num);
+                    if (_game.ActiveSectorID == GameContainer.SectorID.Underworld) _theVoid.SetFloor();
+                    g.ForceMessage("<Asura>", "Setting map size to " + args, Color.Purple, Color.White);
+                }
+                else g.ForceMessage("<error>", "\"" + args + "\" is not a valid mapsize value", Color.DarkRed, Color.White);
+            }
+            _paramSet.Add("mapsize", SetMapSize);
+
             //Sets parallax level
             void SetParallax(ConsoleHandler g, string args)
             {
@@ -94,30 +140,33 @@ namespace ExNihilo.Systems
                 {
                     g.ForceMessage("<Asura>", "Changing parallax to level " + args, Color.Purple, Color.White);
                     _theVoid.SetParallax(num);
+                    if (_game.ActiveSectorID == GameContainer.SectorID.Underworld) _theVoid.SetFloor();
                 }
                 else g.ForceMessage("<error>", "\"" + args + "\" is not a valid parallax value", Color.DarkRed, Color.White);
             }
             _paramSet.Add("parallax", SetParallax);
 
-            //Sets player collisions on or off
-            void SetCollisions(ConsoleHandler g, string args)
+            //Set currently active seed for map generation
+            void SetSeed(ConsoleHandler g, string args)
             {
-                if (args == "on")
-                {
-                    _theVoid.ToggleCollisions(true);
-                    _theTown.ToggleCollisions(true);
-                }
-                else if (args == "off")
-                {
-                    _theVoid.ToggleCollisions(false);
-                    _theTown.ToggleCollisions(false);
-                }
-                else
-                {
-                    g.ForceMessage("<error>", "\"" + args + "\" is not valid. Value must be \"on\" or \"off\"", Color.DarkRed, Color.White);
-                }
+                _theVoid.SetSeed(args.GetHashCode());
+                if (_game.ActiveSectorID == GameContainer.SectorID.Underworld) _theVoid.SetFloor();
+                g.ForceMessage("<Asura>", "Setting active seed to " + args, Color.Purple, Color.White);
             }
-            _paramSet.Add("collisions", SetCollisions);
+            _paramSet.Add("seed", SetSeed);
+
+            //Set speed multiplier for player movement
+            void SetSpeed(ConsoleHandler g, string args)
+            {
+                if (float.TryParse(args, out float num) && num > 0)
+                {
+                    _theTown.SetSpeedMultiplier(num);
+                    _theVoid.SetSpeedMultiplier(num);
+                    g.ForceMessage("<Asura>", "Setting speed multiplier to " + args, Color.Purple, Color.White);
+                }
+                else g.ForceMessage("<error>", "\"" + args + "\" is not a valid speed value", Color.DarkRed, Color.White);
+            }
+            _paramSet.Add("speed", SetSpeed);
         }
         private static void SetupHelpInfo()
         {
@@ -133,8 +182,11 @@ namespace ExNihilo.Systems
             _helpInfo.Add("exit",
                 "\n/exit -> Exits the game. This operates the same as the title menu exit button");
 
-            _helpInfo.Add("exportmap",
-                "\n/exportmap -> Save the current level as a PNG file to the maps directory");
+            _helpInfo.Add("export",
+                "\n/export -> Save the current level as a PNG file to the maps directory");
+
+            _helpInfo.Add("exportall",
+                "\n/exportall -> Save the current level set as PNG files to the maps directory");
 
             _helpInfo.Add("ascend",
                 "\n/ascend          -> Set self to privileged mode" +
@@ -144,29 +196,40 @@ namespace ExNihilo.Systems
                 "\n/descend          -> Set self to default mode" +
                 "\n/descend [player] -> Set given player to default mode");
 
+            //Set-related help section
+
             _helpInfo.Add("set",
                 "\n/set <param> [value] -> set an environment parameter." +
-                "\nPossible parameters: Collision, Floor, Parallax, Seed, Speed" +
+                _paramSet.Aggregate("\nPossible parameters: ", (current, com) => current + (com.Key + " ")) +
                 "\nUse \"/help set <param>\" to see how a certain parameter works");
-
-            _helpInfo.Add("set speed",
-                "\n/set speed [multiplier] -> Set own movement speed with the given multiplier" +
-                "\nMultiplier must be greater than zero. High values will behave erratically.");
-
-            _helpInfo.Add("set seed",
-                "\n/set seed [value] -> Set current active seed based on the input value");
-
-            _helpInfo.Add("set floor",
-                "\n/set floor [value] -> Set current floor to given value" +
-                "\nValue must be greater than zero. This will trigger a loading sequence.");
 
             _helpInfo.Add("set collision",
                 "\n/set collision [value] -> Set own collisions on or off" +
                 "\nValue must be \"on\" or \"off\"");
 
+            _helpInfo.Add("set floor",
+                "\n/set floor [value] -> Set current floor to given value" +
+                "\nValue must be greater than zero. This will trigger a loading sequence.");
+
+            _helpInfo.Add("set gentype",
+                "\n/set gentype [value] -> Set active generation algorithm. Default is Standard2" +
+                "\nValue must be standard1, standard2, messy, abstract. This will trigger a loading sequence.");
+
+            _helpInfo.Add("set mapsize",
+                "\n/set mapsize [value] -> Set Map generation size, Default is 128" +
+                "\nValue must be between 64 and 256. Larger values will increase loading time. This will trigger a loading sequence.");
+
             _helpInfo.Add("set parallax",
                 "\n/set parallax [value] -> Set parallax level" +
-                "\nValue must be greater than or equal to zero");
+                "\nValue must be greater than or equal to zero. This will trigger a loading sequence.");
+
+            _helpInfo.Add("set seed",
+                "\n/set seed [value] -> Set current active seed based on the input value"+
+                "\nThis will trigger a loading sequence.");
+
+            _helpInfo.Add("set speed",
+                "\n/set speed [value] -> Set own movement speed with the given multiplier" +
+                "\nValue must be greater than zero. High values will behave erratically.");
         }
         private static void SetupCommands()
         {
@@ -206,10 +269,25 @@ namespace ExNihilo.Systems
                 }
 
                 if (args.Length != 0) g.ForceMessage("<warning>", "Ignoring unexpected argument(s) \"" + args + "\"", Color.DarkOrange, Color.White);
-                _theVoid.PrintMap();
                 g.ForceMessage("<Asura>", "Outputting current map to the maps directory", Color.Purple, Color.White);
+                _theVoid.PrintMap();
             }
-            _basicCommands.Add("exportmap", ExportMap);
+            _basicCommands.Add("export", ExportMap);
+
+            //Exports the current map set to a file
+            void ExportAllMaps(ConsoleHandler g, string args)
+            {
+                if (_game.ActiveSectorID != GameContainer.SectorID.Underworld)
+                {
+                    g.ForceMessage("<error>", "Can only export maps from within the void", Color.DarkRed, Color.White);
+                    return;
+                }
+
+                if (args.Length != 0) g.ForceMessage("<warning>", "Ignoring unexpected argument(s) \"" + args + "\"", Color.DarkOrange, Color.White);
+                g.ForceMessage("<Asura>", "Outputting current map set to the maps directory", Color.Purple, Color.White);
+                _theVoid.PrintMap(true);
+            }
+            _basicCommands.Add("exportall", ExportAllMaps);
 
             //Shows the current seed value
             void Seed(ConsoleHandler g, string args)
@@ -240,7 +318,7 @@ namespace ExNihilo.Systems
                     param.Invoke(g, args.Substring(index + 1));
                 else
                 {
-                    var givenParam = args.Substring(index);
+                    var givenParam = args.Substring(0, index);
                     g.ForceMessage("<error>", "No such parameter \"" + givenParam + "\". Use \"/help set\" to see available parameters", Color.DarkRed, Color.White);
                 }
             }
@@ -272,8 +350,8 @@ namespace ExNihilo.Systems
             _paramSet = new Dictionary<string, Action<ConsoleHandler, string>>();
             _helpInfo = new Dictionary<string, string>();
             SetupCommands();
-            SetupHelpInfo();
             SetupParams();
+            SetupHelpInfo();
         }
     }
 }

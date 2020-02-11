@@ -24,7 +24,8 @@ namespace ExNihilo.Systems
 
         //private List<EntityContainer> _mobSet;
         private GraphicsDevice _graphics; //for stitching level maps
-        private int _curLevel, _seed=1, _parallax=2;
+        private int _curLevel, _seed=1, _parallax=2, _mapSize=128;
+        private MapGenerator.Type _genType = MapGenerator.Type.Standard2;
 
         private int _fCount;
         private object _fLock = new object();
@@ -36,11 +37,11 @@ namespace ExNihilo.Systems
             //_mobSet = new List<EntityContainer>();
         }
 
-        private async void GenerateLevel(GameContainer g, int slot, int level, MapGenerator.Type type)
+        private async void GenerateLevel(GameContainer g, int slot, int level)
         {
             Tuple<InteractionMap, Texture2D> DoAll()
             {
-                var m = new InteractionMap(new TypeMatrix(MapGenerator.Get(_seed, level, type, 128)));
+                var m = new InteractionMap(new TypeMatrix(MapGenerator.Get(_seed, level, _genType, _mapSize)));
                 var t = MapStitcher.StitchMap(_graphics, m.Map, TileSize);
                 return Tuple.Create(m, t);
             }
@@ -67,40 +68,55 @@ namespace ExNihilo.Systems
             }
         }
 
-        public void DoGenerationQueue(GameContainer g, int level, MapGenerator.Type type = MapGenerator.Type.Random)
+        public void DoGenerationQueue(GameContainer g, int level)
         {
-            _fCount = 0;
+            if (level == -1) level = _curLevel;
+            _fCount = 1 + _parallax;
             var offset = level - _curLevel;
-            if (offset == 0 && _subLevelMaps.Count == _parallax) return;
+            //if (offset == 0 && _subLevelMaps.Count == _parallax) return;
             g.RequestSectorChange(GameContainer.SectorID.Loading);
-            if (offset > 0 && offset <= _subLevelMaps.Count)
+
+            lock (_fLock)
             {
-                //If the requested level was pregenerated use it
-                Map = _subLevelMaps[offset-1];
-                WorldTexture = _subLevelTextures[offset-1];
-                for (int i = 0; i < offset; i++)
+                if (offset > 0 && offset <= _subLevelMaps.Count)
                 {
-                    _subLevelMaps.RemoveAt(0);
-                    _subLevelTextures.RemoveAt(0);
+                    //If the requested level was pregenerated use it
+                    Map = _subLevelMaps[offset - 1];
+                    WorldTexture = _subLevelTextures[offset - 1];
+                    for (int i = 0; i < offset; i++)
+                    {
+                        _subLevelMaps.RemoveAt(0);
+                        _subLevelTextures.RemoveAt(0);
+                    }
                 }
-            }
-            else if (offset != 0)
-            {
-                //Either no pregenerated levels or this is first start
-                GenerateLevel(g, -1, level, type);
-                _subLevelMaps.Clear();
-                _subLevelTextures.Clear();
-            }
-  
-            //Add new parallax levels as needed
-            for (int i = _subLevelMaps.Count; i < _parallax; i++)
-            {
-                _subLevelMaps.Add(null);
-                _subLevelTextures.Add(null);
-                GenerateLevel(g, i, level+i+1, type);
+                else
+                {
+                    //Either no pregenerated levels or this is first start
+                    _fCount--;
+                    GenerateLevel(g, -1, level);
+                    _subLevelMaps.Clear();
+                    _subLevelTextures.Clear();
+                }
+
+                //Add new parallax levels as needed
+                for (int i = _subLevelMaps.Count; i < _parallax; i++)
+                {
+                    _fCount--;
+                    _subLevelMaps.Add(null);
+                    _subLevelTextures.Add(null);
+                    GenerateLevel(g, i, level + i + 1);
+                }
             }
 
             _curLevel = level;
+        }
+
+        public void ChangeMapSize(int size)
+        {
+            if (size == _mapSize) return;
+            _mapSize = size;
+            _subLevelMaps.Clear();
+            _subLevelTextures.Clear();
         }
 
         public void ChangeParallax(int parallax)
@@ -113,8 +129,17 @@ namespace ExNihilo.Systems
             }
         }
 
+        public void ChangeGenerationType(MapGenerator.Type type)
+        {
+            if (type == _genType) return;
+            _genType = type;
+            _subLevelMaps.Clear();
+            _subLevelTextures.Clear();
+        }
+
         public void ChangeSeed(int seed)
         {
+            if (seed == _seed) return;
             _seed = seed;
             _subLevelMaps.Clear();
             _subLevelTextures.Clear();
@@ -169,8 +194,6 @@ namespace ExNihilo.Systems
                 var value = 1.0f/(i+2);
                 var color = new Color(value, value, value);
                 var scale = CurrentWorldScale/(i+2);
-                pos.X = (float)Math.Round(pos.X);
-                pos.Y = (float)Math.Round(pos.Y);
                 spriteBatch.Draw(_subLevelTextures[i], pos, null, color, 0, Vector2.Zero, scale, SpriteEffects.None, 0);
                 if (D.Bug) LineDrawer.DrawSquare(spriteBatch, pos, scale*_subLevelTextures[i].Width, scale*_subLevelTextures[i].Height, ColorScale.White);
             }
@@ -186,13 +209,18 @@ namespace ExNihilo.Systems
         public override void ApplyPush(Coordinate push, float mult, bool ignoreWalls=false)
         {
             base.ApplyPush(push, mult, ignoreWalls);
-            CurrentWorldPosition.X = (float)Math.Round(CurrentWorldPosition.X);
-            CurrentWorldPosition.Y = (float)Math.Round(CurrentWorldPosition.Y);
         }
 
-        public void PrintMap()
+        public void PrintMap(bool all)
         {
-            TextureUtilities.WriteTextureToPNG(WorldTexture, "s"+_seed+"-f"+_curLevel+".png", "maps");
+            TextureUtilities.WriteTextureToPNG(WorldTexture, _genType+"-s"+_seed+"-f"+_curLevel+".png", "maps");
+            if (all)
+            {
+                for (int i = 0; i < _subLevelTextures.Count; i++)
+                {
+                    TextureUtilities.WriteTextureToPNG(_subLevelTextures[i], _genType+"-s" + _seed + "-f" + (_curLevel+i+1) + ".png", "maps");
+                }
+            }
         }
     }
 }

@@ -16,13 +16,13 @@ namespace ExNihilo.Systems
         }
 
         public readonly int X, Y;
-        protected Type[][] _map;
+        protected Type[][] Map;
 
         public TypeMatrix(Type[][] set)
         {
             X = set[0].Length;
             Y = set.Length;
-            _map = set;
+            Map = set;
         }
 
         public TypeMatrix(string fileName)
@@ -31,22 +31,22 @@ namespace ExNihilo.Systems
             if (map.Length == 0) return;
             X = map[0].Length;
             Y = map.Length;
-            _map = new Type[Y][];
+            Map = new Type[Y][];
             for (int i = 0; i < Y; i++)
             {
-                _map[i] = new Type[X];
+                Map[i] = new Type[X];
                 for (int j = 0; j < X; j++)
                 {
                     switch (map[i][j])
                     {
                         case 'G':
-                            _map[i][j] = Type.Ground;
+                            Map[i][j] = Type.Ground;
                             break;
                         case 'W':
-                            _map[i][j] = Type.Wall;
+                            Map[i][j] = Type.Wall;
                             break;
                         default:
-                            _map[i][j] = Type.None;
+                            Map[i][j] = Type.None;
                             break;
                     }
                 }
@@ -55,7 +55,7 @@ namespace ExNihilo.Systems
 
         public Type Get(int x, int y)
         {
-            return _map[y][x];
+            return Map[y][x];
         }
     }
 

@@ -82,14 +82,27 @@ namespace ExNihilo.Sectors
             SetFloor(1);
         }
 
-        public void PrintMap()
+        public void PrintMap(bool all=false)
         {
-            ActiveLevel?.PrintMap();
+            ActiveLevel?.PrintMap(all);
         }
 
-        public void SetFloor(int floor)
+/********************************************************************
+------->Parameter functions
+********************************************************************/
+        public void SetMapSize(int size)
+        {
+            ActiveLevel.ChangeMapSize(size);
+        }
+
+        public void SetFloor(int floor=-1)
         {
             ActiveLevel.DoGenerationQueue(Container, floor);
+        }
+
+        public void SetGenType(MapGenerator.Type type)
+        {
+            ActiveLevel.ChangeGenerationType(type);
         }
 
         public void SetParallax(int levels)
