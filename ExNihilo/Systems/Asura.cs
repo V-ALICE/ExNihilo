@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Drawing.Text;
 using System.Linq;
 using ExNihilo.Sectors;
+using ExNihilo.Util;
 using ExNihilo.Util.Graphics;
 using Microsoft.Xna.Framework;
 
@@ -149,7 +150,7 @@ namespace ExNihilo.Systems
             //Set currently active seed for map generation
             void SetSeed(ConsoleHandler g, string args)
             {
-                _theVoid.SetSeed(args.GetHashCode());
+                _theVoid.SetSeed(Utilities.GetAbsoluteSeed(MathD.urand, args));
                 if (_game.ActiveSectorID == GameContainer.SectorID.Underworld) _theVoid.SetFloor();
                 g.ForceMessage("<Asura>", "Setting active seed to " + args, Color.Purple, Color.White);
             }

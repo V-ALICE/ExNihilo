@@ -9,12 +9,12 @@ namespace ExNihilo.Util
 {
     public static class EncryptedSerializer
     {
-        private static readonly byte[] _key = Encoding.Default.GetBytes("B9obFB76n8fg8PAq");
-        private static readonly byte[] _iv  = Encoding.Default.GetBytes("6jHJf87ss3b0IJ9e");
+        private static readonly byte[] Key = Encoding.Default.GetBytes("B9obFB76n8fg8PAq");
+        private static readonly byte[] Iv  = Encoding.Default.GetBytes("6jHJf87ss3b0IJ9e");
 
         private static void EncryptFile(string fileName, byte[] data)
         {
-            using (ICryptoTransform iCrypto = new TripleDESCryptoServiceProvider().CreateEncryptor(_key, _iv))
+            using (var iCrypto = new TripleDESCryptoServiceProvider().CreateEncryptor(Key, Iv))
             {
                 var encryptedData = iCrypto.TransformFinalBlock(data, 0, data.Length);
                 File.WriteAllBytes(fileName, encryptedData);
@@ -22,7 +22,7 @@ namespace ExNihilo.Util
         }
         private static byte[] DecryptFile(string fileName)
         {
-            using (ICryptoTransform iCrypto = new TripleDESCryptoServiceProvider().CreateDecryptor(_key, _iv))
+            using (var iCrypto = new TripleDESCryptoServiceProvider().CreateDecryptor(Key, Iv))
             {
                 var byteData = File.ReadAllBytes(fileName);
                 return iCrypto.TransformFinalBlock(byteData, 0, byteData.Length);

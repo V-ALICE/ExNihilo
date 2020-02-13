@@ -10,7 +10,8 @@ namespace ExNihilo.Systems
     [Serializable]
     public class PackedGame
     {
-        public const string VERSION = "061719413";
+        // Update this whenever the save contents changes MMDDYYHH
+        public const string _version = "061719413";
 
         //configuration
         private readonly DateTime _lastSaveDate;
@@ -53,7 +54,7 @@ namespace ExNihilo.Systems
         {
             //Default game file stuff
             ID = id;
-            Version = VERSION;
+            Version = _version;
             _lastSaveDate = DateTime.Now;
             FormatTitleCard();
             SavedCharacters = new List<PlayerEntityContainer.PackedPlayerEntityContainer>
@@ -126,7 +127,7 @@ namespace ExNihilo.Systems
                 string fileName = Environment.CurrentDirectory + "/Content/" + file;
                 if (EncryptedSerializer.DeserializeIn(fileName) is PackedGame game)
                 {
-                    if (game.Version == PackedGame.VERSION) _saveSet.Add(file, game);
+                    if (game.Version == PackedGame._version) _saveSet.Add(file, game);
                 }
             }
         }

@@ -307,6 +307,7 @@ namespace ExNihilo
             }
 
             PreviousSectorID = ActiveSectorID;
+            ActiveSector?.Exit();
             ActiveSectorID = newSector;
             ActiveSector?.Enter(_lastMousePosition, _windowSize);
         }

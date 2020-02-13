@@ -149,6 +149,13 @@ namespace ExNihilo.Systems
             return _seed;
         }
 
+        public void Purge()
+        {
+            _subLevelTextures.Clear();
+            _subLevelMaps.Clear();
+            Map = null;
+            WorldTexture = null;
+        }
         public override void Reset(EntityContainer entity, Coordinate hitBox, Coordinate hitBoxOffset)
         {
             base.Reset(entity, hitBox, hitBoxOffset);

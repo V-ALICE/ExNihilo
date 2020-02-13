@@ -9,9 +9,10 @@ namespace ExNihilo.Sectors
 {
     public class LoadingSector : Sector
     {
+        private int _timer;
         private float _loadingScale;
         private readonly ScaleRuleSet _rules = TextureLibrary.HalfScaleRuleSet;
-        private Vector2 _loadingDrawPos, _loadingCyclePos;
+        private Vector2 _loadingDrawPos, _loadingCyclePos, _debugPosition;
         private AnimatableTexture _loadingTexture, _loadingCycle;
 
         public LoadingSector(GameContainer container) : base(container)
@@ -25,6 +26,8 @@ namespace ExNihilo.Sectors
         {
             _loadingScale = 1;
             _loadingDrawPos = new Vector2();
+            _timer = UniversalTime.NewTimer(true);
+            _debugPosition = new Vector2(1, 1 + TextDrawer.AlphaHeight + TextDrawer.LineSpacer);
         }
 
         public override void LoadContent(GraphicsDevice graphicsDevice, ContentManager content)
@@ -33,18 +36,34 @@ namespace ExNihilo.Sectors
             _loadingCycle = null;
         }
 
+        public override void Enter(Point point, Coordinate gameWindow)
+        {
+            OnResize(Container.GraphicsDevice, gameWindow);
+            UniversalTime.ResetTimer(_timer);
+            UniversalTime.TurnOnTimer(_timer);
+        }
+
+        public override void Exit()
+        {
+            UniversalTime.TurnOffTimer(_timer);
+        }
+
         public override void Update()
         {
+            
         }
 
         protected override void DrawDebugInfo(SpriteBatch spriteBatch)
         {
+            var text = "\n" + UniversalTime.GetCurrentTime(_timer).ToString("0.00");
+            TextDrawer.DrawDumbText(spriteBatch, _debugPosition, text, 1, ColorScale.White);
         }
 
         public override void Draw(SpriteBatch spriteBatch, bool drawDebugInfo)
         {
             _loadingTexture.Draw(spriteBatch, _loadingDrawPos, ColorScale.White, _loadingScale);
             _loadingCycle?.Draw(spriteBatch, _loadingCyclePos, ColorScale.White, _loadingScale);
+            if (drawDebugInfo) DrawDebugInfo(spriteBatch);
         }
 
 /********************************************************************

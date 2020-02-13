@@ -30,6 +30,11 @@ namespace ExNihilo.Sectors
         public virtual void Enter(Point point, Coordinate gameWindow)
         {
         }
+        public virtual void Exit()
+        {
+
+        }
+
         public abstract void Initialize();
         public abstract void LoadContent(GraphicsDevice graphicsDevice, ContentManager content);
         public abstract void Update();

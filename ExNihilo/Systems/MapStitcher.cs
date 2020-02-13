@@ -23,7 +23,6 @@ namespace ExNihilo.Systems
                     else if (tile == Tile.Wall) TextureUtilities.SetSubTexture(texture, wall, j * tileSize, i * tileSize);
                 }
             }
-            //TextureUtilities.WriteTextureToPNG(texture, DateTime.Now.Second+"-"+ DateTime.Now.Millisecond+".png", "C:/Users/Alice/Desktop/garbage");
             return texture;
         }
     }

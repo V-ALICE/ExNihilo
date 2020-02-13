@@ -43,6 +43,11 @@ namespace ExNihilo.Sectors
             //_inventory.LoadContent(graphicsDevice, content);
         }
 
+        public override void Exit()
+        {
+            ActiveLevel.Purge();
+        }
+
         public override void Update()
         {
             base.Update();
