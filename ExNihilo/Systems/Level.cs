@@ -21,16 +21,18 @@ namespace ExNihilo.Systems
     {
         private List<Texture2D> _subLevelTextures;
         private List<InteractionMap> _subLevelMaps;
+        private TileTextureMap _textureMap;
 
         //private List<EntityContainer> _mobSet;
         private GraphicsDevice _graphics; //for stitching level maps
-        private int _curLevel, _seed=1, _parallax=2, _mapSize=128;
+        private int _curLevel, _seed=1, _parallax=0, _mapSize=128;
         private MapGenerator.Type _genType = MapGenerator.Type.Standard2;
-
+        private string[] _textureMapFiles = {"Content/TexturePacks/BlueWall.tmf", "Content/TexturePacks/BlueFloor.tmf" };
+        
         private int _fCount;
         private object _fLock = new object();
 
-        public Level(int tileSize) : base(tileSize)
+        public Level() : base(0)
         {
             _subLevelTextures = new List<Texture2D>();
             _subLevelMaps = new List<InteractionMap>();
@@ -41,8 +43,8 @@ namespace ExNihilo.Systems
         {
             Tuple<InteractionMap, Texture2D> DoAll()
             {
-                var m = new InteractionMap(new TypeMatrix(MapGenerator.Get(_seed, level, _genType, _mapSize)));
-                var t = MapStitcher.StitchMap(_graphics, m.Map, TileSize);
+                var m = new InteractionMap(new TypeMatrix(MapGenerator.Get(_seed, level, _genType, _mapSize, out var rand)));
+                var t = MapStitcher.StitchMap(_graphics, m.Map, _textureMap, rand);
                 return Tuple.Create(m, t);
             }
             var levelSet = await Task.Run(() => DoAll());
@@ -167,12 +169,14 @@ namespace ExNihilo.Systems
         public override void LoadContent(GraphicsDevice graphics, ContentManager content)
         {
             _graphics = graphics;
+            _textureMap = TileTextureMap.GetTileTextureMap(graphics, _textureMapFiles);
+            TileSize = _textureMap.TileSize;
         }
 
         private void SetPlayerAnyTile()
         {
-            CurrentWorldPosition = PlayerOverlay.PlayerCenterScreen - CurrentWorldScale * TileSize * Map.GetAnyFloor(MathD.urand);
-            CurrentWorldPosition.Y += 0.5f * CurrentWorldScale * TileSize; //TODO: less magic way to do this
+            CurrentWorldPosition = PlayerOverlay.PlayerCenterScreen - CurrentWorldScale * _textureMap.TileSize * Map.GetAnyFloor(MathD.urand);
+            CurrentWorldPosition.Y += 0.5f * CurrentWorldScale * _textureMap.TileSize; //TODO: less magic way to do this
         }
         public override void OnResize(GraphicsDevice graphics, Coordinate gameWindow)
         {

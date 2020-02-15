@@ -44,7 +44,7 @@ namespace ExNihilo
         private CommandHandler _handler, _superHandler;
         private Point _lastMousePosition;
        
-        public ConsoleHandler Console { get; private set; }
+        public static ConsoleHandler Console { get; private set; }
         public SectorID PreviousSectorID, ActiveSectorID;
 
         protected bool ShowDebugInfo, FormTouched;

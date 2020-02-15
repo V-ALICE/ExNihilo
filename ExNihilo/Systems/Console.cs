@@ -159,8 +159,7 @@ namespace ExNihilo.Systems
         private float _currentScale;
         private ScaleRuleSet _rules;
         private string _lastMessage;
-
-        public bool Active;
+        public bool Active, Ready;
 
         public ConsoleHandler()
         {
@@ -196,6 +195,12 @@ namespace ExNihilo.Systems
             _activeMessagePosition = new Vector2(TextDrawer.AlphaSpacer, gameWindow.Y - TextDrawer.LineSpacer - TextDrawer.AlphaHeight);
             _oldMessagePosition = new Vector2(TextDrawer.AlphaSpacer, gameWindow.Y - _backdrop.Height + TextDrawer.LineSpacer);
             _currentScale = _rules.GetScale(gameWindow);
+
+            Ready = true;
+            foreach (var message in queue)
+            {
+                ForceMessage(message.Item1, message.Item2, message.Item3, message.Item4);
+            }
         }
 
         public void Update()
@@ -248,7 +253,7 @@ namespace ExNihilo.Systems
 
         public void PushConsole(string name="Player")
         {
-            if (_activeText.StartsWith("/")) Asura.Handle(this, _activeText);
+            if (_activeText.StartsWith("/")) Asura.Handle(_activeText);
             else if (_activeText.Length != 0) _console.AddMessage("<"+name+">", _activeText, Color.DeepSkyBlue, Color.White);
 
             CloseConsole();
@@ -256,8 +261,14 @@ namespace ExNihilo.Systems
             _activeText = "";
         }
 
+        private List<Tuple<string, string, ColorScale, ColorScale>> queue = new List<Tuple<string, string, ColorScale, ColorScale>>();
         public void ForceMessage(string starter, string message, ColorScale startColor, ColorScale messageColor)
         {
+            if (!Ready)
+            {
+                queue.Add(new Tuple<string, string, ColorScale, ColorScale>(starter, message, startColor, messageColor));
+                return;
+            }
             _console.AddMessage(starter, message, startColor, messageColor);
         }
 

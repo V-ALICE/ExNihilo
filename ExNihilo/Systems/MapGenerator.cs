@@ -239,11 +239,11 @@ namespace ExNihilo.Systems
         }
 
         private static volatile int _gTotal;
-        public static Tile[][] Get(int key, int subKey, Type type, int setSize)
+        public static Tile[][] Get(int key, int subKey, Type type, int setSize, out Random rand)
         {
             if (setSize > 256) setSize = 256;
             var map = new TileNodeSet(setSize);
-            var rand = new Random(key);
+            rand = new Random(key);
 
             //Prep random with subKey
             for (int i = 0; i < subKey; i++) _gTotal += rand.Next(1) + _gTotal;

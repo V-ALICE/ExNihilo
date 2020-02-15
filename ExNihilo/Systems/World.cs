@@ -17,7 +17,8 @@ namespace ExNihilo.Systems
         protected readonly List<Tuple<AnimatableTexture, Vector2>> Overlays;
         protected readonly ScaleRuleSet WorldRules = TextureLibrary.DefaultScaleRuleSet;
         protected PlayerOverlay PlayerOverlay;
-        protected readonly int TimerID, TileSize;
+        protected readonly int TimerID;
+        protected int TileSize;
         protected float CurrentWorldScale;
         protected Coordinate PlayerCustomHitBox, PlayerCustomHitBoxOffset;
         protected InteractionMap Map;

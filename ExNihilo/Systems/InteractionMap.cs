@@ -12,7 +12,7 @@ namespace ExNihilo.Systems
     {
         public enum Type: byte
         {
-            None, Wall, Ground
+            None, Wall, Ground, Stairs
         }
 
         public readonly int X, Y;
@@ -55,6 +55,7 @@ namespace ExNihilo.Systems
 
         public Type Get(int x, int y)
         {
+            if (x < 0 || y < 0 || x >= X || y >= Y) return Type.None;
             return Map[y][x];
         }
     }
@@ -129,7 +130,8 @@ namespace ExNihilo.Systems
             {
                 for (int j = minX; j <= maxX && j < _x && j >= 0; j++)
                 {
-                    if (Map.Get(j, i) != TypeMatrix.Type.Ground) return true;
+                    var tile = Map.Get(j, i);
+                    if (tile != TypeMatrix.Type.Ground && tile != TypeMatrix.Type.Stairs) return true;
                 }
             }
 

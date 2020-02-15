@@ -33,7 +33,7 @@ namespace ExNihilo.Sectors
         public override void Initialize()
         {
             base.Initialize();
-            _world = new Level(16);
+            _world = new Level();
             //_inventoryMenu = new InventoryMenu(Container, _inventory);
         }
 

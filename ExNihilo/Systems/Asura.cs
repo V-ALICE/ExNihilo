@@ -15,15 +15,16 @@ namespace ExNihilo.Systems
         private static GameContainer _game;
         private static OverworldSector _theTown;
         private static UnderworldSector _theVoid;
+        private static ConsoleHandler Log => GameContainer.Console;
 
-        private static Dictionary<string, Action<ConsoleHandler, string>> _basicCommands;
-        private static Dictionary<string, Action<ConsoleHandler, string>> _elevatedCommands;
-        private static Dictionary<string, Action<ConsoleHandler, string>> _paramSet;
+        private static Dictionary<string, Action<string>> _basicCommands;
+        private static Dictionary<string, Action<string>> _elevatedCommands;
+        private static Dictionary<string, Action<string>> _paramSet;
         private static string _basicHelpString, _elevatedHelpString;
         private static Dictionary<string, string> _helpInfo;
 
         //Called whenever a command-form message is issued
-        public static void Handle(ConsoleHandler g, string com)
+        public static void Handle(string com)
         {
             var command = com.Substring(1).ToLower(); //remove command starter /
             if (command.Length < 1) return; //if the command is blank don't do anything
@@ -33,16 +34,16 @@ namespace ExNihilo.Systems
             var extra = sepIndex >= 0 ? command.Substring(sepIndex+1) : "";
             if (_basicCommands.TryGetValue(baseCommand, out var basic))
             {
-                basic.Invoke(g, extra);
+                basic.Invoke(extra);
             }
             else if (_elevatedCommands.TryGetValue(baseCommand, out var elevated))
             {
-                if (_elevatedMode) elevated.Invoke(g, extra);
-                else g.ForceMessage("<error>", "You do not have permission to use \"" + baseCommand + "\"", Color.DarkRed, Color.White);
+                if (_elevatedMode) elevated.Invoke(extra);
+                else Log.ForceMessage("<error>", "You do not have permission to use \"" + baseCommand + "\"", Color.DarkRed, Color.White);
             }
             else
             {
-                g.ForceMessage("<error>", "No such command \"" + baseCommand + "\". Use /help to see available commands", Color.DarkRed, Color.White);
+                Log.ForceMessage("<error>", "No such command \"" + baseCommand + "\". Use /help to see available commands", Color.DarkRed, Color.White);
             }
         }
 
@@ -50,122 +51,122 @@ namespace ExNihilo.Systems
         private static void SetupParams()
         {
             //Sets player collisions on or off
-            void SetCollisions(ConsoleHandler g, string args)
+            void SetCollisions(string args)
             {
                 if (args == "on")
                 {
-                    g.ForceMessage("<Asura>", "Enabling collisions", Color.Purple, Color.White);
+                    Log.ForceMessage("<Asura>", "Enabling collisions", Color.Purple, Color.White);
                     _theVoid.ToggleCollisions(true);
                     _theTown.ToggleCollisions(true);
                 }
                 else if (args == "off")
                 {
-                    g.ForceMessage("<Asura>", "Disabling collisions", Color.Purple, Color.White);
+                    Log.ForceMessage("<Asura>", "Disabling collisions", Color.Purple, Color.White);
                     _theVoid.ToggleCollisions(false);
                     _theTown.ToggleCollisions(false);
                 }
                 else
                 {
-                    g.ForceMessage("<error>", "\"" + args + "\" is not valid. Value must be \"on\" or \"off\"", Color.DarkRed, Color.White);
+                    Log.ForceMessage("<error>", "\"" + args + "\" is not valid. Value must be \"on\" or \"off\"", Color.DarkRed, Color.White);
                 }
             }
             _paramSet.Add("collisions", SetCollisions);
 
             //Changes to the given floor
-            void SetFloor(ConsoleHandler g, string args)
+            void SetFloor(string args)
             {
                 if (_game.ActiveSectorID != GameContainer.SectorID.Underworld)
                 {
-                    g.ForceMessage("<error>", "Can only change floors from within the void", Color.DarkRed, Color.White);
+                    Log.ForceMessage("<error>", "Can only change floors from within the void", Color.DarkRed, Color.White);
                     return;
                 }
 
                 if (int.TryParse(args, out int num) && num > 0)
                 {
-                    g.ForceMessage("<Asura>", "Swapping to floor " + args, Color.Purple, Color.White);
+                    Log.ForceMessage("<Asura>", "Swapping to floor " + args, Color.Purple, Color.White);
                     _theVoid.SetFloor(num);
                 }
-                else g.ForceMessage("<error>", "\"" + args + "\" is not a valid floor value", Color.DarkRed, Color.White);
+                else Log.ForceMessage("<error>", "\"" + args + "\" is not a valid floor value", Color.DarkRed, Color.White);
             }
             _paramSet.Add("floor", SetFloor);
 
             //Sets level generation type
-            void SetGenType(ConsoleHandler g, string args)
+            void SetGenType(string args)
             {
                 switch (args)
                 {
                     case "standard1":
-                        g.ForceMessage("<Asura>", "Changing generation algorithm to standard1", Color.Purple, Color.White);
+                        Log.ForceMessage("<Asura>", "Changing generation algorithm to standard1", Color.Purple, Color.White);
                         _theVoid.SetGenType(MapGenerator.Type.Standard1);
                         if (_game.ActiveSectorID == GameContainer.SectorID.Underworld) _theVoid.SetFloor();
                         break;
                     case "standard2":
-                        g.ForceMessage("<Asura>", "Changing generation algorithm to standard2", Color.Purple, Color.White);
+                        Log.ForceMessage("<Asura>", "Changing generation algorithm to standard2", Color.Purple, Color.White);
                         _theVoid.SetGenType(MapGenerator.Type.Standard2);
                         if (_game.ActiveSectorID == GameContainer.SectorID.Underworld) _theVoid.SetFloor();
                         break;
                     case "abstract":
-                        g.ForceMessage("<Asura>", "Changing generation algorithm to abstract", Color.Purple, Color.White);
+                        Log.ForceMessage("<Asura>", "Changing generation algorithm to abstract", Color.Purple, Color.White);
                         _theVoid.SetGenType(MapGenerator.Type.Random);
                         if (_game.ActiveSectorID == GameContainer.SectorID.Underworld) _theVoid.SetFloor();
                         break;
                     case "messy":
-                        g.ForceMessage("<Asura>", "Changing generation algorithm to messy", Color.Purple, Color.White);
+                        Log.ForceMessage("<Asura>", "Changing generation algorithm to messy", Color.Purple, Color.White);
                         _theVoid.SetGenType(MapGenerator.Type.MessyBoxes);
                         if (_game.ActiveSectorID == GameContainer.SectorID.Underworld) _theVoid.SetFloor();
                         break;
                     default:
-                        g.ForceMessage("<error>", "\"" + args + "\" is not a valid gentype value", Color.DarkRed, Color.White);
+                        Log.ForceMessage("<error>", "\"" + args + "\" is not a valid gentype value", Color.DarkRed, Color.White);
                         break;
                 }
             }
             _paramSet.Add("gentype", SetGenType);
 
             //Set map generation size
-            void SetMapSize(ConsoleHandler g, string args)
+            void SetMapSize(string args)
             {
                 if (int.TryParse(args, out int num) && num >= 64 && num <= 256)
                 {
                     _theVoid.SetMapSize(num);
                     if (_game.ActiveSectorID == GameContainer.SectorID.Underworld) _theVoid.SetFloor();
-                    g.ForceMessage("<Asura>", "Setting map size to " + args, Color.Purple, Color.White);
+                    Log.ForceMessage("<Asura>", "Setting map size to " + args, Color.Purple, Color.White);
                 }
-                else g.ForceMessage("<error>", "\"" + args + "\" is not a valid mapsize value", Color.DarkRed, Color.White);
+                else Log.ForceMessage("<error>", "\"" + args + "\" is not a valid mapsize value", Color.DarkRed, Color.White);
             }
             _paramSet.Add("mapsize", SetMapSize);
 
             //Sets parallax level
-            void SetParallax(ConsoleHandler g, string args)
+            void SetParallax(string args)
             {
                 if (int.TryParse(args, out int num) && num >= 0)
                 {
-                    g.ForceMessage("<Asura>", "Changing parallax to level " + args, Color.Purple, Color.White);
+                    Log.ForceMessage("<Asura>", "Changing parallax to level " + args, Color.Purple, Color.White);
                     _theVoid.SetParallax(num);
                     if (_game.ActiveSectorID == GameContainer.SectorID.Underworld) _theVoid.SetFloor();
                 }
-                else g.ForceMessage("<error>", "\"" + args + "\" is not a valid parallax value", Color.DarkRed, Color.White);
+                else Log.ForceMessage("<error>", "\"" + args + "\" is not a valid parallax value", Color.DarkRed, Color.White);
             }
             _paramSet.Add("parallax", SetParallax);
 
             //Set currently active seed for map generation
-            void SetSeed(ConsoleHandler g, string args)
+            void SetSeed(string args)
             {
                 _theVoid.SetSeed(Utilities.GetAbsoluteSeed(MathD.urand, args));
                 if (_game.ActiveSectorID == GameContainer.SectorID.Underworld) _theVoid.SetFloor();
-                g.ForceMessage("<Asura>", "Setting active seed to " + args, Color.Purple, Color.White);
+                Log.ForceMessage("<Asura>", "Setting active seed to " + args, Color.Purple, Color.White);
             }
             _paramSet.Add("seed", SetSeed);
 
             //Set speed multiplier for player movement
-            void SetSpeed(ConsoleHandler g, string args)
+            void SetSpeed(string args)
             {
                 if (float.TryParse(args, out float num) && num > 0)
                 {
                     _theTown.SetSpeedMultiplier(num);
                     _theVoid.SetSpeedMultiplier(num);
-                    g.ForceMessage("<Asura>", "Setting speed multiplier to " + args, Color.Purple, Color.White);
+                    Log.ForceMessage("<Asura>", "Setting speed multiplier to " + args, Color.Purple, Color.White);
                 }
-                else g.ForceMessage("<error>", "\"" + args + "\" is not a valid speed value", Color.DarkRed, Color.White);
+                else Log.ForceMessage("<error>", "\"" + args + "\" is not a valid speed value", Color.DarkRed, Color.White);
             }
             _paramSet.Add("speed", SetSpeed);
         }
@@ -235,109 +236,109 @@ namespace ExNihilo.Systems
         private static void SetupCommands()
         {
             //Prints useful help information
-            void Help(ConsoleHandler g, string args)
+            void Help(string args)
             {
                 if (args.Length == 0)
-                    g.ForceMessage("<help>", _elevatedMode ? _elevatedHelpString : _basicHelpString, Color.ForestGreen, Color.White);
+                    Log.ForceMessage("<help>", _elevatedMode ? _elevatedHelpString : _basicHelpString, Color.ForestGreen, Color.White);
                 else if (_helpInfo.TryGetValue(args, out string line))
-                    g.ForceMessage("<help>", line, Color.ForestGreen, Color.White);
+                    Log.ForceMessage("<help>", line, Color.ForestGreen, Color.White);
             }
             _basicCommands.Add("help", Help);
 
             //Exits the game. Executes same function as title menu exit button
-            void Exit(ConsoleHandler g, string args)
+            void Exit(string args)
             {
                 _game.ExitGame();
             }
             _basicCommands.Add("exit", Exit);
 
             //Sets player to privileged mode
-            void AscendPlayer(ConsoleHandler g, string args)
+            void AscendPlayer(string args)
             {
-                if (args.Length != 0) g.ForceMessage("<warning>", "Ignoring unexpected argument(s) \"" + args + "\"", Color.DarkOrange, Color.White);
-                g.ForceMessage("<Asura>", _elevatedMode ? "Already in privileged mode" : "Your privileges have been extended", Color.Purple, Color.White);
+                if (args.Length != 0) Log.ForceMessage("<warning>", "Ignoring unexpected argument(s) \"" + args + "\"", Color.DarkOrange, Color.White);
+                Log.ForceMessage("<Asura>", _elevatedMode ? "Already in privileged mode" : "Your privileges have been extended", Color.Purple, Color.White);
                 _elevatedMode = true;
             }
             _basicCommands.Add("ascend", AscendPlayer);
             
             //Exports the current map to a file
-            void ExportMap(ConsoleHandler g, string args)
+            void ExportMap(string args)
             {
                 if (_game.ActiveSectorID != GameContainer.SectorID.Underworld)
                 {
-                    g.ForceMessage("<error>", "Can only export map from within the void", Color.DarkRed, Color.White);
+                    Log.ForceMessage("<error>", "Can only export map from within the void", Color.DarkRed, Color.White);
                     return;
                 }
 
-                if (args.Length != 0) g.ForceMessage("<warning>", "Ignoring unexpected argument(s) \"" + args + "\"", Color.DarkOrange, Color.White);
-                g.ForceMessage("<Asura>", "Outputting current map to the maps directory", Color.Purple, Color.White);
+                if (args.Length != 0) Log.ForceMessage("<warning>", "Ignoring unexpected argument(s) \"" + args + "\"", Color.DarkOrange, Color.White);
+                Log.ForceMessage("<Asura>", "Outputting current map to the maps directory", Color.Purple, Color.White);
                 _theVoid.PrintMap();
             }
             _basicCommands.Add("export", ExportMap);
 
             //Exports the current map set to a file
-            void ExportAllMaps(ConsoleHandler g, string args)
+            void ExportAllMaps(string args)
             {
                 if (_game.ActiveSectorID != GameContainer.SectorID.Underworld)
                 {
-                    g.ForceMessage("<error>", "Can only export maps from within the void", Color.DarkRed, Color.White);
+                    Log.ForceMessage("<error>", "Can only export maps from within the void", Color.DarkRed, Color.White);
                     return;
                 }
 
-                if (args.Length != 0) g.ForceMessage("<warning>", "Ignoring unexpected argument(s) \"" + args + "\"", Color.DarkOrange, Color.White);
-                g.ForceMessage("<Asura>", "Outputting current map set to the maps directory", Color.Purple, Color.White);
+                if (args.Length != 0) Log.ForceMessage("<warning>", "Ignoring unexpected argument(s) \"" + args + "\"", Color.DarkOrange, Color.White);
+                Log.ForceMessage("<Asura>", "Outputting current map set to the maps directory", Color.Purple, Color.White);
                 _theVoid.PrintMap(true);
             }
             _basicCommands.Add("exportall", ExportAllMaps);
 
             //Shows the current seed value
-            void Seed(ConsoleHandler g, string args)
+            void Seed(string args)
             {
-                if (args.Length != 0) g.ForceMessage("<warning>", "Ignoring unexpected argument(s) \"" + args + "\"", Color.DarkOrange, Color.White);
-                g.ForceMessage("<Asura>", "Current seed is " + _theVoid.GetSeed(), Color.Purple, Color.White);
+                if (args.Length != 0) Log.ForceMessage("<warning>", "Ignoring unexpected argument(s) \"" + args + "\"", Color.DarkOrange, Color.White);
+                Log.ForceMessage("<Asura>", "Current seed is " + _theVoid.GetSeed(), Color.Purple, Color.White);
             }
             _basicCommands.Add("seed", Seed);
 
             //****************************************************************************************
 
             //Sets player to basic mode
-            void DescendPlayer(ConsoleHandler g, string args)
+            void DescendPlayer(string args)
             {
-                if (args.Length != 0) g.ForceMessage("<warning>", "Ignoring unexpected argument(s) \"" + args + "\"", Color.DarkOrange, Color.White);
-                g.ForceMessage("<Asura>", "Your privileges have been revoked", Color.Purple, Color.White);
+                if (args.Length != 0) Log.ForceMessage("<warning>", "Ignoring unexpected argument(s) \"" + args + "\"", Color.DarkOrange, Color.White);
+                Log.ForceMessage("<Asura>", "Your privileges have been revoked", Color.Purple, Color.White);
                 _elevatedMode = false;
             }
             _elevatedCommands.Add("descend", DescendPlayer);
 
             //Sets an environment parameter
-            void Set(ConsoleHandler g, string args)
+            void Set(string args)
             {
                 var index = args.IndexOf(' ');
                 if (index <= 0)
-                    g.ForceMessage("<error>", "Set command requires a value. \"/set <param> [value]\"", Color.DarkRed, Color.White);
+                    Log.ForceMessage("<error>", "Set command requires a value. \"/set <param> [value]\"", Color.DarkRed, Color.White);
                 else if (_paramSet.TryGetValue(args.Substring(0, index), out var param))
-                    param.Invoke(g, args.Substring(index + 1));
+                    param.Invoke(args.Substring(index + 1));
                 else
                 {
                     var givenParam = args.Substring(0, index);
-                    g.ForceMessage("<error>", "No such parameter \"" + givenParam + "\". Use \"/help set\" to see available parameters", Color.DarkRed, Color.White);
+                    Log.ForceMessage("<error>", "No such parameter \"" + givenParam + "\". Use \"/help set\" to see available parameters", Color.DarkRed, Color.White);
                 }
             }
             _elevatedCommands.Add("set", Set);
 
             //Temp debug function for toggling extra debug display
-            void Debug(ConsoleHandler g, string args)
+            void Debug(string args)
             {
-                if (args.Length != 0) g.ForceMessage("<warning>", "Ignoring unexpected argument(s) \"" + args + "\"", Color.DarkOrange, Color.White);
+                if (args.Length != 0) Log.ForceMessage("<warning>", "Ignoring unexpected argument(s) \"" + args + "\"", Color.DarkOrange, Color.White);
                 D.Bug = !D.Bug;
             }
             _elevatedCommands.Add("debug", Debug);
 
             //Temp debug function for executing arbitrary code at will
-            void Trigger(ConsoleHandler g, string args)
+            void Trigger(string args)
             {
                 _game.GLOBAL_DEBUG_COMMAND(args);
-                g.ForceMessage("<Asura>", "Activating debug commands", Color.Purple, Color.White);
+                Log.ForceMessage("<Asura>", "Activating debug commands", Color.Purple, Color.White);
             }
             _elevatedCommands.Add("trigger", Trigger);
         }
@@ -346,9 +347,9 @@ namespace ExNihilo.Systems
             _game = g;
             _theTown = o;
             _theVoid = u;
-            _basicCommands = new Dictionary<string, Action<ConsoleHandler, string>>();
-            _elevatedCommands = new Dictionary<string, Action<ConsoleHandler, string>>();
-            _paramSet = new Dictionary<string, Action<ConsoleHandler, string>>();
+            _basicCommands = new Dictionary<string, Action<string>>();
+            _elevatedCommands = new Dictionary<string, Action<string>>();
+            _paramSet = new Dictionary<string, Action<string>>();
             _helpInfo = new Dictionary<string, string>();
             SetupCommands();
             SetupParams();
