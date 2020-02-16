@@ -21,13 +21,13 @@ namespace ExNihilo.Systems
     {
         private List<Texture2D> _subLevelTextures;
         private List<InteractionMap> _subLevelMaps;
-        private TileTextureMap _textureMap;
+        private TileTextureMap[] _textureMapSet;
 
         //private List<EntityContainer> _mobSet;
         private GraphicsDevice _graphics; //for stitching level maps
         private int _curLevel, _seed=1, _parallax=0, _mapSize=128;
         private MapGenerator.Type _genType = MapGenerator.Type.Standard2;
-        private string[] _textureMapFiles = {"Content/TexturePacks/BlueWall.tmf", "Content/TexturePacks/BlueFloor.tmf" };
+        private string _textureMapFile = "Content/TexturePacks/DawnHackBrickComplete.tmf";
         
         private int _fCount;
         private object _fLock = new object();
@@ -44,7 +44,7 @@ namespace ExNihilo.Systems
             Tuple<InteractionMap, Texture2D> DoAll()
             {
                 var m = new InteractionMap(new TypeMatrix(MapGenerator.Get(_seed, level, _genType, _mapSize, out var rand)));
-                var t = MapStitcher.StitchMap(_graphics, m.Map, _textureMap, rand);
+                var t = MapStitcher.StitchMap(_graphics, m.Map, rand, _textureMapSet[rand.Next(_textureMapSet.Length)]);
                 return Tuple.Create(m, t);
             }
             var levelSet = await Task.Run(() => DoAll());
@@ -169,14 +169,14 @@ namespace ExNihilo.Systems
         public override void LoadContent(GraphicsDevice graphics, ContentManager content)
         {
             _graphics = graphics;
-            _textureMap = TileTextureMap.GetTileTextureMap(graphics, _textureMapFiles);
-            TileSize = _textureMap.TileSize;
+            _textureMapSet = TileTextureMap.GetTileTextureMap(graphics, _textureMapFile);
+            TileSize = _textureMapSet[0].TileSize;
         }
 
         private void SetPlayerAnyTile()
         {
-            CurrentWorldPosition = PlayerOverlay.PlayerCenterScreen - CurrentWorldScale * _textureMap.TileSize * Map.GetAnyFloor(MathD.urand);
-            CurrentWorldPosition.Y += 0.5f * CurrentWorldScale * _textureMap.TileSize; //TODO: less magic way to do this
+            CurrentWorldPosition = PlayerOverlay.PlayerCenterScreen - CurrentWorldScale * TileSize * Map.GetAnyFloor(MathD.urand);
+            CurrentWorldPosition.Y += 0.5f * CurrentWorldScale * TileSize; //TODO: less magic way to do this
         }
         public override void OnResize(GraphicsDevice graphics, Coordinate gameWindow)
         {

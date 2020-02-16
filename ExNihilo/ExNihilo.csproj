@@ -167,10 +167,7 @@
     <Content Include="Content\Resources\CHAR.info">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="Content\TexturePacks\BlueFloor.tmf">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Content\TexturePacks\BlueWall.tmf">
+    <Content Include="Content\TexturePacks\DawnHackBrickComplete.tmf">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <None Include="packages.config" />
