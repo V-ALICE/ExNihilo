@@ -43,9 +43,9 @@ namespace ExNihilo.Sectors
             //_inventory.LoadContent(graphicsDevice, content);
         }
 
-        public override void Exit()
+        public override void Leave(GameContainer.SectorID newSector)
         {
-            ActiveLevel.Purge();
+            if (newSector == GameContainer.SectorID.Outerworld) ActiveLevel.Purge();
         }
 
         public override void Update()

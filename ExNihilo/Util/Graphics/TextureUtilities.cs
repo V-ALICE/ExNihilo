@@ -3,6 +3,8 @@ using System.Drawing;
 using System.Drawing.Imaging;
 using System.IO;
 using System.Linq;
+using System.Linq.Expressions;
+using System.Threading;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Rectangle = Microsoft.Xna.Framework.Rectangle; 
@@ -113,7 +115,7 @@ namespace ExNihilo.Util.Graphics
 
         public static Texture2D GetSubTexture(GraphicsDevice device, Texture2D sheet, Rectangle rect)
         {
-            //while (GAME.FormTouched) { Thread.Sleep(100); }
+            while (GameContainer.FormTouched) { Thread.Sleep(100); }
             if (device == null) return null;
             var texture = new Texture2D(device, rect.Width, rect.Height);
             if (rect.Width == 0 || rect.Height == 0) return texture;
@@ -123,7 +125,7 @@ namespace ExNihilo.Util.Graphics
 
         private static Color[] GetColorData(Texture2D sheet, Rectangle rect)
         {
-            //while (GAME.FormTouched) { Thread.Sleep(100); }
+            while (GameContainer.FormTouched) { Thread.Sleep(100); }
             try
             {
                 var data = new Color[rect.Width * rect.Height];
@@ -138,16 +140,19 @@ namespace ExNihilo.Util.Graphics
 
         public static void SetSubTexture(Texture2D main, Texture2D sub, int x, int y)
         {
-            try
+            if (main is null || sub is null) return;
+            if (x < 0 || y < 0 || x + sub.Width > main.Width || y + sub.Height > main.Height) return;
+            while (GameContainer.FormTouched) { Thread.Sleep(100); }
+            //try
             {
                 Color[] subData = new Color[sub.Width * sub.Height];
                 sub.GetData(subData);
                 main.SetData(0, new Rectangle(x, y, sub.Width, sub.Height), subData, 0, subData.Length);
             }
-            catch (Exception)
+            //catch (Exception)
             {
-                throw new ApplicationException("Graphics action interrupted");
             }
+
         }
 
         public static Texture2D CreateSingleColorTexture(GraphicsDevice device, int width, int height, Color color)

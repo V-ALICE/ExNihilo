@@ -43,7 +43,7 @@ namespace ExNihilo.Sectors
             UniversalTime.TurnOnTimer(_timer);
         }
 
-        public override void Exit()
+        public override void Leave(GameContainer.SectorID newSector)
         {
             UniversalTime.TurnOffTimer(_timer);
         }

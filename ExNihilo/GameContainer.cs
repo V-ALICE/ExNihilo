@@ -47,7 +47,8 @@ namespace ExNihilo
         public static ConsoleHandler Console { get; private set; }
         public SectorID PreviousSectorID, ActiveSectorID;
 
-        protected bool ShowDebugInfo, FormTouched;
+        protected bool ShowDebugInfo;
+        public static bool FormTouched;
         protected bool ConsoleActive => Console.Active;
         protected int SystemClockID;
         protected SpriteBatch SpriteBatch;
@@ -81,7 +82,7 @@ namespace ExNihilo
         }
         private void CheckForWindowUpdate()
         {
-            if (ActiveSectorID == SectorID.Loading) return;
+            //if (ActiveSectorID == SectorID.Loading) return;
             if (Window.ClientBounds.Width != _windowSize.X || Window.ClientBounds.Height != _windowSize.Y)
             {
                 _graphics.PreferredBackBufferWidth = MathHelper.Clamp(Window.ClientBounds.Width, ScaleRule.MIN_X, ScaleRule.MAX_X);
@@ -308,7 +309,7 @@ namespace ExNihilo
             }
 
             PreviousSectorID = ActiveSectorID;
-            ActiveSector?.Exit();
+            ActiveSector?.Leave(newSector);
             ActiveSectorID = newSector;
             ActiveSector?.Enter(_lastMousePosition, _windowSize);
         }

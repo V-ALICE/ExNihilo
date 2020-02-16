@@ -180,6 +180,7 @@ namespace ExNihilo.Systems
                             return;
                         }
                     }
+                    Log.ForceMessage("<Asura>", "Setting texture pack to " + args, Color.Purple, Color.White);
                     _theVoid.SetTexturePack(set);
                     if (_game.ActiveSectorID == GameContainer.SectorID.Underworld) _theVoid.SetFloor();
                 }

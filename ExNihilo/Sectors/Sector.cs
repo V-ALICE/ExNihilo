@@ -30,7 +30,7 @@ namespace ExNihilo.Sectors
         public virtual void Enter(Point point, Coordinate gameWindow)
         {
         }
-        public virtual void Exit()
+        public virtual void Leave(GameContainer.SectorID newSector)
         {
 
         }

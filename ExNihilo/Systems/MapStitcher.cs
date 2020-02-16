@@ -62,7 +62,6 @@ namespace ExNihilo.Systems
 
         public int TileSize;
         public bool CheckVoid;
-        private readonly Texture2D _null;
         private readonly Dictionary<long, List<Texture2D>> _mapping;
 
         private void Entry(GraphicsDevice g, Texture2D texture, string line, Coordinate offset)
@@ -73,8 +72,18 @@ namespace ExNihilo.Systems
             {
                 var set = line.Split(' ');
                 var id = TileRef.ToLong(set[0]);
-                var rect = new Rectangle(int.Parse(set[1])+offset.X, int.Parse(set[2])+offset.Y, int.Parse(set[3]), int.Parse(set[4]));
-                var tex = TextureUtilities.GetSubTexture(g, texture, rect);
+                Texture2D tex;
+                if (set.Length == 5)
+                {
+                    var rect = new Rectangle(int.Parse(set[1]) + offset.X, int.Parse(set[2]) + offset.Y, int.Parse(set[3]), int.Parse(set[4]));
+                    tex = TextureUtilities.GetSubTexture(g, texture, rect);
+                }
+                else if (set.Length == 2 && set[1] == "null")
+                {
+                    tex = null;
+                }
+                else throw new IndexOutOfRangeException();
+
                 if (_mapping.TryGetValue(id, out var list))
                 {
                     //Another of this type already exists
@@ -88,13 +97,13 @@ namespace ExNihilo.Systems
             }
             catch (IndexOutOfRangeException)
             {
-                GameContainer.Console.ForceMessage("<error>", "Ignoring unexpected line " + line + " in tile map description", Color.DarkRed, Color.White);
+                GameContainer.Console.ForceMessage("<error>", "Ignoring unexpected line \"" + line + "\" in tile map description", Color.DarkRed, Color.White);
             }
         }
 
         private static TileTextureMap[] Default(GraphicsDevice g)
         {
-            var map = new TileTextureMap(new Texture2D(g, 1, 1));
+            var map = new TileTextureMap();
             var wall = TextureUtilities.CreateSingleColorTexture(g, 16, 16, Color.DarkRed);
             var floor = TextureUtilities.CreateSingleColorTexture(g, 16, 16, Color.ForestGreen);
             var stair = TextureUtilities.CreateSingleColorTexture(g, 16, 16, Color.DeepSkyBlue);
@@ -105,10 +114,9 @@ namespace ExNihilo.Systems
             return new[] {map};
         }
 
-        private TileTextureMap(Texture2D n)
+        private TileTextureMap()
         {
             _mapping = new Dictionary<long, List<Texture2D>>();
-            _null = n;
             TileSize = -1;
         }
         public static TileTextureMap[] GetTileTextureMap(GraphicsDevice g, string fileName)
@@ -141,6 +149,7 @@ namespace ExNihilo.Systems
                 //Go through description line by line 
                 var offsets = new List<Coordinate>();
                 Texture2D curTex = null;
+                tmfSet.Add(new TileTextureMap());
                 foreach (var line in lines)
                 {
                     //Possible line types: TMF, OPEN, OFF, VOID, tile description
@@ -164,7 +173,6 @@ namespace ExNihilo.Systems
                     {
                         //Open a new texture file
                         offsets.Clear();
-                        tmfSet.Add(new TileTextureMap(new Texture2D(g, 1, 1)));
                         var tex = zip.Entries.FirstOrDefault(f => f.FullName == line.Substring(5));
                         if (tex is null) throw new IndexOutOfRangeException();
                         var texStream = tex.Open();
@@ -178,11 +186,11 @@ namespace ExNihilo.Systems
                         if (split.Length == 3 && int.TryParse(split[1], out int x) && int.TryParse(split[2], out int y))
                         {
                             offsets.Add(new Coordinate(x, y));
-                            if (offsets.Count > tmfSet.Count-1) tmfSet.Add(new TileTextureMap(new Texture2D(g, 1, 1)));
+                            if (offsets.Count > tmfSet.Count-1) tmfSet.Add(new TileTextureMap());
                         }
                         else
                         {
-                            GameContainer.Console.ForceMessage("<warning>", "Ignoring unexpected line " + line + " in tile map description", Color.DarkOrange, Color.White);
+                            GameContainer.Console.ForceMessage("<warning>", "Ignoring unexpected line \"" + line + "\" in tile map description", Color.DarkOrange, Color.White);
                         }
                     }
                     else if (curTex != null)
@@ -194,7 +202,7 @@ namespace ExNihilo.Systems
                     else
                     {
                         //Most likely trying to load tiles without loading a file first
-                        GameContainer.Console.ForceMessage("<warning>", "Ignoring unexpected line " + line + " in tile map description", Color.DarkOrange, Color.White);
+                        GameContainer.Console.ForceMessage("<warning>", "Ignoring unexpected line \"" + line + "\" in tile map description", Color.DarkOrange, Color.White);
                     }
                 }
 
@@ -241,8 +249,15 @@ namespace ExNihilo.Systems
 
         public Texture2D GetAnyOfType(long type, Random rand)
         {
-            var g = (from set in _mapping where TileRef.Equals(set.Key, type) select set.Value[rand.Next(set.Value.Count)]).FirstOrDefault();
-            return g ?? _null;
+            foreach (var m in _mapping)
+            {
+                if (TileRef.Equals(m.Key, type))
+                {
+                    return m.Value[rand.Next(m.Value.Count)];
+                }
+            }
+            GameContainer.Console.ForceMessage("<warning>", "Texture map contains no definitions for ID " + type.ToString("X9"), Color.DarkRed, Color.White);
+            return null;
         }
 
         //Convenience function since stair ID is static
@@ -281,7 +296,7 @@ namespace ExNihilo.Systems
 
         public static Texture2D StitchMap(GraphicsDevice graphics, TypeMatrix set, Random rand, TileTextureMap wall, TileTextureMap floor, TileTextureMap other=null)
         {
-            var texture = new Texture2D(graphics, wall.TileSize * set.X, wall.TileSize * set.Y);
+            var texture = new Texture2D(graphics, wall.TileSize * set.X, wall.TileSize * (set.Y+5));
 
             for (int i = 0; i < set.Y; i++)
             {
