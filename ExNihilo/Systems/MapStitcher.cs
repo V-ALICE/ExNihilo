@@ -21,27 +21,19 @@ namespace ExNihilo.Systems
             None = 2, Floor = 3, Wall = 4, NoneFloor = 5, NoneWall = 6, FloorWall = 7, Any = 9
         }
 
-        public static long ToLong(string list)
+        public static string ToString(Type[] list)
         {
-            return long.Parse(list, NumberStyles.HexNumber);
-        }
-        public static long ToLong(Type[] list)
-        {
-            return ToLong(list.Aggregate("", (current, t) => current + (byte)t));
+            return list.Aggregate("", (current, t) => current + (byte)t);
         }
 
         //a will be 2-7/9
         //b will be only 2/3/4
-        public static bool Equals(long a, long b)
+        public static bool Equals(string a, string b)
         {
-            var aB = a.ToString("X9").ToCharArray();
-            var bB = b.ToString("X9").ToCharArray();
-            Array.Reverse(aB);
-            Array.Reverse(bB);
             for (int i = 0; i < 9; i++)
             {
-                var aBv = aB[i] - '0';
-                var bBv = bB[i] - '0';
+                var aBv = a[i] - '0';
+                var bBv = b[i] - '0';
                 if (aBv == (int)Type.Any) continue;
                 var sub = aBv - bBv;
                 if (aBv != bBv && (sub > (int)Type.Wall || sub < (int)Type.None || sub == bBv)) return false;
@@ -62,7 +54,7 @@ namespace ExNihilo.Systems
 
         public int TileSize;
         public bool CheckVoid;
-        private readonly Dictionary<long, List<Texture2D>> _mapping;
+        private readonly Dictionary<string, List<Texture2D>> _mapping;
 
         private void Entry(GraphicsDevice g, Texture2D texture, string line, Coordinate offset)
         {
@@ -71,7 +63,7 @@ namespace ExNihilo.Systems
             try
             {
                 var set = line.Split(' ');
-                var id = TileRef.ToLong(set[0]);
+                var id = set[0];
                 Texture2D tex;
                 if (set.Length == 5)
                 {
@@ -108,15 +100,15 @@ namespace ExNihilo.Systems
             var floor = TextureUtilities.CreateSingleColorTexture(g, 16, 16, Color.ForestGreen);
             var stair = TextureUtilities.CreateSingleColorTexture(g, 16, 16, Color.DeepSkyBlue);
             map.TileSize = 16;
-            map._mapping.Add(0, new List<Texture2D> { stair });
-            map._mapping.Add(TileRef.ToLong("999939999"), new List<Texture2D> { floor });
-            map._mapping.Add(TileRef.ToLong("999949999"), new List<Texture2D> { wall });
+            map._mapping.Add("0", new List<Texture2D> { stair });
+            map._mapping.Add("999939999", new List<Texture2D> { floor });
+            map._mapping.Add("999949999", new List<Texture2D> { wall });
             return new[] {map};
         }
 
         private TileTextureMap()
         {
-            _mapping = new Dictionary<long, List<Texture2D>>();
+            _mapping = new Dictionary<string, List<Texture2D>>();
             TileSize = -1;
         }
         public static TileTextureMap[] GetTileTextureMap(GraphicsDevice g, string fileName)
@@ -247,7 +239,7 @@ namespace ExNihilo.Systems
             return Default(g);
         }
 
-        public Texture2D GetAnyOfType(long type, Random rand)
+        public Texture2D GetAnyOfType(string type, Random rand)
         {
             foreach (var m in _mapping)
             {
@@ -256,14 +248,14 @@ namespace ExNihilo.Systems
                     return m.Value[rand.Next(m.Value.Count)];
                 }
             }
-            GameContainer.Console.ForceMessage("<warning>", "Texture map contains no definitions for ID " + type.ToString("X9"), Color.DarkRed, Color.White);
+            GameContainer.Console.ForceMessage("<warning>", "Texture map contains no definitions for ID " + type, Color.DarkRed, Color.White);
             return null;
         }
 
         //Convenience function since stair ID is static
         public Texture2D GetAnyStairs(Random rand)
         {
-            return GetAnyOfType(0, rand);
+            return GetAnyOfType("0", rand);
         }
     } 
 
@@ -307,16 +299,16 @@ namespace ExNihilo.Systems
                         case Tile.None:
                             if (other != null)
                             {
-                                var idn = TileRef.ToLong(GetSurroundings(set, j, i));
+                                var idn = TileRef.ToString(GetSurroundings(set, j, i));
                                 TextureUtilities.SetSubTexture(texture, other.GetAnyOfType(idn, rand), j * other.TileSize, i * other.TileSize);
                             }
                             break;
                         case Tile.Wall:
-                            var idw = TileRef.ToLong(GetSurroundings(set, j, i));
+                            var idw = TileRef.ToString(GetSurroundings(set, j, i));
                             TextureUtilities.SetSubTexture(texture, wall.GetAnyOfType(idw, rand), j * wall.TileSize, i * wall.TileSize);
                             break;
                         case Tile.Ground:
-                            var idg = TileRef.ToLong(GetSurroundings(set, j, i));
+                            var idg = TileRef.ToString(GetSurroundings(set, j, i));
                             TextureUtilities.SetSubTexture(texture, floor.GetAnyOfType(idg, rand), j * floor.TileSize, i * floor.TileSize);
                             break;
                         case Tile.Stairs:
