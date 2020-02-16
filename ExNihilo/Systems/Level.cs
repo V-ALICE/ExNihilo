@@ -19,18 +19,23 @@ namespace ExNihilo.Systems
      */
     public class Level : World
     {
+        private int _fCount;
+        private object _fLock = new object();
+
         private List<Texture2D> _subLevelTextures;
         private List<InteractionMap> _subLevelMaps;
-        private TileTextureMap[] _textureMapSet;
 
         //private List<EntityContainer> _mobSet;
         private GraphicsDevice _graphics; //for stitching level maps
-        private int _curLevel, _seed=1, _parallax=0, _mapSize=128;
+        private int _curLevel, _seed=123, _parallax=2, _mapSize=128;
         private MapGenerator.Type _genType = MapGenerator.Type.Standard2;
-        private string _textureMapFile = "Content/TexturePacks/DawnHackBrickComplete.tmf";
-        
-        private int _fCount;
-        private object _fLock = new object();
+
+        private TileTextureMap[] _wallTextureMapSet;
+        private TileTextureMap[] _floorTextureMapSet;
+        private TileTextureMap[] _otherTextureMapSet;
+        private string _wallTextureMapFile = "Content/TexturePacks/DawnLikeBrickComplete.tmf";//"Content/TexturePacks/DawnLikeBrickWalls.tmf";
+        private string _floorTextureMapFile = "";//"Content/TexturePacks/DawnLikeBrickFloors.tmf";
+        private string _otherTextureMapFile = "";
 
         public Level() : base(0)
         {
@@ -44,7 +49,10 @@ namespace ExNihilo.Systems
             Tuple<InteractionMap, Texture2D> DoAll()
             {
                 var m = new InteractionMap(new TypeMatrix(MapGenerator.Get(_seed, level, _genType, _mapSize, out var rand)));
-                var t = MapStitcher.StitchMap(_graphics, m.Map, rand, _textureMapSet[rand.Next(_textureMapSet.Length)]);
+                var wall = _wallTextureMapSet[rand.Next(_wallTextureMapSet.Length)];
+                var floor = _floorTextureMapSet is null ? wall : _floorTextureMapSet[rand.Next(_floorTextureMapSet.Length)];
+                var other = _otherTextureMapSet?[rand.Next(_otherTextureMapSet.Length)];
+                var t = MapStitcher.StitchMap(_graphics, m.Map, rand, wall, floor, other);
                 return Tuple.Create(m, t);
             }
             var levelSet = await Task.Run(() => DoAll());
@@ -113,44 +121,6 @@ namespace ExNihilo.Systems
             _curLevel = level;
         }
 
-        public void ChangeMapSize(int size)
-        {
-            if (size == _mapSize) return;
-            _mapSize = size;
-            _subLevelMaps.Clear();
-            _subLevelTextures.Clear();
-        }
-
-        public void ChangeParallax(int parallax)
-        {
-            _parallax = parallax;
-            while (_subLevelMaps.Count > _parallax)
-            {
-                _subLevelMaps.RemoveAt(_subLevelMaps.Count - 1);
-                _subLevelTextures.RemoveAt(_subLevelTextures.Count - 1);
-            }
-        }
-
-        public void ChangeGenerationType(MapGenerator.Type type)
-        {
-            if (type == _genType) return;
-            _genType = type;
-            _subLevelMaps.Clear();
-            _subLevelTextures.Clear();
-        }
-
-        public void ChangeSeed(int seed)
-        {
-            if (seed == _seed) return;
-            _seed = seed;
-            _subLevelMaps.Clear();
-            _subLevelTextures.Clear();
-        }
-        public int GetSeed()
-        {
-            return _seed;
-        }
-
         public void Purge()
         {
             _subLevelTextures.Clear();
@@ -169,8 +139,10 @@ namespace ExNihilo.Systems
         public override void LoadContent(GraphicsDevice graphics, ContentManager content)
         {
             _graphics = graphics;
-            _textureMapSet = TileTextureMap.GetTileTextureMap(graphics, _textureMapFile);
-            TileSize = _textureMapSet[0].TileSize;
+            _wallTextureMapSet = TileTextureMap.GetTileTextureMap(graphics, _wallTextureMapFile);
+            TileSize = _wallTextureMapSet[0].TileSize;
+            if (_floorTextureMapFile.Length > 0) _floorTextureMapSet = TileTextureMap.GetTileTextureMap(graphics, _floorTextureMapFile);
+            if (_otherTextureMapFile.Length > 0) _otherTextureMapSet = TileTextureMap.GetTileTextureMap(graphics, _otherTextureMapFile);
         }
 
         private void SetPlayerAnyTile()
@@ -220,6 +192,57 @@ namespace ExNihilo.Systems
         public override void ApplyPush(Coordinate push, float mult, bool ignoreWalls=false)
         {
             base.ApplyPush(push, mult, ignoreWalls);
+        }
+
+        // **********Params and Commands*************
+        public void ChangeMapSize(int size)
+        {
+            if (size == _mapSize) return;
+            _mapSize = size;
+            _subLevelMaps.Clear();
+            _subLevelTextures.Clear();
+        }
+
+        public void ChangeParallax(int parallax)
+        {
+            _parallax = parallax;
+            while (_subLevelMaps.Count > _parallax)
+            {
+                _subLevelMaps.RemoveAt(_subLevelMaps.Count - 1);
+                _subLevelTextures.RemoveAt(_subLevelTextures.Count - 1);
+            }
+        }
+
+        public void ChangeGenerationType(MapGenerator.Type type)
+        {
+            if (type == _genType) return;
+            _genType = type;
+            _subLevelMaps.Clear();
+            _subLevelTextures.Clear();
+        }
+
+        public void ChangeTexturePack(string[] files)
+        {
+            _wallTextureMapFile = files[0];
+            _floorTextureMapFile = files.Length > 1 ? files[1] : "";
+            _otherTextureMapFile = files.Length > 2 ? files[2] : "";
+
+            _wallTextureMapSet = TileTextureMap.GetTileTextureMap(_graphics, _wallTextureMapFile);
+            TileSize = _wallTextureMapSet[0].TileSize;
+            _floorTextureMapSet = _floorTextureMapFile.Length > 0 ? TileTextureMap.GetTileTextureMap(_graphics, _floorTextureMapFile) : null;
+            _otherTextureMapSet = _otherTextureMapFile.Length > 0 ? TileTextureMap.GetTileTextureMap(_graphics, _otherTextureMapFile) : null;
+        }
+
+        public void ChangeSeed(int seed)
+        {
+            if (seed == _seed) return;
+            _seed = seed;
+            _subLevelMaps.Clear();
+            _subLevelTextures.Clear();
+        }
+        public int GetSeed()
+        {
+            return _seed;
         }
 
         public void PrintMap(bool all)

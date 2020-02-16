@@ -110,6 +110,11 @@ namespace ExNihilo.Sectors
             ActiveLevel.ChangeGenerationType(type);
         }
 
+        public void SetTexturePack(string[] files)
+        {
+            ActiveLevel.ChangeTexturePack(files);
+        }
+
         public void SetParallax(int levels)
         {
             ActiveLevel.ChangeParallax(levels);

@@ -279,14 +279,9 @@ namespace ExNihilo.Systems
             return map.ToArray();
         }
 
-        public static Texture2D StitchMap(GraphicsDevice graphics, TypeMatrix set, Random rand, TileTextureMap map)
+        public static Texture2D StitchMap(GraphicsDevice graphics, TypeMatrix set, Random rand, TileTextureMap wall, TileTextureMap floor, TileTextureMap other=null)
         {
-            return StitchMap(graphics, set, rand, map, map, map.CheckVoid ? map : null);
-        }
-
-        public static Texture2D StitchMap(GraphicsDevice graphics, TypeMatrix set, Random rand, TileTextureMap floor, TileTextureMap wall, TileTextureMap other=null)
-        {
-            var texture = new Texture2D(graphics, floor.TileSize * set.X, floor.TileSize * set.Y);
+            var texture = new Texture2D(graphics, wall.TileSize * set.X, wall.TileSize * set.Y);
 
             for (int i = 0; i < set.Y; i++)
             {
@@ -298,12 +293,12 @@ namespace ExNihilo.Systems
                             if (other != null)
                             {
                                 var idn = TileRef.ToLong(GetSurroundings(set, j, i));
-                                TextureUtilities.SetSubTexture(texture, floor.GetAnyOfType(idn, rand), j * floor.TileSize, i * floor.TileSize);
+                                TextureUtilities.SetSubTexture(texture, other.GetAnyOfType(idn, rand), j * other.TileSize, i * other.TileSize);
                             }
                             break;
                         case Tile.Wall:
                             var idw = TileRef.ToLong(GetSurroundings(set, j, i));
-                            TextureUtilities.SetSubTexture(texture, floor.GetAnyOfType(idw, rand), j * floor.TileSize, i * floor.TileSize);
+                            TextureUtilities.SetSubTexture(texture, wall.GetAnyOfType(idw, rand), j * wall.TileSize, i * wall.TileSize);
                             break;
                         case Tile.Ground:
                             var idg = TileRef.ToLong(GetSurroundings(set, j, i));

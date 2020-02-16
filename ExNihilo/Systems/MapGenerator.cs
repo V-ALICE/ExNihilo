@@ -16,7 +16,6 @@ namespace ExNihilo.Systems
     {
         public enum Type
         {
-            Random,       // Rooms like the previous version with no particular shape
             MessyBoxes,   // Rectangular rooms
             Standard1,    // MessyBoxes with some clean up applied
             Standard2,    // Standard1 with wider halls and less spaced out rooms 
@@ -116,43 +115,6 @@ namespace ExNihilo.Systems
             public int Length => _map.Length;
         }
 
-        private static void GetRandom(TileNodeSet map, Random rand, int chunkSize, int proc=49)
-        {
-            void GetRandomChunk(int ix, int iy)
-            {
-                void Push(int x, int y, int dx, int dy)
-                {
-                    if (map.Get(x + dx, y + dy)) return;
-                    if (x + dx <= x || x + dx >= x + dx - 1) return;
-                    if (y + dy <= y || y + dy >= y + dy - 1) return;
-
-                    map.Add(x + dx, y + dy);
-                    if (MathD.Chance(rand, proc)) Push(x + dx, y + dy, 0, 1);
-                    if (MathD.Chance(rand, proc)) Push(x + dx, y + dy, 0, -1);
-                    if (MathD.Chance(rand, proc)) Push(x + dx, y + dy, -1, 0);
-                    if (MathD.Chance(rand, proc)) Push(x + dx, y + dy, 1, 0);
-                }
-
-                map.Add(ix + chunkSize / 2, iy + chunkSize / 2);
-                Push(ix + chunkSize / 2, iy + chunkSize / 2, 0, 1);
-                Push(ix + chunkSize / 2, iy + chunkSize / 2, 0, -1);
-                Push(ix + chunkSize / 2, iy + chunkSize / 2, -1, 0);
-                Push(ix + chunkSize / 2, iy + chunkSize / 2, 1, 0);
-            }
-
-            var count = map.Length / chunkSize;
-            for (int i = 0; i < count; i++)
-            {
-                int x, y;
-                do
-                {
-                    x = rand.Next(map.Length - chunkSize);
-                    y = rand.Next(map.Length - chunkSize);
-                } while (map.Get(x, y));
-                GetRandomChunk(x, y);
-            }
-        }
-
         private static void GetBoxes(TileNodeSet map, Random rand, int minSize, int maxSize, int totalRooms, int roomSepMin, int hallWidth)
         {
             // up=0, down=1, left=2, right=3
@@ -250,9 +212,6 @@ namespace ExNihilo.Systems
 
             switch (type)
             {
-                case Type.Random:
-                    GetRandom(map, rand, setSize/2);
-                    break;
                 case Type.MessyBoxes:
                 case Type.Standard1:
                     GetBoxes(map, rand, setSize/10, setSize/5, setSize/10, 3, 2);

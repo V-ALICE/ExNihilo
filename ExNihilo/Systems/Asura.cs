@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Drawing.Text;
+using System.IO;
 using System.Linq;
 using ExNihilo.Sectors;
 using ExNihilo.Util;
@@ -70,7 +71,7 @@ namespace ExNihilo.Systems
                     Log.ForceMessage("<error>", "\"" + args + "\" is not valid. Value must be \"on\" or \"off\"", Color.DarkRed, Color.White);
                 }
             }
-            _paramSet.Add("collisions", SetCollisions);
+            _paramSet.Add("collision", SetCollisions);
 
             //Changes to the given floor
             void SetFloor(string args)
@@ -103,11 +104,6 @@ namespace ExNihilo.Systems
                     case "standard2":
                         Log.ForceMessage("<Asura>", "Changing generation algorithm to standard2", Color.Purple, Color.White);
                         _theVoid.SetGenType(MapGenerator.Type.Standard2);
-                        if (_game.ActiveSectorID == GameContainer.SectorID.Underworld) _theVoid.SetFloor();
-                        break;
-                    case "abstract":
-                        Log.ForceMessage("<Asura>", "Changing generation algorithm to abstract", Color.Purple, Color.White);
-                        _theVoid.SetGenType(MapGenerator.Type.Random);
                         if (_game.ActiveSectorID == GameContainer.SectorID.Underworld) _theVoid.SetFloor();
                         break;
                     case "messy":
@@ -169,6 +165,27 @@ namespace ExNihilo.Systems
                 else Log.ForceMessage("<error>", "\"" + args + "\" is not a valid speed value", Color.DarkRed, Color.White);
             }
             _paramSet.Add("speed", SetSpeed);
+
+            //Set texture pack
+            void SetTexturePack(string args)
+            {
+                var set = args.Split(' ');
+                if (set.Length > 0 && set.Length < 4)
+                {
+                    foreach (var file in set)
+                    {
+                        if (!File.Exists(file))
+                        {
+                            Log.ForceMessage("<error>", "\"" + file + "\" is not a valid file", Color.DarkRed, Color.White);
+                            return;
+                        }
+                    }
+                    _theVoid.SetTexturePack(set);
+                    if (_game.ActiveSectorID == GameContainer.SectorID.Underworld) _theVoid.SetFloor();
+                }
+                else Log.ForceMessage("<error>", "Can only set texture pack using 1 to 3 files", Color.DarkRed, Color.White);
+            }
+            _paramSet.Add("textures", SetTexturePack);
         }
         private static void SetupHelpInfo()
         {
@@ -211,27 +228,33 @@ namespace ExNihilo.Systems
 
             _helpInfo.Add("set floor",
                 "\n/set floor [value] -> Set current floor to given value" +
-                "\nValue must be greater than zero. This will trigger a loading sequence.");
+                "\nValue must be greater than zero. This will trigger a loading sequence if used in the Void.");
 
             _helpInfo.Add("set gentype",
                 "\n/set gentype [value] -> Set active generation algorithm. Default is Standard2" +
-                "\nValue must be standard1, standard2, messy, abstract. This will trigger a loading sequence.");
+                "\nValue must be standard1, standard2, messy. This will trigger a loading sequence if used in the Void.");
 
             _helpInfo.Add("set mapsize",
                 "\n/set mapsize [value] -> Set Map generation size, Default is 128" +
-                "\nValue must be between 64 and 256. Larger values will increase loading time. This will trigger a loading sequence.");
+                "\nValue must be between 64 and 256. Larger values will increase loading time. This will trigger a loading sequence if used in the Void.");
 
             _helpInfo.Add("set parallax",
                 "\n/set parallax [value] -> Set parallax level" +
-                "\nValue must be greater than or equal to zero. This will trigger a loading sequence.");
+                "\nValue must be greater than or equal to zero. This will trigger a loading sequence if used in the Void.");
 
             _helpInfo.Add("set seed",
                 "\n/set seed [value] -> Set current active seed based on the input value"+
-                "\nThis will trigger a loading sequence.");
+                "\nThis will trigger a loading sequence if used in the Void.");
 
             _helpInfo.Add("set speed",
                 "\n/set speed [value] -> Set own movement speed with the given multiplier" +
                 "\nValue must be greater than zero. High values will behave erratically.");
+
+            _helpInfo.Add("set textures", 
+                "\n/set textures [value] -> Load a complete (ALL) texture pack" + 
+                "\n/set textures [value] [value] -> Load a separate wall and floor texture pack (in that order)" +
+                "\n/set textures [value] [value] [value] -> Load separate wall, floor, and other texture packs (in that order)" +
+                "\nValue(s) must be files that exist. This will freeze the game for a bit. It will also trigger a loading sequence if used in the Void.");
         }
         private static void SetupCommands()
         {

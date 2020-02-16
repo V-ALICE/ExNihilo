@@ -167,7 +167,13 @@
     <Content Include="Content\Resources\CHAR.info">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="Content\TexturePacks\DawnHackBrickComplete.tmf">
+    <Content Include="Content\TexturePacks\DawnLikeBrickComplete.tmf">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Content\TexturePacks\DawnLikeBrickFloors.tmf">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Content\TexturePacks\DawnLikeBrickWalls.tmf">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <None Include="packages.config" />
