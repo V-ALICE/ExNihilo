@@ -33,8 +33,8 @@ namespace ExNihilo.Systems
         private TileTextureMap[] _wallTextureMapSet;
         private TileTextureMap[] _floorTextureMapSet;
         private TileTextureMap[] _otherTextureMapSet;
-        private string _wallTextureMapFile = "Content/TexturePacks/DawnLikeBrickComplete.tmf";//"Content/TexturePacks/DawnLikeBrickWalls.tmf";
-        private string _floorTextureMapFile = "";//"Content/TexturePacks/DawnLikeBrickFloors.tmf";
+        private string _wallTextureMapFile = "Content/TexturePacks/DawnLikeComplete.tmf";
+        private string _floorTextureMapFile = "";
         private string _otherTextureMapFile = "";
 
         public Level() : base(0)

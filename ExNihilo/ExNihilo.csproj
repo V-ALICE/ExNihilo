@@ -167,7 +167,7 @@
     <Content Include="Content\Resources\CHAR.info">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="Content\TexturePacks\DawnLikeBrickComplete.tmf">
+    <Content Include="Content\TexturePacks\DawnLikeComplete.tmf">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Include="Content\TexturePacks\DawnLikeBrickFloors.tmf">
