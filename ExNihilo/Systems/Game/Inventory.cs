@@ -1,11 +1,6 @@
-﻿
-using System;
+﻿using System;
 using System.Collections.Generic;
-using System.Runtime.InteropServices;
-using ExNihilo.Systems.Backend;
-using ExNihilo.Systems.Bases;
 using ExNihilo.Util;
-using Microsoft.Xna.Framework;
 
 namespace ExNihilo.Systems.Game
 {
