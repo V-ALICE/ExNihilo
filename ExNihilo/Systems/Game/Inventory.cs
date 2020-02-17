@@ -15,14 +15,14 @@ namespace ExNihilo.Systems.Game
      * This entire container is serialized into the save file for each character, thus it is important
      * not to make this too crazy (it probably wouldn't matter anyway but might as well)
      */
-
     [Serializable]
-    public class Inventory : ISavable
+    public class Inventory
     {
         /*
          * This structure holds temporary changes to player stats
          * These can be from de/buffs or simply lost health and used up MP
          */
+        [Serializable]
         private struct StatOffset
         {
             public int Hp, Mp, MaxHp, MaxMp, Atk, Def, Luck;
@@ -36,6 +36,7 @@ namespace ExNihilo.Systems.Game
          * a permanent stat boost (for example: via non combat skills)
          * Stats have an effective cap of 2,147,483,647 each
          */
+        [Serializable]
         private struct StatSet
         {
             public int MaxHp, MaxMp, Atk, Def, Luck;
@@ -131,15 +132,6 @@ namespace ExNihilo.Systems.Game
                     else _offsetTriggers[j] = new Tuple<int, Action>(_offsetTriggers[j].Item1-1, _offsetTriggers[j].Item2);
                 }
             }
-        }
-
-        public void Pack(PackedGame game)
-        {
-            throw new NotImplementedException();
-        }
-        public void Unpack(PackedGame game)
-        {
-            throw new NotImplementedException();
         }
     }
 }

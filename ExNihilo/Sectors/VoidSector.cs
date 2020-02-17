@@ -18,6 +18,7 @@ namespace ExNihilo.Sectors
         //private Menu _inventoryMenu;
 
         private Level ActiveLevel => _world as Level;
+        private PlayerEntityContainer Player => Container.Player;
 
         public VoidSector(GameContainer container) : base(container)
         {
@@ -86,9 +87,9 @@ namespace ExNihilo.Sectors
             ActiveLevel.Unpack(game);
         }
 
-        public void StartNewGame(EntityContainer player, int floor)
+        public void StartNewGame(int floor)
         {
-            ActiveLevel.Reset(player, new Coordinate(10, 10), new Coordinate(3, 10));
+            ActiveLevel.Reset(Player, new Coordinate(10, 10), new Coordinate(3, 10));
             SetFloor(floor);
         }
 

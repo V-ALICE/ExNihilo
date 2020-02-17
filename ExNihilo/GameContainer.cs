@@ -364,11 +364,11 @@ namespace ExNihilo
             AudioManager.EffectVolume = param.EffectVolume;
         }
 
-        public void StartNewGame(PlayerEntityContainer p, int floor=1)
+        public void StartNewGame(int floor=1)
         {
             //This exists solely so that other sectors can tell the void to start a new game
             var a = _sectorDirectory[SectorID.Void] as VoidSector;
-            a?.StartNewGame(p, floor);
+            a?.StartNewGame(floor);
         }
 
         public void GLOBAL_DEBUG_COMMAND(string input)

@@ -38,6 +38,11 @@ namespace ExNihilo.Sectors
             _voidMenu.OnResize(graphics, gameWindow);
         }
 
+        public override void Leave(GameContainer.SectorID newSector)
+        {
+            if (newSector == GameContainer.SectorID.Loading)
+                _world.Reset(Player, new Coordinate(10, 10), new Coordinate(3, 10));
+        }
 
         public override void Initialize()
         {
@@ -99,7 +104,7 @@ namespace ExNihilo.Sectors
                 if (ReferenceEquals(_menuPoint, _voidMenu) && _voidMenu.Confirmed) //TODO: this is not a great way/place to detect this
                 {
                     _voidMenu.BackOut();
-                    Container.StartNewGame(Player);
+                    Container.StartNewGame();
                 }
                 if (_menuPoint.Dead) _menuPoint = null;
             }

@@ -577,7 +577,7 @@ namespace ExNihilo.Menus
             _characters.Clear();
             foreach (var c in game.SavedCharacters)
             {
-                var player = new PlayerEntityContainer(Container.GraphicsDevice, c.Name, c.TextureSet[0], c.TextureSet[1], c.TextureSet[2], c.TextureSet[3]);
+                var player = new PlayerEntityContainer(Container.GraphicsDevice, c.Name, c.TextureSet[0], c.TextureSet[1], c.TextureSet[2], c.TextureSet[3], c.Inventory);
                 _characters.Add(player);
                 (_panelUI.GetElement("Portrait" + _characters.Count) as UIDynamicElement)?.ChangeTexture(player.Entity.GetTexture(EntityTexture.State.Down));
             }

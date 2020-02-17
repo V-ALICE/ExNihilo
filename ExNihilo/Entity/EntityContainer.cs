@@ -1,6 +1,7 @@
 ﻿using System;
 using ExNihilo.Systems;
 using ExNihilo.Systems.Backend;
+using ExNihilo.Systems.Game;
 using ExNihilo.Util;
 using ExNihilo.Util.Graphics;
 using Microsoft.Xna.Framework.Graphics;
@@ -37,22 +38,25 @@ namespace ExNihilo.Entity
         {
             public int[] TextureSet;
             public string Name;
+            public Inventory Inventory;
         }
 
         private readonly int[] _textureSet;
+        private readonly Inventory _inventory;
 
-        public PlayerEntityContainer(GraphicsDevice graphics, string name, int body, int hair, int cloth, int color) : base(name)
+        public PlayerEntityContainer(GraphicsDevice graphics, string name, int body, int hair, int cloth, int color, Inventory inv=null) : base(name)
         {
             var bodySheet = TextureLibrary.Lookup("Char/base/" + (body + 1));
             var hairSheet = TextureLibrary.Lookup("Char/hair/" + (hair + 1) + "-" + (color + 1));
             var clothSheet = TextureLibrary.Lookup("Char/cloth/" + (cloth + 1));
             Entity = new EntityTexture(graphics, TextureUtilities.CombineTextures(graphics, bodySheet, clothSheet, hairSheet), 1);
             _textureSet = new[] {body, hair, cloth, color};
+            _inventory = inv ?? new Inventory();
         }
 
         public PackedPlayerEntityContainer GetPacked()
         {
-            return new PackedPlayerEntityContainer {Name = Name, TextureSet = _textureSet};
+            return new PackedPlayerEntityContainer {Name = Name, TextureSet = _textureSet, Inventory = _inventory};
         }
     }
 }

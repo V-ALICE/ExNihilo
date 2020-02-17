@@ -155,7 +155,7 @@ namespace ExNihilo.Menus
             }
             else if (save.InVoid)
             {
-                Container.StartNewGame(Container.Player, save.Floor);
+                Container.StartNewGame(save.Floor);
             }
             else Container.RequestSectorChange(GameContainer.SectorID.Outerworld);
         }
