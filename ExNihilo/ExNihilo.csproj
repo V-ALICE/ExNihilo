@@ -108,6 +108,7 @@
     <Compile Include="Systems\Game\ParticleBackdrop.cs" />
     <Compile Include="Entity\PlayerOverlay.cs" />
     <Compile Include="Systems\Backend\SaveHandler.cs" />
+    <Compile Include="Systems\Game\Stats.cs" />
     <Compile Include="Systems\Game\World.cs" />
     <Compile Include="UI\Bases\IClickable.cs" />
     <Compile Include="UI\Bases\IScalable.cs" />

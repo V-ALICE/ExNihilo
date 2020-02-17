@@ -18,57 +18,25 @@ namespace ExNihilo.Systems.Game
     [Serializable]
     public class Inventory
     {
-        /*
-         * This structure holds temporary changes to player stats
-         * These can be from de/buffs or simply lost health and used up MP
-         */
-        [Serializable]
-        private struct StatOffset
-        {
-            public int Hp, Mp, MaxHp, MaxMp, Atk, Def, Luck;
-        }
-        private StatOffset _offsets;
+        public StatOffset Offsets;
         private List<Tuple<int, Action>> _offsetTriggers;
+        public StatSet Stats;
 
-        /*
-         * This structure holds the absolute value of the player's current stats
-         * The only changes to stats in this set will be by leveling up or otherwise gaining
-         * a permanent stat boost (for example: via non combat skills)
-         * Stats have an effective cap of 2,147,483,647 each
-         */
-        [Serializable]
-        private struct StatSet
-        {
-            public int MaxHp, MaxMp, Atk, Def, Luck;
-
-            public static StatOffset operator +(StatSet a, StatOffset b)
-            {
-                return new StatOffset
-                {
-                    Hp = MathHelper.Clamp(a.MaxHp + b.Hp, 0, a.MaxHp + b.MaxHp),
-                    Mp = MathHelper.Clamp(a.MaxMp + b.Mp, 0, a.MaxMp + b.MaxMp),
-                    MaxHp = a.MaxHp + b.MaxHp,
-                    MaxMp = a.MaxMp + b.MaxMp,
-                    Atk = a.Atk + b.Atk,
-                    Def = a.Def + b.Def,
-                    Luck = a.Luck + b.Luck
-                };
-            }
-        }
-        private StatSet _stats;
+        //TODO: add equipment set
+        //TODO: add inventory set
 
         private const uint BaseNeededExp = 100;
         private const int BaseHp = 25, BaseMp = 10, BaseAtk = 5, BaseDef = 5, BaseLuck = 0;
 
-        private ulong _heldGold;
+        private long _heldGold;
         private uint _heldLevel;
         private uint _heldSkillPoints = 2; //temp until skill set class exists
         private uint _heldExp, _nextExp;
 
         public Inventory()
         {
-            _offsets = new StatOffset();
-            _stats = new StatSet
+            Offsets = new StatOffset();
+            Stats = new StatSet
             {
                 MaxHp = BaseHp,
                 MaxMp = BaseMp,
@@ -82,7 +50,7 @@ namespace ExNihilo.Systems.Game
 
         public void SoftReset()
         {
-            _offsets = new StatOffset();
+            Offsets = new StatOffset();
             _offsetTriggers.Clear();
         }
 
@@ -91,11 +59,11 @@ namespace ExNihilo.Systems.Game
             for (int j = 0; j < count; j++)
             {
                 var mark = MathD.urand.Next(5);
-                if (mark == 0) _stats.MaxHp++;
-                else if (mark == 1) _stats.MaxMp++;
-                else if (mark == 2) _stats.Atk++;
-                else if (mark == 3) _stats.Def++;
-                else if (mark == 4) _stats.Luck++;
+                if (mark == 0) Stats.MaxHp++;
+                else if (mark == 1) Stats.MaxMp++;
+                else if (mark == 2) Stats.Atk++;
+                else if (mark == 3) Stats.Def++;
+                else if (mark == 4) Stats.Luck++;
             }
         }
         public void LevelUp(uint count = 1)
@@ -116,6 +84,16 @@ namespace ExNihilo.Systems.Game
                 _nextExp = (uint) (1.25 * _nextExp);
                 LevelUp();
             }
+        }
+
+        public long GetGold()
+        {
+            return _heldGold;
+        }
+        public void TapGold(long change)
+        {
+            _heldGold += change;
+            if (_heldGold < 0) _heldGold = 0;
         }
 
         public void PassTurn(int count=1)
