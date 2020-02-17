@@ -1,6 +1,9 @@
-﻿using System.Threading.Tasks;
+﻿using System.Diagnostics.Eventing.Reader;
+using System.Threading.Tasks;
 using ExNihilo.Input.Controllers;
 using ExNihilo.Systems;
+using ExNihilo.Systems.Backend;
+using ExNihilo.Systems.Game;
 using ExNihilo.UI;
 using ExNihilo.Util;
 using ExNihilo.Util.Graphics;
@@ -143,8 +146,18 @@ namespace ExNihilo.Menus
         private async void LoadGame(string caller)
         {
             Container.RequestSectorChange(GameContainer.SectorID.Loading);
-            var success = await Task.Run(() => Container.Unpack(SaveHandler.GetSave(caller, true)));
-            Container.RequestSectorChange(success ? GameContainer.SectorID.Outerworld : GameContainer.SectorID.MainMenu);
+            var save = SaveHandler.GetSave(caller, true);
+            var success = await Task.Run(() => Container.Unpack(save));
+            if (!success)
+            {
+                GameContainer.Console.ForceMessage("<error>", "Failed to load save", Color.DarkRed, Color.White);
+                Container.RequestSectorChange(GameContainer.SectorID.Outerworld);
+            }
+            else if (save.InVoid)
+            {
+                Container.StartNewGame(Container.Player, save.Floor);
+            }
+            else Container.RequestSectorChange(GameContainer.SectorID.Outerworld);
         }
 
         private void SelectLoad(UICallbackPackage package)

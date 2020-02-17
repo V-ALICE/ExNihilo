@@ -1,18 +1,16 @@
-﻿
-using System;
+﻿using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
-using System.Windows.Forms;
+using ExNihilo.Systems.Backend;
 using ExNihilo.Util;
 using ExNihilo.Util.Graphics;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
-using Tile = ExNihilo.Systems.TypeMatrix.Type;
+using Tile = ExNihilo.Systems.Backend.TypeMatrix.Type;
 
-namespace ExNihilo.Systems
+namespace ExNihilo.Systems.Game
 {
     public static class TileRef
     {

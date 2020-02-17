@@ -9,7 +9,7 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
 
-namespace ExNihilo.Systems
+namespace ExNihilo.Systems.Backend
 {
     public class Message
     {
@@ -164,7 +164,7 @@ namespace ExNihilo.Systems
         public ConsoleHandler()
         {
             _handler = new CommandHandler();
-            _handler.Initialize(this);
+            _handler.InitializeConsole(this);
             _console = new ConsoleBox(_maxLineCount, _maxCharacterCount);
             _lastMessage = "";
             _activeText = "";
@@ -251,9 +251,13 @@ namespace ExNihilo.Systems
             TypingKeyboard.Unlock(this);
         }
 
-        public void PushConsole(string name="Player")
+        public void PushConsole(bool loading, string name="Player")
         {
-            if (_activeText.StartsWith("/")) Asura.Handle(_activeText);
+            if (_activeText.StartsWith("/"))
+            {
+                if (loading) ForceMessage("<error>", "Cannot execute commands during loading sequence", Color.DarkRed, Color.White);
+                else Asura.Handle(_activeText);
+            }
             else if (_activeText.Length != 0) _console.AddMessage("<"+name+">", _activeText, Color.DeepSkyBlue, Color.White);
 
             CloseConsole();

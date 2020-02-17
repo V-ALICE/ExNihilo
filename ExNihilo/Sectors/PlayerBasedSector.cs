@@ -2,6 +2,7 @@
 using ExNihilo.Menus;
 using ExNihilo.Systems;
 using ExNihilo.Systems.Bases;
+using ExNihilo.Systems.Game;
 using ExNihilo.Util;
 using ExNihilo.Util.Graphics;
 using Microsoft.Xna.Framework;
@@ -44,9 +45,9 @@ namespace ExNihilo.Sectors
         public override void Initialize()
         {
             MenuHandler = new CommandHandler();
-            MenuHandler.Initialize(this, true);
+            MenuHandler.InitializeMenu(this);
             _playerHandler = new CommandHandler();
-            _playerHandler.Initialize(this, false);
+            _playerHandler.InitializePlayer(this);
             _debugPosition = new Vector2(1, 1 + TextDrawer.AlphaHeight + TextDrawer.LineSpacer);
             _lastMousePosition = new Point();
         }

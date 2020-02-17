@@ -1,4 +1,5 @@
 ﻿using ExNihilo.Systems;
+using ExNihilo.Systems.Backend;
 
 namespace ExNihilo.Input.Commands.Types
 {
@@ -10,7 +11,7 @@ namespace ExNihilo.Input.Commands.Types
 
         public override void Activate()
         {
-            Receiver.PushConsole();
+            Receiver.PushConsole(GameContainer.ActiveSectorID == GameContainer.SectorID.Loading);
         }
     }
 

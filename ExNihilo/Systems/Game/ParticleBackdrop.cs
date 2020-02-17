@@ -1,12 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
-using ExNihilo.UI.Bases;
+using ExNihilo.Systems.Backend;
 using ExNihilo.Util;
 using ExNihilo.Util.Graphics;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 
-namespace ExNihilo.Systems
+namespace ExNihilo.Systems.Game
 {
     public static class ParticleBackdrop
     {

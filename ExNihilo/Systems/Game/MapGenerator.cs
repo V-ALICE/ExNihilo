@@ -1,16 +1,10 @@
-﻿
-using System;
+﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
-using System.Windows.Forms;
 using ExNihilo.Util;
-using ExNihilo.Util.Graphics;
 using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Graphics;
-using Tile = ExNihilo.Systems.TypeMatrix.Type;
+using Tile = ExNihilo.Systems.Backend.TypeMatrix.Type;
 
-namespace ExNihilo.Systems
+namespace ExNihilo.Systems.Game
 {
     public static class MapGenerator
     {
@@ -201,10 +195,9 @@ namespace ExNihilo.Systems
         }
 
         private static volatile int _gTotal;
-        public static Tile[][] Get(int key, int subKey, Type type, int setSize, out Random rand)
+        public static Tile[][] Get(int key, int subKey, Type type, out Random rand)
         {
-            if (setSize > 256) setSize = 256;
-            var map = new TileNodeSet(setSize);
+            TileNodeSet map;
             rand = new Random(key);
 
             //Prep random with subKey
@@ -214,10 +207,13 @@ namespace ExNihilo.Systems
             {
                 case Type.MessyBoxes:
                 case Type.Standard1:
-                    GetBoxes(map, rand, setSize/10, setSize/5, setSize/10, 3, 2);
+                    map = new TileNodeSet(128);
+                    GetBoxes(map, rand, 12, 25, 12, 3, 2);
                     break;
                 case Type.Standard2:
-                    GetBoxes(map, rand, setSize / 10, setSize / 5, setSize / 10, 0, 4);
+                default:
+                    map = new TileNodeSet(128);
+                    GetBoxes(map, rand, 12, 25, 12, 0, 4);
                     break;
             }
 

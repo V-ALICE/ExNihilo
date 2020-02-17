@@ -1,11 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Drawing.Text;
 using System.IO;
 using System.Linq;
 using ExNihilo.Sectors;
+using ExNihilo.Systems.Backend;
+using ExNihilo.Systems.Game;
 using ExNihilo.Util;
-using ExNihilo.Util.Graphics;
 using Microsoft.Xna.Framework;
 
 namespace ExNihilo.Systems
@@ -14,8 +14,8 @@ namespace ExNihilo.Systems
     {
         private static bool _elevatedMode=true;
         private static GameContainer _game;
-        private static OverworldSector _theTown;
-        private static UnderworldSector _theVoid;
+        private static OuterworldSector _theTown;
+        private static VoidSector _theVoid;
         private static ConsoleHandler Log => GameContainer.Console;
 
         private static Dictionary<string, Action<string>> _basicCommands;
@@ -76,7 +76,7 @@ namespace ExNihilo.Systems
             //Changes to the given floor
             void SetFloor(string args)
             {
-                if (_game.ActiveSectorID != GameContainer.SectorID.Underworld)
+                if (GameContainer.ActiveSectorID != GameContainer.SectorID.Void)
                 {
                     Log.ForceMessage("<error>", "Can only change floors from within the void", Color.DarkRed, Color.White);
                     return;
@@ -99,17 +99,17 @@ namespace ExNihilo.Systems
                     case "standard1":
                         Log.ForceMessage("<Asura>", "Changing generation algorithm to standard1", Color.Purple, Color.White);
                         _theVoid.SetGenType(MapGenerator.Type.Standard1);
-                        if (_game.ActiveSectorID == GameContainer.SectorID.Underworld) _theVoid.SetFloor();
+                        if (GameContainer.ActiveSectorID == GameContainer.SectorID.Void) _theVoid.SetFloor();
                         break;
                     case "standard2":
                         Log.ForceMessage("<Asura>", "Changing generation algorithm to standard2", Color.Purple, Color.White);
                         _theVoid.SetGenType(MapGenerator.Type.Standard2);
-                        if (_game.ActiveSectorID == GameContainer.SectorID.Underworld) _theVoid.SetFloor();
+                        if (GameContainer.ActiveSectorID == GameContainer.SectorID.Void) _theVoid.SetFloor();
                         break;
                     case "messy":
                         Log.ForceMessage("<Asura>", "Changing generation algorithm to messy", Color.Purple, Color.White);
                         _theVoid.SetGenType(MapGenerator.Type.MessyBoxes);
-                        if (_game.ActiveSectorID == GameContainer.SectorID.Underworld) _theVoid.SetFloor();
+                        if (GameContainer.ActiveSectorID == GameContainer.SectorID.Void) _theVoid.SetFloor();
                         break;
                     default:
                         Log.ForceMessage("<error>", "\"" + args + "\" is not a valid gentype value", Color.DarkRed, Color.White);
@@ -118,19 +118,6 @@ namespace ExNihilo.Systems
             }
             _paramSet.Add("gentype", SetGenType);
 
-            //Set map generation size
-            void SetMapSize(string args)
-            {
-                if (int.TryParse(args, out int num) && num >= 64 && num <= 256)
-                {
-                    _theVoid.SetMapSize(num);
-                    if (_game.ActiveSectorID == GameContainer.SectorID.Underworld) _theVoid.SetFloor();
-                    Log.ForceMessage("<Asura>", "Setting map size to " + args, Color.Purple, Color.White);
-                }
-                else Log.ForceMessage("<error>", "\"" + args + "\" is not a valid mapsize value", Color.DarkRed, Color.White);
-            }
-            _paramSet.Add("mapsize", SetMapSize);
-
             //Sets parallax level
             void SetParallax(string args)
             {
@@ -138,7 +125,7 @@ namespace ExNihilo.Systems
                 {
                     Log.ForceMessage("<Asura>", "Changing parallax to level " + args, Color.Purple, Color.White);
                     _theVoid.SetParallax(num);
-                    if (_game.ActiveSectorID == GameContainer.SectorID.Underworld) _theVoid.SetFloor();
+                    if (GameContainer.ActiveSectorID == GameContainer.SectorID.Void) _theVoid.SetFloor();
                 }
                 else Log.ForceMessage("<error>", "\"" + args + "\" is not a valid parallax value", Color.DarkRed, Color.White);
             }
@@ -148,7 +135,7 @@ namespace ExNihilo.Systems
             void SetSeed(string args)
             {
                 _theVoid.SetSeed(Utilities.GetAbsoluteSeed(MathD.urand, args));
-                if (_game.ActiveSectorID == GameContainer.SectorID.Underworld) _theVoid.SetFloor();
+                if (GameContainer.ActiveSectorID == GameContainer.SectorID.Void) _theVoid.SetFloor();
                 Log.ForceMessage("<Asura>", "Setting active seed to " + args, Color.Purple, Color.White);
             }
             _paramSet.Add("seed", SetSeed);
@@ -182,7 +169,7 @@ namespace ExNihilo.Systems
                     }
                     Log.ForceMessage("<Asura>", "Setting texture pack to " + args, Color.Purple, Color.White);
                     _theVoid.SetTexturePack(set);
-                    if (_game.ActiveSectorID == GameContainer.SectorID.Underworld) _theVoid.SetFloor();
+                    if (GameContainer.ActiveSectorID == GameContainer.SectorID.Void) _theVoid.SetFloor();
                 }
                 else Log.ForceMessage("<error>", "Can only set texture pack using 1 to 3 files", Color.DarkRed, Color.White);
             }
@@ -216,6 +203,10 @@ namespace ExNihilo.Systems
                 "\n/descend          -> Set self to default mode" +
                 "\n/descend [player] -> Set given player to default mode");
 
+            _helpInfo.Add("return", 
+                "\nreturn -> Exit the Void and return to the Outerworld" +
+                "\nAny unsaved progress will be lost");
+
             //Set-related help section
 
             _helpInfo.Add("set",
@@ -234,10 +225,6 @@ namespace ExNihilo.Systems
             _helpInfo.Add("set gentype",
                 "\n/set gentype [value] -> Set active generation algorithm. Default is Standard2" +
                 "\nValue must be standard1, standard2, messy. This will trigger a loading sequence if used in the Void.");
-
-            _helpInfo.Add("set mapsize",
-                "\n/set mapsize [value] -> Set Map generation size, Default is 128" +
-                "\nValue must be between 64 and 256. Larger values will increase loading time. This will trigger a loading sequence if used in the Void.");
 
             _helpInfo.Add("set parallax",
                 "\n/set parallax [value] -> Set parallax level" +
@@ -288,7 +275,7 @@ namespace ExNihilo.Systems
             //Exports the current map to a file
             void ExportMap(string args)
             {
-                if (_game.ActiveSectorID != GameContainer.SectorID.Underworld)
+                if (GameContainer.ActiveSectorID != GameContainer.SectorID.Void)
                 {
                     Log.ForceMessage("<error>", "Can only export map from within the void", Color.DarkRed, Color.White);
                     return;
@@ -303,7 +290,7 @@ namespace ExNihilo.Systems
             //Exports the current map set to a file
             void ExportAllMaps(string args)
             {
-                if (_game.ActiveSectorID != GameContainer.SectorID.Underworld)
+                if (GameContainer.ActiveSectorID != GameContainer.SectorID.Void)
                 {
                     Log.ForceMessage("<error>", "Can only export maps from within the void", Color.DarkRed, Color.White);
                     return;
@@ -350,6 +337,20 @@ namespace ExNihilo.Systems
             }
             _elevatedCommands.Add("set", Set);
 
+            //Return from void to outerworld
+            void Return(string args)
+            {
+                if (GameContainer.ActiveSectorID != GameContainer.SectorID.Void)
+                {
+                    Log.ForceMessage("<error>", "Can only return from within the void", Color.DarkRed, Color.White);
+                    return;
+                }
+
+                if (args.Length != 0) Log.ForceMessage("<warning>", "Ignoring unexpected argument(s) \"" + args + "\"", Color.DarkOrange, Color.White);
+                _game.RequestSectorChange(GameContainer.SectorID.Outerworld);
+            }
+            _elevatedCommands.Add("return", Return);
+
             //Temp debug function for toggling extra debug display
             void Debug(string args)
             {
@@ -366,7 +367,7 @@ namespace ExNihilo.Systems
             }
             _elevatedCommands.Add("trigger", Trigger);
         }
-        public static void Ascend(GameContainer g, UnderworldSector u, OverworldSector o)
+        public static void Ascend(GameContainer g, VoidSector u, OuterworldSector o)
         {
             _game = g;
             _theTown = o;

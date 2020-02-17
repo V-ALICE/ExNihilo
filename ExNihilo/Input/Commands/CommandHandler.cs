@@ -2,7 +2,7 @@
 using ExNihilo.Input.Commands.Types;
 using ExNihilo.Input.Controllers;
 using ExNihilo.Sectors;
-using ExNihilo.Systems;
+using ExNihilo.Systems.Backend;
 using ExNihilo.Util;
 using Microsoft.Xna.Framework.Input;
 
@@ -23,57 +23,54 @@ namespace ExNihilo.Input.Commands
             _bucket = new List<KeyBlock>();
         }
 
-        public void Initialize(GameContainer game, bool super)
+        public void InitializeConsole(ConsoleHandler game)
         {
             if (_bucket.Count > 0) return;
-
-            if (super)
-            {
-                _bucket.Add(new KeyBlock(new BackspaceMessage(game), new UnbackspaceMessage(game), false, Keys.Back));
-                _bucket.Add(new KeyBlock(new BackOutCommand(game), false, Keys.Escape, Buttons.Back));
-                _bucket.Add(new KeyBlock(new ToggleDebugUI(game), false, Keys.F1));
-                _bucket.Add(new KeyBlock(new ToggleFullScreen(game), false, Keys.F2));
-            }
-            else
-            {
-                _bucket.Add(new KeyBlock(new Uncommand(), new OpenConsole(game), false, Keys.T));
-                _bucket.Add(new KeyBlock(new Uncommand(), new OpenConsoleForCommand(game), false, Keys.OemQuestion));
-            }
+            _bucket.Add(new KeyBlock(new PushConsole(game), false, Keys.Enter));
+            _bucket.Add(new KeyBlock(new RememberLastMessage(game), false, Keys.Up));
+            _bucket.Add(new KeyBlock(new ForgetCurrentMessage(game), false, Keys.Down));
         }
 
-        public void Initialize(ConsoleHandler console)
+        public void InitializeSuper(GameContainer game)
         {
             if (_bucket.Count > 0) return;
 
-            _bucket.Add(new KeyBlock(new PushConsole(console), false, Keys.Enter));
-            _bucket.Add(new KeyBlock(new RememberLastMessage(console), false, Keys.Up));
-            _bucket.Add(new KeyBlock(new ForgetCurrentMessage(console), false, Keys.Down));
-            
+            _bucket.Add(new KeyBlock(new BackspaceMessage(game), new UnbackspaceMessage(game), false, Keys.Back));
+            _bucket.Add(new KeyBlock(new BackOutCommand(game), false, Keys.Escape, Buttons.Back));
+            _bucket.Add(new KeyBlock(new ToggleDebugUI(game), false, Keys.F1));
+            _bucket.Add(new KeyBlock(new ToggleFullScreen(game), false, Keys.F2));
         }
 
-
-        public void Initialize(Sector game, bool isMenu)
+        public void InitializeBase(GameContainer game)
         {
             if (_bucket.Count > 0) return;
 
-            if (isMenu)
-            {
-                _bucket.Add(new KeyBlock(new MenuUp(game), true, Keys.Up, Keys.W, Buttons.DPadUp, Buttons.LeftThumbstickUp));
-                _bucket.Add(new KeyBlock(new MenuDown(game), true, Keys.Down, Keys.S, Buttons.DPadDown, Buttons.LeftThumbstickDown));
-                _bucket.Add(new KeyBlock(new MenuLeft(game), true, Keys.Left, Keys.A, Buttons.DPadLeft, Buttons.LeftThumbstickLeft));
-                _bucket.Add(new KeyBlock(new MenuRight(game), true, Keys.Right, Keys.D, Buttons.DPadRight, Buttons.LeftThumbstickRight));
-                _bucket.Add(new KeyBlock(new MenuSelect(game), false, Keys.Enter, Buttons.A));
-                _bucket.Add(new KeyBlock(new MenuBack(game), false, Keys.Q, Buttons.Start));
-            }
-            else
-            {
-                _bucket.Add(new KeyBlock(new InteractWithWorld(game), false, Keys.E, Buttons.A));
-                _bucket.Add(new KeyBlock(new TurnUp(game), new UnTurnUp(game), false, Keys.Up, Keys.W, Buttons.DPadUp, Buttons.LeftThumbstickUp));
-                _bucket.Add(new KeyBlock(new TurnDown(game), new UnTurnDown(game), false, Keys.Down, Keys.S, Buttons.DPadDown, Buttons.LeftThumbstickDown));
-                _bucket.Add(new KeyBlock(new TurnLeft(game), new UnTurnLeft(game), false, Keys.Left, Keys.A, Buttons.DPadLeft, Buttons.LeftThumbstickLeft));
-                _bucket.Add(new KeyBlock(new TurnRight(game), new UnTurnRight(game), false, Keys.Right, Keys.D, Buttons.DPadRight, Buttons.LeftThumbstickRight));
-                _bucket.Add(new KeyBlock(new DoubleSpeed(game), new UnDoubleSpeed(game), false, Keys.LeftShift, Buttons.X, Buttons.Y));
-            }
+            _bucket.Add(new KeyBlock(new Uncommand(), new OpenConsole(game), false, Keys.T));
+            _bucket.Add(new KeyBlock(new Uncommand(), new OpenConsoleForCommand(game), false, Keys.OemQuestion));
+        }
+
+        public void InitializePlayer(Sector game)
+        {
+            if (_bucket.Count > 0) return;
+
+            _bucket.Add(new KeyBlock(new InteractWithWorld(game), false, Keys.E, Buttons.A));
+            _bucket.Add(new KeyBlock(new TurnUp(game), new UnTurnUp(game), false, Keys.Up, Keys.W, Buttons.DPadUp, Buttons.LeftThumbstickUp));
+            _bucket.Add(new KeyBlock(new TurnDown(game), new UnTurnDown(game), false, Keys.Down, Keys.S, Buttons.DPadDown, Buttons.LeftThumbstickDown));
+            _bucket.Add(new KeyBlock(new TurnLeft(game), new UnTurnLeft(game), false, Keys.Left, Keys.A, Buttons.DPadLeft, Buttons.LeftThumbstickLeft));
+            _bucket.Add(new KeyBlock(new TurnRight(game), new UnTurnRight(game), false, Keys.Right, Keys.D, Buttons.DPadRight, Buttons.LeftThumbstickRight));
+            _bucket.Add(new KeyBlock(new DoubleSpeed(game), new UnDoubleSpeed(game), false, Keys.LeftShift, Buttons.X, Buttons.Y));
+        }
+
+        public void InitializeMenu(Sector game)
+        {
+            if (_bucket.Count > 0) return;
+
+            _bucket.Add(new KeyBlock(new MenuUp(game), true, Keys.Up, Keys.W, Buttons.DPadUp, Buttons.LeftThumbstickUp));
+            _bucket.Add(new KeyBlock(new MenuDown(game), true, Keys.Down, Keys.S, Buttons.DPadDown, Buttons.LeftThumbstickDown));
+            _bucket.Add(new KeyBlock(new MenuLeft(game), true, Keys.Left, Keys.A, Buttons.DPadLeft, Buttons.LeftThumbstickLeft));
+            _bucket.Add(new KeyBlock(new MenuRight(game), true, Keys.Right, Keys.D, Buttons.DPadRight, Buttons.LeftThumbstickRight));
+            _bucket.Add(new KeyBlock(new MenuSelect(game), false, Keys.Enter, Buttons.A));
+            _bucket.Add(new KeyBlock(new MenuBack(game), false, Keys.Q, Buttons.Start));
         }
 
         public void UpdateInput()

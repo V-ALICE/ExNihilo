@@ -1,5 +1,5 @@
 ﻿using ExNihilo.Sectors;
-using ExNihilo.Systems;
+using ExNihilo.Systems.Backend;
 using ExNihilo.Systems.Bases;
 
 namespace ExNihilo.Input.Commands.Types
@@ -19,20 +19,20 @@ namespace ExNihilo.Input.Commands.Types
         public abstract void Activate();
     }
 
-    public abstract class ConsoleCommand : ICommand
+    public abstract class MenuCommand : ICommand
     {
-        protected readonly ConsoleHandler Receiver;
-        protected ConsoleCommand(ConsoleHandler receiver)
+        protected readonly Sector Receiver;
+        protected MenuCommand(Sector receiver)
         {
             Receiver = receiver;
         }
         public abstract void Activate();
     }
 
-    public abstract class MenuCommand : ICommand
+    public abstract class ConsoleCommand : ICommand
     {
-        protected readonly Sector Receiver;
-        protected MenuCommand(Sector receiver)
+        protected readonly ConsoleHandler Receiver;
+        protected ConsoleCommand(ConsoleHandler receiver)
         {
             Receiver = receiver;
         }

@@ -2,6 +2,8 @@
 using ExNihilo.Entity;
 using ExNihilo.Menus;
 using ExNihilo.Systems;
+using ExNihilo.Systems.Backend;
+using ExNihilo.Systems.Game;
 using ExNihilo.Util;
 using ExNihilo.Util.Graphics;
 using Microsoft.Xna.Framework.Content;
@@ -9,7 +11,7 @@ using Microsoft.Xna.Framework.Graphics;
 
 namespace ExNihilo.Sectors
 {
-    public class UnderworldSector : PlayerBasedSector
+    public class VoidSector : PlayerBasedSector
     {
         //TODO: add inventory, entityList
 
@@ -17,7 +19,7 @@ namespace ExNihilo.Sectors
 
         private Level ActiveLevel => _world as Level;
 
-        public UnderworldSector(GameContainer container) : base(container)
+        public VoidSector(GameContainer container) : base(container)
         {
         }
 
@@ -45,18 +47,22 @@ namespace ExNihilo.Sectors
 
         public override void Leave(GameContainer.SectorID newSector)
         {
-            if (newSector == GameContainer.SectorID.Outerworld) ActiveLevel.Purge();
+            if (newSector == GameContainer.SectorID.Outerworld)
+            {
+                ActiveLevel.Purge();
+                Container.Pack();
+            }
         }
 
         public override void Update()
         {
             base.Update();
-            ActiveLevel.Update();
         }
 
         protected override void DrawDebugInfo(SpriteBatch spriteBatch)
         {
             base.DrawDebugInfo(spriteBatch);
+            ActiveLevel.DrawDebugInfo(spriteBatch, _debugPosition);
         }
 
         public override void Draw(SpriteBatch spriteBatch, bool drawDebugInfo)
@@ -72,19 +78,18 @@ namespace ExNihilo.Sectors
 ********************************************************************/
         public override void Pack(PackedGame game)
         {
-            //_inventoryMenu.Pack(game);
+            ActiveLevel.Pack(game);
         }
 
         public override void Unpack(PackedGame game)
         {
-            //_inventoryMenu.Unpack(game);
-            //TODO: pack and unpack current seed and parallax 
+            ActiveLevel.Unpack(game);
         }
 
-        public void StartNewGame(EntityContainer player)
+        public void StartNewGame(EntityContainer player, int floor)
         {
             ActiveLevel.Reset(player, new Coordinate(10, 10), new Coordinate(3, 10));
-            SetFloor(1);
+            SetFloor(floor);
         }
 
         public void PrintMap(bool all=false)
@@ -95,10 +100,6 @@ namespace ExNihilo.Sectors
 /********************************************************************
 ------->Parameter functions
 ********************************************************************/
-        public void SetMapSize(int size)
-        {
-            ActiveLevel.ChangeMapSize(size);
-        }
 
         public void SetFloor(int floor=-1)
         {

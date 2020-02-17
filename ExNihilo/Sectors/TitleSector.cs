@@ -1,6 +1,7 @@
 ﻿using ExNihilo.Input.Commands;
 using ExNihilo.Menus;
 using ExNihilo.Systems;
+using ExNihilo.Systems.Backend;
 using ExNihilo.Util;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content;
@@ -33,7 +34,7 @@ namespace ExNihilo.Sectors
         public override void Initialize()
         {
             MenuHandler = new CommandHandler();
-            MenuHandler.Initialize(this, true);
+            MenuHandler.InitializeMenu(this);
             _title = new TitleMenu(Container);
         }
 

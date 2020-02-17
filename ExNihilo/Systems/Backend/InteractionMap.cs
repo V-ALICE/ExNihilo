@@ -1,12 +1,10 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Resources;
 using ExNihilo.Systems.Bases;
 using ExNihilo.Util;
 using Microsoft.Xna.Framework;
 
-namespace ExNihilo.Systems
+namespace ExNihilo.Systems.Backend
 {
     public class TypeMatrix
     {

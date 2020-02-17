@@ -8,7 +8,7 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
 
-namespace ExNihilo.Systems
+namespace ExNihilo.Systems.Backend
 {
     public static class TextureLibrary
     {

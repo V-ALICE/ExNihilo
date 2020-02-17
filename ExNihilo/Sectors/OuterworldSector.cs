@@ -1,9 +1,8 @@
-﻿using System;
-using System.Threading.Tasks;
-using ExNihilo.Entity;
+﻿using ExNihilo.Entity;
 using ExNihilo.Menus;
-using ExNihilo.Systems;
+using ExNihilo.Systems.Backend;
 using ExNihilo.Systems.Bases;
+using ExNihilo.Systems.Game;
 using ExNihilo.Util;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content;
@@ -11,7 +10,7 @@ using Microsoft.Xna.Framework.Graphics;
 
 namespace ExNihilo.Sectors
 {
-    public class OverworldSector : PlayerBasedSector
+    public class OuterworldSector : PlayerBasedSector
     {
         //Preset Menus (since they never change)
         private CharacterMenu _characterMenu;
@@ -20,7 +19,9 @@ namespace ExNihilo.Sectors
         private NoteMenu _voidMenu;
         private NoteMenu _fishMenu;
 
-        public OverworldSector(GameContainer container) : base(container)
+        public PlayerEntityContainer Player => _characterMenu.GetCurrentChar();
+
+        public OuterworldSector(GameContainer container) : base(container)
         {
         }
 
@@ -98,7 +99,7 @@ namespace ExNihilo.Sectors
                 if (ReferenceEquals(_menuPoint, _voidMenu) && _voidMenu.Confirmed) //TODO: this is not a great way/place to detect this
                 {
                     _voidMenu.BackOut();
-                    Container.StartNewGame(_characterMenu.GetCurrentChar());
+                    Container.StartNewGame(Player);
                 }
                 if (_menuPoint.Dead) _menuPoint = null;
             }
@@ -122,7 +123,7 @@ namespace ExNihilo.Sectors
             _multiplayerMenu.Unpack(game);
             _fishMenu.Unpack(game);
             _voidMenu.Unpack(game);
-            _world.Reset(_characterMenu.GetCurrentChar(), new Coordinate(10, 10), new Coordinate(3, 10));
+            _world.Reset(Player, new Coordinate(10, 10), new Coordinate(3, 10));
             
         }
     }

@@ -3,15 +3,16 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using ExNihilo.Entity;
+using ExNihilo.Systems.Game;
 using ExNihilo.Util;
 
-namespace ExNihilo.Systems
+namespace ExNihilo.Systems.Backend
 {
     [Serializable]
     public class PackedGame
     {
         // Update this whenever the save contents changes MMDDYYHH
-        public const string _version = "061719413";
+        public const string _version = "02162006";
 
         //configuration
         private readonly DateTime _lastSaveDate;
@@ -19,9 +20,15 @@ namespace ExNihilo.Systems
         public string ID { get; }
         public string TitleCard { get; private set; }
 
+        //flags
+        public bool InVoid;
+
         //data
         public List<PlayerEntityContainer.PackedPlayerEntityContainer> SavedCharacters { get; }
         public int CurrentPlayer;
+        public int Floor, Parallax, Seed;
+        public MapGenerator.Type GenType;
+        public string[] TexturePack;
 
         private void FormatTitleCard()
         {
@@ -59,9 +66,15 @@ namespace ExNihilo.Systems
             FormatTitleCard();
             SavedCharacters = new List<PlayerEntityContainer.PackedPlayerEntityContainer>
             {
-                new PlayerEntityContainer(game.GraphicsDevice, "Nobody", 0,0,0,0).GetPacked()
+                new PlayerEntityContainer(game.GraphicsDevice, "Player", 0,0,0,0).GetPacked()
             };
             CurrentPlayer = 0;
+            InVoid = false;
+            Floor = 1;
+            Parallax = 2;
+            Seed = 123;
+            GenType = MapGenerator.Type.Standard2;
+            TexturePack = new[] {"Content/TexturePacks/DawnLikeComplete.tmf", "", ""};
         }
 
     }

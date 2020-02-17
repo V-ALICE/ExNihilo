@@ -9,6 +9,8 @@ using ExNihilo.Input.Commands;
 using ExNihilo.Input.Controllers;
 using ExNihilo.Sectors;
 using ExNihilo.Systems;
+using ExNihilo.Systems.Backend;
+using ExNihilo.Systems.Game;
 using ExNihilo.Util;
 using ExNihilo.Util.Graphics;
 using Microsoft.Xna.Framework;
@@ -26,7 +28,7 @@ namespace ExNihilo
     {
         public enum SectorID
         {
-            MainMenu, Outerworld, Underworld, Loading
+            MainMenu, Outerworld, Void, Loading
         }
 
         private Sector ActiveSector => _sectorDirectory[ActiveSectorID];
@@ -43,9 +45,12 @@ namespace ExNihilo
         private MouseController _mouse;
         private CommandHandler _handler, _superHandler;
         private Point _lastMousePosition;
+
+        public PlayerEntityContainer Player => ((OuterworldSector)_sectorDirectory[SectorID.Outerworld]).Player;
        
         public static ConsoleHandler Console { get; private set; }
-        public SectorID PreviousSectorID, ActiveSectorID;
+        public SectorID PreviousSectorID;
+        public static SectorID ActiveSectorID;
 
         protected bool ShowDebugInfo;
         public static bool FormTouched;
@@ -153,8 +158,8 @@ namespace ExNihilo
             Console = new ConsoleHandler();
             _handler = new CommandHandler();
             _superHandler = new CommandHandler();
-            _handler.Initialize(this, false);
-            _superHandler.Initialize(this, true);
+            _handler.InitializeBase(this);
+            _superHandler.InitializeSuper(this);
             SystemClockID = UniversalTime.NewTimer(true);
             _frameTimeID = UniversalTime.NewTimer(true, 1.5);
             TextureLibrary.LoadRuleSets();
@@ -181,12 +186,12 @@ namespace ExNihilo
             _sectorDirectory = new Dictionary<SectorID, Sector>
             {
                 {SectorID.MainMenu, new TitleSector(this)},
-                {SectorID.Outerworld, new OverworldSector(this) },
-                {SectorID.Underworld, new UnderworldSector(this) },
+                {SectorID.Outerworld, new OuterworldSector(this) },
+                {SectorID.Void, new VoidSector(this) },
                 {SectorID.Loading, new LoadingSector(this) }
             };
             foreach (var sector in _sectorDirectory.Values) sector?.Initialize();
-            Asura.Ascend(this, _sectorDirectory[SectorID.Underworld] as UnderworldSector, _sectorDirectory[SectorID.Outerworld] as OverworldSector);
+            Asura.Ascend(this, _sectorDirectory[SectorID.Void] as VoidSector, _sectorDirectory[SectorID.Outerworld] as OuterworldSector);
 
             base.Initialize();
             //ForceWindowUpdate(1920, 1080);
@@ -321,7 +326,6 @@ namespace ExNihilo
 
         public void OpenConsole(string initMessage="")
         {
-            if (ActiveSectorID == SectorID.Loading) return;
             Console.OpenConsole(initMessage);
         }
 
@@ -343,6 +347,7 @@ namespace ExNihilo
             PackedGame game = new PackedGame(this, SaveHandler.GetLastID());
             foreach (var sector in _sectorDirectory.Values) sector?.Pack(game);
             SaveHandler.Save(SaveHandler.LastLoadedFile, game);
+            Console.ForceMessage("<Asura>", "Game has been saved", Color.Purple, Color.White);
         }
 
         public bool Unpack(PackedGame game)
@@ -359,11 +364,11 @@ namespace ExNihilo
             AudioManager.EffectVolume = param.EffectVolume;
         }
 
-        public void StartNewGame(PlayerEntityContainer p)
+        public void StartNewGame(PlayerEntityContainer p, int floor=1)
         {
-            //This exists solely so that the overworld can tell the underworld to start a new game
-            var a = _sectorDirectory[SectorID.Underworld] as UnderworldSector;
-            a?.StartNewGame(p);
+            //This exists solely so that other sectors can tell the void to start a new game
+            var a = _sectorDirectory[SectorID.Void] as VoidSector;
+            a?.StartNewGame(p, floor);
         }
 
         public void GLOBAL_DEBUG_COMMAND(string input)
