@@ -166,13 +166,10 @@ namespace ExNihilo
             SystemClockID = UniversalTime.NewTimer(true);
             _frameTimeID = UniversalTime.NewTimer(true, 1.5);
             TextureLibrary.LoadRuleSets();
-            Equipment.SetUpMaterials("MATS.info");
             UniversalTime.TurnOnTimer(SystemClockID, _frameTimeID);
 
             ColorScale.AddToGlobal("Random", new ColorScale(2f, 32, 222));
-            ColorScale.AddToGlobal("Pulse", new ColorScale(0.5f, false, Color.White, Color.Black, Color.White));
-            ColorScale.AddToGlobal("Ember", new ColorScale(0.75f, false, Color.Red, Color.Red, Color.OrangeRed, Color.Orange, Color.OrangeRed));
-            ColorScale.AddToGlobal("Rainbow", new ColorScale(1.0f, false, Color.Red, Color.Yellow, Color.Lime, Color.Cyan, Color.Blue, Color.Magenta));
+            ColorScale.LoadColors("COLOR.info");
 
             //IsMouseVisible = true;
             Window.AllowUserResizing = true;
@@ -227,6 +224,7 @@ namespace ExNihilo
             TextureLibrary.LoadIconLibrary(GraphicsDevice, Content, "ICON.info");
             TextureLibrary.LoadCharacterLibrary(GraphicsDevice, Content, "CHAR.info");
             TextureLibrary.LoadTextureLibrary(GraphicsDevice, Content, "BACK.info");
+            ItemLoader.LoadItems("MAT.info");
 
             TextDrawer.Initialize(GraphicsDevice, Content.Load<Texture2D>("UI/FONT"));
             foreach (var sector in _sectorDirectory.Values) sector?.LoadContent(GraphicsDevice, Content);

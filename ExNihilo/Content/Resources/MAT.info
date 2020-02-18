@@ -1,0 +1,37 @@
+WOOD
+Wooden 130 106 77
+Oak 162 132 97
+SUPER
+Living-Wood LivingWood
+Mahogany 109 71 65
+Ebony 55 49 43
+
+METAL
+Iron 80 103 107
+Steel 158 164 166
+Silver 227 229 228
+Bronze 156 82 33
+Copper 175 99 62
+SUPER
+Mithril 230 240 230
+Orichalcum 231 189 66
+Platinum 184 183 178
+
+GEM
+Amethyst 207 183 201
+Jade 0 148 118
+Crystal 209 235 234
+Ruby 129 62 69
+Sapphire 29 78 143
+Emerald 9 104 69
+SUPER
+Moonstone 241 232 233
+Sunstone 231 196 172
+Diamond 221 220 220
+
+CLOTH
+Cloth 206 194 175
+Leather 156 98 80
+SUPER
+Fur 127 98 68
+Silk 172 185 208

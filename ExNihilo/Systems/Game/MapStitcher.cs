@@ -119,7 +119,7 @@ namespace ExNihilo.Systems.Game
             try
             {
                 //Open tmf file archive and confirm it has a description file
-                var file = File.OpenRead(fileName);
+                var file = File.OpenRead(Environment.CurrentDirectory + "/Content/TexturePacks/" + fileName);
                 var zip = new ZipArchive(file, ZipArchiveMode.Read);
                 var desc = zip.Entries.FirstOrDefault(f => f.FullName == "desc");
                 if (desc is null) throw new IndexOutOfRangeException();

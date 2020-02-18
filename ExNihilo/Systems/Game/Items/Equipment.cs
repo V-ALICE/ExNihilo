@@ -25,55 +25,48 @@ namespace ExNihilo.Systems.Game.Items
             }
         }
 
-        private static Dictionary<string, List<Tuple<string, ColorScale>>> MaterialSets;
-        private static Dictionary<string, List<Tuple<string, ColorScale>>> SuperMaterialSets;
-        public static void SetUpMaterials(params string[] files)
+        private static readonly Dictionary<string, List<Tuple<string, ColorScale>>> MaterialSets = new Dictionary<string, List<Tuple<string, ColorScale>>>();
+        private static readonly Dictionary<string, List<Tuple<string, ColorScale>>> SuperMaterialSets = new Dictionary<string, List<Tuple<string, ColorScale>>>();
+        public static void SetUpMaterials(string file)
         {
-            foreach (var file in files)
+            var fileName = Environment.CurrentDirectory + "/Content/Resources/" + file;
+            if (!File.Exists(fileName)) return;
+            var lines = File.ReadAllLines(fileName);
+
+            var category = "";
+            var super = false;
+            foreach (var line in lines)
             {
-                var fileName = Environment.CurrentDirectory + "/Content/Resources/" + file;
-                if (!File.Exists(fileName)) continue;
-
-                var lines = File.ReadAllLines(fileName);
-                if (lines.Length == 0) continue;
-
-                var category = "";
-                var super = false;
-                MaterialSets = new Dictionary<string, List<Tuple<string, ColorScale>>>();
-                SuperMaterialSets = new Dictionary<string, List<Tuple<string, ColorScale>>>();
-                foreach (var line in lines)
+                if (line.Length == 0) continue;
+                try
                 {
-                    if (line.Length == 0) continue;
-                    try
+                    var set = line.Split(' ');
+                    if (set.Length == 1)
                     {
-                        var set = line.Split(' ');
-                        if (set.Length == 1)
-                        {
-                            //Changing category
-                            if (line == "SUPER") super = true;
-                            else
-                            {
-                                category = line;
-                                super = false;
-                                MaterialSets.Add(category, new List<Tuple<string, ColorScale>>());
-                                SuperMaterialSets.Add(category, new List<Tuple<string, ColorScale>>());
-                            }
-                        }
+                        //Changing category
+                        if (line == "SUPER") super = true;
                         else
                         {
-                            //Type for current category (can be rgb255 or a name)
-                            ColorScale color;
-                            if (set.Length == 2) color = ColorScale.GetFromGlobal(set[1]);
-                            else color = new Color(int.Parse(set[1]), int.Parse(set[2]), int.Parse(set[3]));
-
-                            if (super) SuperMaterialSets[category].Add(Tuple.Create(set[0], color));
-                            else MaterialSets[category].Add(Tuple.Create(set[0], color));
+                            category = line;
+                            super = false;
+                            MaterialSets.Add(category, new List<Tuple<string, ColorScale>>());
+                            SuperMaterialSets.Add(category, new List<Tuple<string, ColorScale>>());
                         }
                     }
-                    catch (Exception)
+                    else
                     {
-                        GameContainer.Console.ForceMessage("<warning>", "Ignoring malformed material line \"" + line + "\"", Color.DarkOrange, Color.White);
+                        //Type for current category (can be rgb255 or a name)
+                        ColorScale color;
+                        if (set.Length == 2) color = ColorScale.GetFromGlobal(set[1]);
+                        else color = new Color(int.Parse(set[1]), int.Parse(set[2]), int.Parse(set[3]));
+
+                        if (super) SuperMaterialSets[category].Add(Tuple.Create(set[0], color));
+                        else MaterialSets[category].Add(Tuple.Create(set[0], color));
                     }
+                }
+                catch (Exception)
+                {
+                    GameContainer.Console.ForceMessage("<warning>", "Ignoring malformed material line \"" + line + "\"", Color.DarkOrange, Color.White);
                 }
             }
         }
@@ -186,4 +179,5 @@ namespace ExNihilo.Systems.Game.Items
             return new EquipmentInstance(item, trueName, level, stats, textColor, color);
         }
     }
+
 }

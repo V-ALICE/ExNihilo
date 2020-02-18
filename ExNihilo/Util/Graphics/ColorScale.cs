@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using Microsoft.Xna.Framework;
 
 namespace ExNihilo.Util.Graphics
@@ -11,6 +12,36 @@ namespace ExNihilo.Util.Graphics
         public static ColorScale Black = new ColorScale(Color.Black);
         public static ColorScale Grey = new ColorScale(Color.Gray);
         public static ColorScale Ghost = new ColorScale(new Color(160, 160, 160, 128));
+
+        public static void LoadColors(string file)
+        {
+            var fileName = Environment.CurrentDirectory + "/Content/Resources/" + file;
+            if (!File.Exists(fileName)) return;
+            var lines = File.ReadAllLines(fileName);
+
+            foreach (var line in lines)
+            {
+                if (line.Length == 0) continue;
+                try
+                {
+                    var set = line.Split(' ');
+                    if (set.Length < 5 || (set.Length-2) % 3 != 0) throw new Exception();
+                    var all = new List<Color>();
+                    for (int i = 2; i < set.Length; i += 3)
+                    {
+                        all.Add(new Color(int.Parse(set[i]), int.Parse(set[i + 1]), int.Parse(set[i + 2])));
+                    }
+
+                    var first = all[0];
+                    all.RemoveAt(0);
+                    AddToGlobal(set[0], new ColorScale(float.Parse(set[1]), false, first, all.ToArray()));
+                }
+                catch (Exception)
+                {
+                    GameContainer.Console.ForceMessage("<warning>", "Ignoring malformed color line \"" + line + "\"", Color.DarkOrange, Color.White);
+                }
+            }
+        }
 
         private readonly bool _random, _oneWay;
         private readonly byte _upper, _lower;
@@ -54,7 +85,7 @@ namespace ExNihilo.Util.Graphics
 
         public static implicit operator Color(ColorScale c)
         {
-            return c.Get();
+            return c?.Get() ?? Color.Black;
         }
 
         public static implicit operator ColorScale[](ColorScale c)
@@ -69,7 +100,10 @@ namespace ExNihilo.Util.Graphics
 
         public static ColorScale GetFromGlobal(string name)
         {
-            return _globalScaleMap.ContainsKey(name) ? _globalScaleMap[name] : null;
+            var c = _globalScaleMap.TryGetValue(name, out var color);
+            if (c) return color;
+            GameContainer.Console.ForceMessage("<error>", "Trying to load nonexistent color \"" + name + "\"", Color.DarkRed, Color.White);
+            return null;
         }
 
         public static void AddToGlobal(string name, ColorScale scale)
