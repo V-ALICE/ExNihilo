@@ -156,8 +156,13 @@ namespace ExNihilo.Menus
             else if (save.InVoid)
             {
                 Container.StartNewGame(save.Floor);
+                AudioManager.PlaySong("Void", true);
             }
-            else Container.RequestSectorChange(GameContainer.SectorID.Outerworld);
+            else
+            {
+                Container.RequestSectorChange(GameContainer.SectorID.Outerworld);
+                AudioManager.PlaySong("Outerworld", true);
+            }
         }
 
         private void SelectLoad(UICallbackPackage package)

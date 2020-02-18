@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using ExNihilo.Systems.Bases;
 using ExNihilo.Util;
 using ExNihilo.Util.Graphics;
@@ -24,26 +25,64 @@ namespace ExNihilo.Systems.Game.Items
             }
         }
 
-        //TODO: these need colors
-        private static readonly Dictionary<Material, string[]> MaterialSets = new Dictionary<Material, string[]>
+        private static Dictionary<string, List<Tuple<string, ColorScale>>> MaterialSets;
+        private static Dictionary<string, List<Tuple<string, ColorScale>>> SuperMaterialSets;
+        public static void SetUpMaterials(params string[] files)
         {
-            {Material.WOOD, new []{"Wooden", "Oak" } },
-            {Material.METAL, new []{"Iron", "Steel", "Bronze", "Copper", "Silver"} },
-            {Material.GEM, new []{"Crystal", "Jade", "Amethyst", "Topaz"} },
-            {Material.CLOTH, new []{"Cloth", "Leather", "Fur"} }
-        };
-        private static readonly Dictionary<Material, string[]> SuperMaterialSets = new Dictionary<Material, string[]>
-        {
-            {Material.WOOD, new []{"Living Wood", "Mahogany", "Ebony" } },
-            {Material.METAL, new []{"Platinum", "Mithril", "Orichalcum"} },
-            {Material.GEM, new []{"Emerald", "Ruby", "Sapphire", "Diamond"} },
-            {Material.CLOTH, new []{"Silk", "Leather", "Fur"} }
-        };
+            foreach (var file in files)
+            {
+                var fileName = Environment.CurrentDirectory + "/Content/Resources/" + file;
+                if (!File.Exists(fileName)) continue;
+
+                var lines = File.ReadAllLines(fileName);
+                if (lines.Length == 0) continue;
+
+                var category = "";
+                var super = false;
+                MaterialSets = new Dictionary<string, List<Tuple<string, ColorScale>>>();
+                SuperMaterialSets = new Dictionary<string, List<Tuple<string, ColorScale>>>();
+                foreach (var line in lines)
+                {
+                    if (line.Length == 0) continue;
+                    try
+                    {
+                        var set = line.Split(' ');
+                        if (set.Length == 1)
+                        {
+                            //Changing category
+                            if (line == "SUPER") super = true;
+                            else
+                            {
+                                category = line;
+                                super = false;
+                                MaterialSets.Add(category, new List<Tuple<string, ColorScale>>());
+                                SuperMaterialSets.Add(category, new List<Tuple<string, ColorScale>>());
+                            }
+                        }
+                        else
+                        {
+                            //Type for current category (can be rgb255 or a name)
+                            ColorScale color;
+                            if (set.Length == 2) color = ColorScale.GetFromGlobal(set[1]);
+                            else color = new Color(int.Parse(set[1]), int.Parse(set[2]), int.Parse(set[3]));
+
+                            if (super) SuperMaterialSets[category].Add(Tuple.Create(set[0], color));
+                            else MaterialSets[category].Add(Tuple.Create(set[0], color));
+                        }
+                    }
+                    catch (Exception)
+                    {
+                        GameContainer.Console.ForceMessage("<warning>", "Ignoring malformed material line \"" + line + "\"", Color.DarkOrange, Color.White);
+                    }
+                }
+            }
+        }
 
         //These must have 11 elements. Note last element represents perfection
         private static readonly string[] ModifierSet =
         {
-            "Broken", "Damaged", "Shabby", "Basic", "", "", "Fine", "Grand", "Legendary", "Mythical", "Absolute"
+            //Colors: Fine = green, Grand = blue, Legendary = yellow/orange, Mythical = purple, Absolute = rainbow
+            "Broken ", "Damaged ", "Shabby ", "Basic ", "", "", "Fine ", "Grand ", "Legendary ", "Mythical ", "Absolute "
         };
 
         private enum Type
@@ -52,11 +91,7 @@ namespace ExNihilo.Systems.Game.Items
         }
         private Type _type;
 
-        private enum Material
-        {
-            WOOD, METAL, GEM, CLOTH, SUPERMETAL
-        }
-        private readonly List<Material> _materials = new List<Material>();
+        private List<string> _materials;
 
         private readonly float _hp, _mp, _atk, _def, _luck;
 
@@ -83,13 +118,16 @@ namespace ExNihilo.Systems.Game.Items
                         case "STAT":
                             _hp = float.Parse(set[1]);
                             _mp = float.Parse(set[2]);
-               
-             _atk = float.Parse(set[3]);
+                            _atk = float.Parse(set[3]);
                             _def = float.Parse(set[4]);
                             _luck = float.Parse(set[5]);
                             break;
                         case "MAT":
-                            for (int i = 1; i < set.Length; i++) _materials.Add((Material) Enum.Parse(typeof(Material), set[i].ToUpper()));
+                            for (int i = 1; i < set.Length; i++)
+                            {
+                                if (MaterialSets.ContainsKey(set[i])) _materials.Add(set[i]);
+                                else GameContainer.Console.ForceMessage("<warning>", set[i] + " is not a valid material", Color.DarkOrange, Color.White);
+                            }
                             break;
                         case "COLOR":
                             IconColor = new Color(int.Parse(set[1]), int.Parse(set[2]), int.Parse(set[3]));
@@ -107,38 +145,45 @@ namespace ExNihilo.Systems.Game.Items
 
         public static EquipmentInstance GetInstance(Equipment item, int level, Random rand)
         {
+            //Set stats
             //  10 +  2-  4 total points at level   1 with standard mults
             //  30 +  6- 18 total points at level  10 with standard mults
             // 210 + 51-153 total points at level 100 with standard mults
             var basic = 2 + 2 * level / 5;
+            var count = (int)MathD.BellRange(MathD.urand, level / 2 + 1, 3 * level / 2 + 1);
+            var quality = 10 * (count - level / 2 - 1) / level; //0-10
             var stats = new StatOffset
             {
-                MaxHp = (int) (item._hp * basic),
-                MaxMp = (int) (item._mp * basic),
-                Atk = (int) (item._atk * basic),
-                Def = (int) (item._def * basic),
-                Luck = (int) (item._luck * basic)
+                MaxHp = (int) (item._hp * (basic + count)),
+                MaxMp = (int) (item._mp * (basic + count)),
+                Atk = (int) (item._atk * (basic + count)),
+                Def = (int) (item._def * (basic + count)),
+                Luck = (int) (item._luck * (basic + count))
             };
-            var count = (int) MathD.BellRange(MathD.urand, level / 2 + 1, 3 * level / 2 + 1);
-            var quality = 10 * (count - level / 2 - 1) / level; //0-10
-            for (int j = 0; j < count; j++)
-            {
-                var mark = rand.Next(5);
-                if (mark == 0) stats.MaxHp++;
-                else if (mark == 1) stats.MaxMp++;
-                else if (mark == 2) stats.Atk++;
-                else if (mark == 3) stats.Def++;
-                else if (mark == 4) stats.Luck++;
-            }
 
             //Figure out item's name
-            var matType = MaterialSets[item._materials[rand.Next(item._materials.Count)]];
-            var mat = matType.Length > 0 ? matType[rand.Next(matType.Length)] + " " : "";
-            var mod = ModifierSet[quality];
-            var trueName = (mod.Length > 0 ? mod + " " : "") + mat + item.Name;
+            var matName = "";
+            Color color = item.IconColor;
+            if (item._materials.Count > 0)
+            {
+                var matSet = quality > 6 ? SuperMaterialSets[item._materials[rand.Next(item._materials.Count)]] : MaterialSets[item._materials[rand.Next(item._materials.Count)]];
+                var material = matSet[rand.Next(matSet.Count)];
+                matName = material.Item1 + " ";
+                color = material.Item2;
+            }
+            var trueName = ModifierSet[quality] + matName + item.Name;
+
+            //Figure out quality color if any
+            var textColor = Color.Black;
+            if (quality < 3) textColor = Color.DarkRed;
+            else if (quality == 6) textColor = Color.ForestGreen;
+            else if (quality == 7) textColor = Color.DeepSkyBlue;
+            else if (quality == 8) textColor = Color.DarkOrange;
+            else if (quality == 9) textColor = Color.Purple;
+            else if (quality == 10) textColor = ColorScale.GetFromGlobal("Rainbow");
 
             //Return generated instance of input item
-            return new EquipmentInstance(item, trueName, level, stats, ColorScale.White, ColorScale.White);
+            return new EquipmentInstance(item, trueName, level, stats, textColor, color);
         }
     }
 }

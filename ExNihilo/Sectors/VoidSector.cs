@@ -52,6 +52,7 @@ namespace ExNihilo.Sectors
             {
                 ActiveLevel.Purge();
                 Container.Pack();
+                AudioManager.PlaySong("Outerworld", true);
             }
         }
 

@@ -41,7 +41,11 @@ namespace ExNihilo.Sectors
         public override void Leave(GameContainer.SectorID newSector)
         {
             if (newSector == GameContainer.SectorID.Loading)
+            {
+                //Assumed to be entering void
                 _world.Reset(Player, new Coordinate(10, 10), new Coordinate(3, 10));
+                AudioManager.PlaySong("Void", true);
+            }
         }
 
         public override void Initialize()

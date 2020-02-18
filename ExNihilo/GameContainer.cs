@@ -11,6 +11,7 @@ using ExNihilo.Sectors;
 using ExNihilo.Systems;
 using ExNihilo.Systems.Backend;
 using ExNihilo.Systems.Game;
+using ExNihilo.Systems.Game.Items;
 using ExNihilo.Util;
 using ExNihilo.Util.Graphics;
 using Microsoft.Xna.Framework;
@@ -139,10 +140,12 @@ namespace ExNihilo
         private void f_Activate(object sender, EventArgs e)
         {
             IsMouseVisible = false;
+            AudioManager.Pause(false);
         }
         private void f_Deactivate(object sender, EventArgs e)
         {
             IsMouseVisible = true;
+            AudioManager.Pause(true);
         }
 
 /********************************************************************
@@ -163,6 +166,7 @@ namespace ExNihilo
             SystemClockID = UniversalTime.NewTimer(true);
             _frameTimeID = UniversalTime.NewTimer(true, 1.5);
             TextureLibrary.LoadRuleSets();
+            Equipment.SetUpMaterials("MATS.info");
             UniversalTime.TurnOnTimer(SystemClockID, _frameTimeID);
 
             ColorScale.AddToGlobal("Random", new ColorScale(2f, 32, 222));
@@ -197,6 +201,9 @@ namespace ExNihilo
             //ForceWindowUpdate(1920, 1080);
             CheckForWindowUpdate();
             ActiveSector?.Enter(_lastMousePosition, _windowSize);
+
+            //AudioManager.Pause(true);
+            AudioManager.PlaySong("Title", true);
         }
 
         protected override void LoadContent()
@@ -226,6 +233,8 @@ namespace ExNihilo
             Console.LoadContent(GraphicsDevice, Content);
 
             _mouseTexture = Content.Load<Texture2D>("UI/CURSOR");
+
+            AudioManager.Initialize(Content);
 
             base.LoadContent();
         }

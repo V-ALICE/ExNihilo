@@ -7,14 +7,10 @@ namespace ExNihilo.Util
 {
     public static class AudioManager
     {
-        private static readonly Dictionary<string, SoundEffect> Effects = new Dictionary<string, SoundEffect>
-        {
+        //TODO: this is all just temp
+        private static readonly Dictionary<string, SoundEffect> Effects = new Dictionary<string, SoundEffect>();
+        private static readonly Dictionary<string, Song> Songs = new Dictionary<string, Song>();
 
-        };
-        private static readonly Dictionary<string, Song> Songs = new Dictionary<string, Song>
-        {
-
-        };
         private static Dictionary<string, List<SoundEffectInstance>> _soundLimiter;
         private static string _currentSong;
         private const int _maxSoundInstances = 2;
@@ -34,12 +30,15 @@ namespace ExNihilo.Util
             {
                 _soundLimiter.Add(word, new List<SoundEffectInstance>(_maxSoundInstances));
             }
-            EffectVolume = MusicVolume = 0.75f;
+
+            Songs.Add("Void", content.Load<Song>("Music/void"));
+            Songs.Add("Title", content.Load<Song>("Music/title"));
+            Songs.Add("Outerworld", content.Load<Song>("Music/outerworld"));
         }
 
-        public static void Pause()
+        public static void Pause(bool on)
         {
-            _paused = !_paused;
+            _paused = on;
             if (_paused) MediaPlayer.Pause();
             else MediaPlayer.Resume();
         }

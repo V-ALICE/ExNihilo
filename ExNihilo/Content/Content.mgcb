@@ -49,6 +49,24 @@
 /processorParam:TextureFormat=Color
 /build:Characters/Hair.png
 
+#begin Music/outerworld.ogg
+/importer:OggImporter
+/processor:SongProcessor
+/processorParam:Quality=Best
+/build:Music/outerworld.ogg
+
+#begin Music/title.mp3
+/importer:Mp3Importer
+/processor:SongProcessor
+/processorParam:Quality=Best
+/build:Music/title.mp3
+
+#begin Music/void.mp3
+/importer:Mp3Importer
+/processor:SongProcessor
+/processorParam:Quality=Best
+/build:Music/void.mp3
+
 #begin UI/CURSOR.png
 /importer:TextureImporter
 /processor:TextureProcessor
