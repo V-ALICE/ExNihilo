@@ -117,8 +117,8 @@ namespace ExNihilo.Util.Graphics
         {
             while (GameContainer.FormTouched) { Thread.Sleep(100); }
             if (device == null) return null;
+            if (rect.Width == 0 || rect.Height == 0) return null;
             var texture = new Texture2D(device, rect.Width, rect.Height);
-            if (rect.Width == 0 || rect.Height == 0) return texture;
             texture.SetData(GetColorData(sheet, rect));
             return texture;
         }

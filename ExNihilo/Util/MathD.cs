@@ -41,5 +41,19 @@ namespace ExNihilo.Util
         {
             return r.Next(total) < chance;
         }
+
+        public static double Bell(Random r, double mean = 0, double stdDev = 1)
+        {
+            // https://stackoverflow.com/a/218600
+            double u1 = 1.0 - r.NextDouble(), u2 = 1.0 - r.NextDouble();
+            var randStdNormal = Math.Sqrt(-2.0 * Math.Log(u1)) * Math.Sin(2.0 * Math.PI * u2);
+            return mean + stdDev * randStdNormal;
+        }
+
+        public static float BellRange(Random r, float minInclusive, float maxInclusive)
+        {
+            var b = MathHelper.Clamp((float)Bell(r), -3, 3);
+            return minInclusive + (maxInclusive - minInclusive) * (b + 3) / 6;
+        }
     }
 }

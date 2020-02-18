@@ -11,6 +11,20 @@ namespace ExNihilo.Systems.Game
     public struct StatOffset
     {
         public int Hp, Mp, MaxHp, MaxMp, Atk, Def, Luck;
+
+        public static StatOffset operator +(StatOffset a, StatOffset b)
+        {
+            return new StatOffset
+            {
+                Hp = a.Hp + b.Hp,
+                Mp = a.Mp + b.Mp,
+                MaxHp = a.MaxHp + b.MaxHp,
+                MaxMp = a.MaxMp + b.MaxMp,
+                Atk = a.Atk + b.Atk,
+                Def = a.Def + b.Def,
+                Luck = a.Luck + b.Luck
+            };
+        }
     }
     
 
