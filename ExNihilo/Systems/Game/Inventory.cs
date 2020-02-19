@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using ExNihilo.Systems.Bases;
+using ExNihilo.Systems.Game.Items;
 using ExNihilo.Util;
 
 namespace ExNihilo.Systems.Game
@@ -17,9 +19,10 @@ namespace ExNihilo.Systems.Game
         private List<Tuple<int, Action>> _offsetTriggers;
         public StatSet Stats;
 
-        //TODO: add equipment set
-        //TODO: add inventory set
+        private readonly EquipmentInstance[] _equipment = new EquipmentInstance[7];
+        private readonly ItemInstance[] _inventory = new ItemInstance[InventorySize];
 
+        private const int InventorySize = 24;
         private const uint BaseNeededExp = 100;
         private const int BaseHp = 25, BaseMp = 10, BaseAtk = 5, BaseDef = 5, BaseLuck = 0;
 

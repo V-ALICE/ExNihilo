@@ -1,10 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
+//using System.Drawing;
 using System.Globalization;
 using System.IO;
 using ExNihilo.Entity;
 using ExNihilo.Systems.Game;
 using ExNihilo.Util;
+using ExNihilo.Util.Graphics;
+using Microsoft.Xna.Framework;
 
 namespace ExNihilo.Systems.Backend
 {
@@ -12,7 +15,7 @@ namespace ExNihilo.Systems.Backend
     public class PackedGame
     {
         // Update this whenever the save contents changes MMDDYYHH
-        public const string _version = "02182016";
+        public const string _version = "02182021";
 
         //configuration
         private readonly DateTime _lastSaveDate;
@@ -138,9 +141,16 @@ namespace ExNihilo.Systems.Backend
             foreach (var file in files)
             {
                 string fileName = Environment.CurrentDirectory + "/Content/" + file;
-                if (EncryptedSerializer.DeserializeIn(fileName) is PackedGame game)
+                try
                 {
-                    if (game.Version == PackedGame._version) _saveSet.Add(file, game);
+                    if (EncryptedSerializer.DeserializeIn(fileName) is PackedGame game)
+                    {
+                        if (game.Version == PackedGame._version) _saveSet.Add(file, game);
+                    }
+                }
+                catch (Exception e)
+                {
+                    GameContainer.Console.ForceMessage("<error>", e.Message, Color.DarkRed, ColorScale.White);
                 }
             }
         }

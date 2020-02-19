@@ -362,8 +362,8 @@ namespace ExNihilo.Systems
             //Temp debug function for executing arbitrary code at will
             void Trigger(string args)
             {
-                _game.GLOBAL_DEBUG_COMMAND(args);
                 Log.ForceMessage("<Asura>", "Activating debug commands", Color.Purple, Color.White);
+                _game.GLOBAL_DEBUG_COMMAND(args);
             }
             _elevatedCommands.Add("trigger", Trigger);
         }

@@ -224,7 +224,7 @@ namespace ExNihilo
             TextureLibrary.LoadIconLibrary(GraphicsDevice, Content, "ICON.info");
             TextureLibrary.LoadCharacterLibrary(GraphicsDevice, Content, "CHAR.info");
             TextureLibrary.LoadTextureLibrary(GraphicsDevice, Content, "BACK.info");
-            ItemLoader.LoadItems("MAT.info");
+            ItemLoader.LoadItems(GraphicsDevice, "MAT.info");
 
             TextDrawer.Initialize(GraphicsDevice, Content.Load<Texture2D>("UI/FONT"));
             foreach (var sector in _sectorDirectory.Values) sector?.LoadContent(GraphicsDevice, Content);
@@ -380,7 +380,33 @@ namespace ExNihilo
 
         public void GLOBAL_DEBUG_COMMAND(string input)
         {
-            
+            var dict = new int[10];
+            for (int i = 0; i < 100000; i++)
+            {
+                var item = ItemLoader.GetEquipment(MathD.urand, 100);
+                var desc = item.Name.IndexOf(' ') > 0 ? item.Name.Substring(0, item.Name.IndexOf(' ')) : "None";
+                if (desc.StartsWith("Broken")) dict[0]++;
+                else if (desc.StartsWith("Damaged")) dict[1]++;
+                else if (desc.StartsWith("Shabby")) dict[2]++;
+                else if (desc.StartsWith("Basic")) dict[3]++;
+                else if (desc.StartsWith("Fine")) dict[5]++;
+                else if (desc.StartsWith("Grand")) dict[6]++;
+                else if (desc.StartsWith("Legendary")) dict[7]++;
+                else if (desc.StartsWith("Mythical")) dict[8]++;
+                else if (desc.StartsWith("Absolute")) dict[9]++;
+                else dict[4]++;
+            }
+
+            Console.ForceMessage("", "Broken:    " + dict[0], ColorScale.Black, ColorScale.White);
+            Console.ForceMessage("", "Damaged:   " + dict[1], ColorScale.Black, ColorScale.White);
+            Console.ForceMessage("", "Shabby:    " + dict[2], ColorScale.Black, ColorScale.White);
+            Console.ForceMessage("", "Basic:     " + dict[3], ColorScale.Black, ColorScale.White);
+            Console.ForceMessage("", "Average:   " + dict[4], ColorScale.Black, ColorScale.White);
+            Console.ForceMessage("", "Fine:      " + dict[5], ColorScale.Black, ColorScale.White);
+            Console.ForceMessage("", "Grand:     " + dict[6], ColorScale.Black, ColorScale.White);
+            Console.ForceMessage("", "Legendary: " + dict[7], ColorScale.Black, ColorScale.White);
+            Console.ForceMessage("", "Mythical:  " + dict[8], ColorScale.Black, ColorScale.White);
+            Console.ForceMessage("", "Absolute:  " + dict[9], ColorScale.Black, ColorScale.White);
         }
     }
 }

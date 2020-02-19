@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
+using System.Runtime.Serialization;
 using ExNihilo.Systems.Bases;
 using ExNihilo.Util;
 using ExNihilo.Util.Graphics;
@@ -9,22 +11,33 @@ using Microsoft.Xna.Framework.Graphics;
 
 namespace ExNihilo.Systems.Game.Items
 {
-    public class Equipment : Item
+    public class EquipmentInstance : ItemInstance
     {
-        public class EquipmentInstance : ItemInstance
-        {
-            public ColorScale QualityColor;
-            public readonly StatOffset Stats;
+        private readonly string _qualityColorName;
+        public ColorScale QualityColor;
+        public readonly StatOffset Stats;
+        public readonly Equipment.SlotType Type;
 
-            public EquipmentInstance(Equipment item, string fullName, int level, StatOffset stats, ColorScale quality, ColorScale icon) : base(item, level)
-            {
-                Stats = stats;
-                Name = fullName;
-                QualityColor = quality;
-                IconColor = icon;
-            }
+        [OnDeserialized]
+        internal void OnDeserialize(StreamingContext context)
+        {
+            if (_qualityColorName.Length > 0) QualityColor = ColorScale.GetFromGlobal(_qualityColorName);
+            if (ColorName.Length > 0) IconColor = ColorScale.GetFromGlobal(ColorName);
         }
 
+        public EquipmentInstance(Equipment item, string fullName, int level, StatOffset stats, ColorScale quality, ColorScale icon, string qualityName="") : base(item, level)
+        {
+            Stats = stats;
+            Name = fullName;
+            QualityColor = quality;
+            IconColor = icon;
+            Type = item.Slot;
+            _qualityColorName = qualityName;
+        }
+    }
+
+    public class Equipment : Item
+    {
         private static readonly Dictionary<string, List<Tuple<string, ColorScale>>> MaterialSets = new Dictionary<string, List<Tuple<string, ColorScale>>>();
         private static readonly Dictionary<string, List<Tuple<string, ColorScale>>> SuperMaterialSets = new Dictionary<string, List<Tuple<string, ColorScale>>>();
         public static void SetUpMaterials(string file)
@@ -78,35 +91,40 @@ namespace ExNihilo.Systems.Game.Items
             "Broken ", "Damaged ", "Shabby ", "Basic ", "", "", "Fine ", "Grand ", "Legendary ", "Mythical ", "Absolute "
         };
 
-        private enum Type
+        public enum SlotType : byte
         {
-            HEAD, CHEST, HANDS, LEGS, FEET, ACC
+            WEAP=0, HEAD=1, CHEST=2, HANDS=3, LEGS=4, FEET=5, ACC=6
         }
-        private Type _type;
+        public readonly SlotType Slot;
 
-        private List<string> _materials;
+        private readonly List<string> _materials;
 
         private readonly float _hp, _mp, _atk, _def, _luck;
 
-        public Equipment(GraphicsDevice g, Texture2D sheet, string name, IEnumerable<string> block) : base(ItemType.Equip)
+        public Equipment(GraphicsDevice g, Texture2D sheet, string name, List<string> lines) : base(ItemType.Equip)
         {
             Name = name;
-            foreach (var line in block)
+            _materials = new List<string>();
+            var tokens = new[]{1, 1, 1, 1, 1};
+            while(lines.Count > 0)
             {
                 try
                 {
-                    var set = line.Split(' ');
+                    var set = lines[0].Split(new[] {' '}, StringSplitOptions.RemoveEmptyEntries);
                     switch (set[0])
                     {
                         case "TYPE":
-                            _type = (Type) Enum.Parse(typeof(Type), set[1].ToUpper());
+                            Slot = (SlotType) Enum.Parse(typeof(SlotType), set[1]);
+                            tokens[0] = 0;
                             break;
                         case "ICON":
                             var rect = new Rectangle(int.Parse(set[1]), int.Parse(set[2]), int.Parse(set[3]), int.Parse(set[4]));
                             Texture = TextureUtilities.GetSubTexture(g, sheet, rect);
+                            tokens[1] = 0;
                             break;
                         case "CHANCE":
                             Chance = float.Parse(set[1]);
+                            tokens[2] = 0;
                             break;
                         case "STAT":
                             _hp = float.Parse(set[1]);
@@ -114,37 +132,65 @@ namespace ExNihilo.Systems.Game.Items
                             _atk = float.Parse(set[3]);
                             _def = float.Parse(set[4]);
                             _luck = float.Parse(set[5]);
+                            tokens[3] = 0;
                             break;
                         case "MAT":
-                            for (int i = 1; i < set.Length; i++)
+                            for (int j = 1; j < set.Length; j++)
                             {
-                                if (MaterialSets.ContainsKey(set[i])) _materials.Add(set[i]);
-                                else GameContainer.Console.ForceMessage("<warning>", set[i] + " is not a valid material", Color.DarkOrange, Color.White);
+                                if (MaterialSets.ContainsKey(set[j]))
+                                {
+                                    _materials.Add(set[j]);
+                                    tokens[4] = 0;
+                                }
+                                else GameContainer.Console.ForceMessage("<warning>", set[j] + " is not a valid material", Color.DarkOrange, Color.White);
                             }
                             break;
                         case "COLOR":
                             IconColor = new Color(int.Parse(set[1]), int.Parse(set[2]), int.Parse(set[3]));
+                            tokens[4] = 0;
                             break;
+                        case "NEW":
+                        case "OPEN":
+                            Valid = tokens.All(t => t == 0);
+                            //These symbolize the end of the current item if they appear
+                            return;
                         default:
                             throw new ArgumentOutOfRangeException();
                     }
                 }
                 catch (Exception)
                 {
-                    GameContainer.Console.ForceMessage("<warning>", "Ignoring malformed item pack line \""+line+"\"", Color.DarkOrange, Color.White);
+                    GameContainer.Console.ForceMessage("<warning>", "Ignoring malformed item pack line \""+lines[0]+"\"", Color.DarkOrange, Color.White);
                 }
+                lines.RemoveAt(0);
             }
+            Valid = tokens.All(t => t == 0);
         }
 
-        public static EquipmentInstance GetInstance(Equipment item, int level, Random rand)
+        public static EquipmentInstance GetInstance(Equipment item, Random rand, int level, int qual=-1)
         {
             //Set stats
-            //  10 +  2-  4 total points at level   1 with standard mults
-            //  30 +  6- 18 total points at level  10 with standard mults
-            // 210 + 51-153 total points at level 100 with standard mults
+            //   10 +    3-  12 total points at level    1 with standard mults
+            //   30 +   12-  30 total points at level   10 with standard mults
+            //  210 +  102- 210 total points at level  100 with standard mults
+            // 2010 + 1002-2010 total points at level 1000 with standard mults
             var basic = 2 + 2 * level / 5;
-            var count = (int)MathD.BellRange(MathD.urand, level / 2 + 1, 3 * level / 2 + 1);
-            var quality = 10 * (count - level / 2 - 1) / level; //0-10
+            var min = level + 2;
+            var max = 2 * level + 10;
+
+            int count, quality = qual;
+            if (qual < 0)
+            {
+                count = (int) MathD.BellRange(MathD.urand, min, max);
+                quality = 10 * (count - min) / (max - min); //0-10
+                count /= 5;
+            }
+            else
+            {
+                //inverse calculation from quality->rough count
+                count = (int) ((quality / 10.0 * (max - min) + min) / 5);
+            }
+
             var stats = new StatOffset
             {
                 MaxHp = (int) (item._hp * (basic + count)),
@@ -167,12 +213,12 @@ namespace ExNihilo.Systems.Game.Items
             var trueName = ModifierSet[quality] + matName + item.Name;
 
             //Figure out quality color if any
-            var textColor = Color.Black;
+            var textColor = Color.White;
             if (quality < 3) textColor = Color.DarkRed;
             else if (quality == 6) textColor = Color.ForestGreen;
             else if (quality == 7) textColor = Color.DeepSkyBlue;
             else if (quality == 8) textColor = Color.DarkOrange;
-            else if (quality == 9) textColor = Color.Purple;
+            else if (quality == 9) textColor = Color.MediumPurple;
             else if (quality == 10) textColor = ColorScale.GetFromGlobal("Rainbow");
 
             //Return generated instance of input item
