@@ -4,6 +4,8 @@ using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
+using ExNihilo.Systems.Bases;
+using ExNihilo.Systems.Game.Items.ExNihilo.Systems.Game.Items;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 
@@ -11,16 +13,17 @@ namespace ExNihilo.Systems.Game.Items
 {
     public static class ItemLoader
     {
-        private static readonly Dictionary<Equipment.SlotType, List<Equipment>> _equipSet = new Dictionary<Equipment.SlotType, List<Equipment>>();
+        private static readonly Dictionary<EquipItem.SlotType, List<EquipItem>> _equipSet = new Dictionary<EquipItem.SlotType, List<EquipItem>>();
         private static readonly List<InstantItem> _instantSet = new List<InstantItem>();
         private static readonly List<UseItem> _useSet = new List<UseItem>();
+        private static float _totalEquipChance, _totalInstantChance, _totalUseChance;
 
         public static void LoadItems(GraphicsDevice g, string materialFile)
         {
-            Equipment.SetUpMaterials(materialFile);
-            foreach (var e in (Equipment.SlotType[]) Enum.GetValues(typeof(Equipment.SlotType)))
+            EquipItem.SetUpMaterials(materialFile);
+            foreach (var e in (EquipItem.SlotType[]) Enum.GetValues(typeof(EquipItem.SlotType)))
             {
-                _equipSet.Add(e, new List<Equipment>());
+                _equipSet.Add(e, new List<EquipItem>());
             }
 
             var fileSet = Directory.GetFiles(Environment.CurrentDirectory + "/Content/Items/");
@@ -68,18 +71,30 @@ namespace ExNihilo.Systems.Game.Items
                             switch (type)
                             {
                                 case "EQUIP":
-                                    var equip = new Equipment(g, curTex, name, lines);
-                                    if (equip.Valid) _equipSet[equip.Slot].Add(equip);
+                                    var equip = new EquipItem(g, curTex, name, lines);
+                                    if (equip.Valid)
+                                    {
+                                        _equipSet[equip.Slot].Add(equip);
+                                        _totalEquipChance += equip.Chance;
+                                    }
                                     else GameContainer.Console.ForceMessage("<error>", "Item with name \"" + equip.Name + "\" is invalid", Color.DarkRed, Color.White);
                                     break;
                                 case "USE":
                                     var use = new UseItem(g, curTex, name, lines);
-                                    if (use.Valid) _useSet.Add(use);
+                                    if (use.Valid)
+                                    {
+                                        _useSet.Add(use);
+                                        _totalUseChance += use.Chance;
+                                    }
                                     else GameContainer.Console.ForceMessage("<error>", "Item with name \"" + use.Name + "\" is invalid", Color.DarkRed, Color.White);
                                     break;
                                 case "INSTANT":
                                     var instant = new InstantItem(g, curTex, name, lines);
-                                    if (instant.Valid) _instantSet.Add(instant);
+                                    if (instant.Valid)
+                                    {
+                                        _instantSet.Add(instant);
+                                        _totalInstantChance += instant.Chance;
+                                    }
                                     else GameContainer.Console.ForceMessage("<error>", "Item with name \"" + instant.Name + "\" is invalid", Color.DarkRed, Color.White);
                                     break;
                                 default:
@@ -108,16 +123,99 @@ namespace ExNihilo.Systems.Game.Items
             if (_equipSet.Count == 0 && _useSet.Count == 0 && _instantSet.Count == 0) throw new FileLoadException("No items could be loaded successfully");
         }
 
-        public static EquipmentInstance GetEquipment(Random rand, int level)
+        public static EquipInstance GetEquipment(Random rand, int level, int quality = -1)
         {
-            var list = _equipSet.Values.ToList()[rand.Next(_equipSet.Count)];
-            return Equipment.GetInstance(list[rand.Next(list.Count)], rand, level);
+            var selection = (float)(_totalEquipChance * rand.NextDouble());
+            foreach (var l in _equipSet)
+            {
+                foreach (var e in l.Value)
+                {
+                    selection -= e.Chance;
+                    if (selection < 0) return EquipItem.GetInstance(e, rand, level, quality);
+                }
+            }
+
+            return null;
         }
 
-        public static EquipmentInstance GetEquipment(Random rand, int level, Equipment.SlotType type, int quality)
+        public static EquipInstance GetEquipment(Random rand, int level, EquipItem.SlotType type, int quality = -1)
         {
             if (!_equipSet.ContainsKey(type)) return null;
-            return Equipment.GetInstance(_equipSet[type][rand.Next(_equipSet[type].Count)], rand, level, quality);
+
+            var selection = (float)(_totalEquipChance * rand.NextDouble());
+
+            //Since individual sets don't have total chances this isn't a fully fair fetch
+            //For most equipment sets items in the back of the list will have a slightly lower chance than normal
+            //This function should only be used for initial character equips
+            while (true)
+            {
+                foreach (var e in _equipSet[type])
+                {
+                    selection -= e.Chance;
+                    if (selection < 0) return EquipItem.GetInstance(e, rand, level, quality);
+                }
+            }
+        }
+
+        public static InstantInstance GetInstant(Random rand, int level, int quality = -1)
+        {
+            var selection = (float)(_totalInstantChance * rand.NextDouble());
+            foreach (var i in _instantSet)
+            {
+                selection -= i.Chance;
+                if (selection < 0) return InstantItem.GetInstance(i, rand, level, quality);
+            }
+
+            return null;
+        }
+
+        public static UseInstance GetUse(Random rand, int level, int quality = -1)
+        {
+            var selection = (float)(_totalUseChance * rand.NextDouble());
+            foreach (var u in _useSet)
+            {
+                selection -= u.Chance;
+                if (selection < 0) return UseItem.GetInstance(u, rand, level, quality);
+            }
+
+            return null;
+        }
+
+        public static ItemInstance GetItem(Random rand, int level)
+        {
+            var chance = _totalEquipChance + _totalInstantChance + _totalUseChance;
+            var selection = (float)(chance * rand.NextDouble());
+
+            if (selection > _totalEquipChance) selection -= _totalEquipChance;
+            else
+            {
+                foreach (var l in _equipSet)
+                {
+                    foreach (var e in l.Value)
+                    {
+                        selection -= e.Chance;
+                        if (selection < 0) return EquipItem.GetInstance(e, rand, level);
+                    }
+                }
+            }
+
+            if (selection > _totalInstantChance) selection -= _totalInstantChance;
+            else
+            {
+                foreach (var i in _instantSet)
+                {
+                    selection -= i.Chance;
+                    if (selection < 0) return InstantItem.GetInstance(i, rand, level);
+                }
+            }
+
+            foreach (var u in _useSet)
+            {
+                selection -= u.Chance;
+                if (selection < 0) return UseItem.GetInstance(u, rand, level);
+            }
+
+            return null;
         }
     }
 }

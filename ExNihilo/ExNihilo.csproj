@@ -103,7 +103,7 @@
     <Compile Include="Systems\Bases\ITypable.cs" />
     <Compile Include="Systems\Backend\InteractionMap.cs" />
     <Compile Include="Systems\Game\Inventory.cs" />
-    <Compile Include="Systems\Game\Items\Equipment.cs" />
+    <Compile Include="Systems\Game\Items\EquipItem.cs" />
     <Compile Include="Systems\Game\Items\InstantItem.cs" />
     <Compile Include="Systems\Game\Items\ItemLoader.cs" />
     <Compile Include="Systems\Game\Items\UseItem.cs" />
@@ -193,6 +193,9 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Include="Content\Resources\COLOR.info">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Content\Items\BasicItems.imf">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <None Include="packages.config" />

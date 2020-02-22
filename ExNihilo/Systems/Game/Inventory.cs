@@ -16,20 +16,20 @@ namespace ExNihilo.Systems.Game
     public class Inventory
     {
         public StatOffset Offsets;
-        private List<Tuple<int, Action>> _offsetTriggers;
+        private List<Tuple<int, StatOffset>> _offsetTriggers;
         public StatSet Stats;
 
-        private readonly EquipmentInstance[] _equipment = new EquipmentInstance[7];
-        private readonly ItemInstance[] _inventory = new ItemInstance[InventorySize];
+        public readonly EquipInstance[] _equipment = new EquipInstance[7];
+        public readonly ItemInstance[] _inventory = new ItemInstance[InventorySize];
 
         private const int InventorySize = 24;
         private const uint BaseNeededExp = 100;
         private const int BaseHp = 25, BaseMp = 10, BaseAtk = 5, BaseDef = 5, BaseLuck = 0;
 
-        private long _heldGold;
-        private uint _heldLevel;
-        private uint _heldSkillPoints = 2; //temp until skill set class exists
-        private uint _heldExp, _nextExp;
+        public long HeldGold;
+        public uint HeldLevel;
+        public uint HeldSkillPoints = 2; //temp until skill set class exists
+        public uint HeldExp, NextExp;
 
         public Inventory()
         {
@@ -42,8 +42,8 @@ namespace ExNihilo.Systems.Game
                 Def = BaseDef,
                 Luck = BaseLuck
             };
-            _nextExp = BaseNeededExp;
-            _offsetTriggers = new List<Tuple<int, Action>>();
+            NextExp = BaseNeededExp;
+            _offsetTriggers = new List<Tuple<int, StatOffset>>();
         }
 
         public void SoftReset()
@@ -66,34 +66,40 @@ namespace ExNihilo.Systems.Game
         }
         public void LevelUp(uint count = 1)
         {
+            SoftReset();
             for (uint i = 0; i < count; i++)
             {
-                _heldLevel++;
-                SettleStats(_heldLevel / 2 + 1);
-                _heldSkillPoints += _heldLevel < 5 ? 1 : _heldLevel / 5;
+                HeldLevel++;
+                SettleStats(HeldLevel / 2 + 1);
+                HeldSkillPoints += HeldLevel < 5 ? 1 : HeldLevel / 5;
             }
         }
         public void GainExp(uint exp)
         {
-            _heldExp += exp;
-            while (_heldExp > _nextExp)
+            HeldExp += exp;
+            while (HeldExp > NextExp)
             {
-                _heldExp -= _nextExp;
-                _nextExp = (uint) (1.25 * _nextExp);
+                HeldExp -= NextExp;
+                NextExp = (uint) (1.25 * NextExp);
                 LevelUp();
             }
         }
 
         public long GetGold()
         {
-            return _heldGold;
+            return HeldGold;
         }
         public void TapGold(long change)
         {
-            _heldGold += change;
-            if (_heldGold < 0) _heldGold = 0;
+            HeldGold += change;
+            if (HeldGold < 0) HeldGold = 0;
         }
 
+        public void AddTriggeredOffset(int turns, StatOffset diff)
+        {
+            _offsetTriggers.Add(new Tuple<int, StatOffset>(turns, diff));
+            Offsets += diff;
+        }
         public void PassTurn(int count=1)
         {
             for (int i = 0; i < count; i++)
@@ -102,10 +108,10 @@ namespace ExNihilo.Systems.Game
                 {
                     if (_offsetTriggers[j].Item1 == 1)
                     {
-                        _offsetTriggers[j].Item2.Invoke();
+                        Offsets -= _offsetTriggers[j].Item2;
                         _offsetTriggers.RemoveAt(j);
                     }
-                    else _offsetTriggers[j] = new Tuple<int, Action>(_offsetTriggers[j].Item1-1, _offsetTriggers[j].Item2);
+                    else _offsetTriggers[j] = new Tuple<int, StatOffset>(_offsetTriggers[j].Item1-1, _offsetTriggers[j].Item2);
                 }
             }
         }

@@ -11,32 +11,59 @@ using Microsoft.Xna.Framework.Graphics;
 
 namespace ExNihilo.Systems.Game.Items
 {
-    public class EquipmentInstance : ItemInstance
+    public class EquipInstance : ItemInstance
     {
-        private readonly string _qualityColorName;
-        public ColorScale QualityColor;
         public readonly StatOffset Stats;
-        public readonly Equipment.SlotType Type;
+        public readonly EquipItem.SlotType Type;
 
-        [OnDeserialized]
-        internal void OnDeserialize(StreamingContext context)
-        {
-            if (_qualityColorName.Length > 0) QualityColor = ColorScale.GetFromGlobal(_qualityColorName);
-            if (ColorName.Length > 0) IconColor = ColorScale.GetFromGlobal(ColorName);
-        }
-
-        public EquipmentInstance(Equipment item, string fullName, int level, StatOffset stats, ColorScale quality, ColorScale icon, string qualityName="") : base(item, level)
+        public EquipInstance(EquipItem item, int level, int quality, string fullName, StatOffset stats, ColorScale icon) : base(item, level, quality)
         {
             Stats = stats;
             Name = fullName;
-            QualityColor = quality;
             IconColor = icon;
             Type = item.Slot;
-            _qualityColorName = qualityName;
+        }
+
+        public override string GetSmartDesc()
+        {
+            var desc = base.GetSmartDesc();
+
+            desc += "HP   " + Stats.MaxHp + "\n";
+            desc += "MP   " + Stats.MaxMp + "\n";
+            desc += "ATK  " + Stats.Atk + "\n";
+            desc += "DEF  " + Stats.Def + "\n";
+            desc += "LUCK " + Stats.Luck + "\n";
+
+            return desc;
+        }
+        public override Color[] GetSmartColors(Color basic)
+        {
+            return new Color[] { QualityColor, basic, Color.ForestGreen, Color.DarkRed };
+        }
+
+        public string GetSmartDesc(EquipInstance other)
+        {
+            var desc = base.GetSmartDesc();
+
+            string GetDiff(int value)
+            {
+                if (value == 0) return "(@c1+0)";
+                if (value > 0) return "(@c2+" + value + ")";
+                return "(@c3" + value + ")";
+            }
+
+            var diff = other.Stats - Stats; //Other is going to be currently equipped item
+            desc += "HP   " + Stats.MaxHp + GetDiff(Stats.MaxHp) + "\n";
+            desc += "MP   " + Stats.MaxMp + GetDiff(Stats.MaxMp) + "\n";
+            desc += "ATK  " + Stats.Atk + GetDiff(Stats.Atk) + "\n";
+            desc += "DEF  " + Stats.Def + GetDiff(Stats.Def) + "\n";
+            desc += "LUCK " + Stats.Luck + GetDiff(Stats.Luck) + "\n";
+
+            return desc;
         }
     }
 
-    public class Equipment : Item
+    public class EquipItem : Item
     {
         private static readonly Dictionary<string, List<Tuple<string, ColorScale>>> MaterialSets = new Dictionary<string, List<Tuple<string, ColorScale>>>();
         private static readonly Dictionary<string, List<Tuple<string, ColorScale>>> SuperMaterialSets = new Dictionary<string, List<Tuple<string, ColorScale>>>();
@@ -84,16 +111,9 @@ namespace ExNihilo.Systems.Game.Items
             }
         }
 
-        //These must have 11 elements. Note last element represents perfection
-        private static readonly string[] ModifierSet =
-        {
-            //Colors: Fine = green, Grand = blue, Legendary = yellow/orange, Mythical = purple, Absolute = rainbow
-            "Broken ", "Damaged ", "Shabby ", "Basic ", "", "", "Fine ", "Grand ", "Legendary ", "Mythical ", "Absolute "
-        };
-
         public enum SlotType : byte
         {
-            WEAP=0, HEAD=1, CHEST=2, HANDS=3, LEGS=4, FEET=5, ACC=6
+            WEAP = 0, HEAD = 1, CHEST = 2, HANDS = 3, LEGS = 4, FEET = 5, ACC = 6
         }
         public readonly SlotType Slot;
 
@@ -101,30 +121,21 @@ namespace ExNihilo.Systems.Game.Items
 
         private readonly float _hp, _mp, _atk, _def, _luck;
 
-        public Equipment(GraphicsDevice g, Texture2D sheet, string name, List<string> lines) : base(ItemType.Equip)
+        public EquipItem(GraphicsDevice g, Texture2D sheet, string name, List<string> lines) : base(ItemType.Equip)
         {
             Name = name;
             _materials = new List<string>();
-            var tokens = new[]{1, 1, 1, 1, 1};
-            while(lines.Count > 0)
+            var tokens = new[] { 1, 1, 1, 1, 1 };
+            while (lines.Count > 0)
             {
                 try
                 {
-                    var set = lines[0].Split(new[] {' '}, StringSplitOptions.RemoveEmptyEntries);
+                    var set = lines[0].Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
                     switch (set[0])
                     {
                         case "TYPE":
-                            Slot = (SlotType) Enum.Parse(typeof(SlotType), set[1]);
+                            Slot = (SlotType)Enum.Parse(typeof(SlotType), set[1]);
                             tokens[0] = 0;
-                            break;
-                        case "ICON":
-                            var rect = new Rectangle(int.Parse(set[1]), int.Parse(set[2]), int.Parse(set[3]), int.Parse(set[4]));
-                            Texture = TextureUtilities.GetSubTexture(g, sheet, rect);
-                            tokens[1] = 0;
-                            break;
-                        case "CHANCE":
-                            Chance = float.Parse(set[1]);
-                            tokens[2] = 0;
                             break;
                         case "STAT":
                             _hp = float.Parse(set[1]);
@@ -145,6 +156,16 @@ namespace ExNihilo.Systems.Game.Items
                                 else GameContainer.Console.ForceMessage("<warning>", set[j] + " is not a valid material", Color.DarkOrange, Color.White);
                             }
                             break;
+                        case "ICON":
+                            var rect = new Rectangle(int.Parse(set[1]), int.Parse(set[2]), int.Parse(set[3]), int.Parse(set[4]));
+                            Texture = TextureUtilities.GetSubTexture(g, sheet, rect);
+                            tokens[1] = 0;
+                            break;
+                        case "CHANCE":
+                            Chance = float.Parse(set[1]);
+                            if (Chance < 0) throw new ArgumentOutOfRangeException();
+                            tokens[2] = 0;
+                            break;
                         case "COLOR":
                             IconColor = new Color(int.Parse(set[1]), int.Parse(set[2]), int.Parse(set[3]));
                             tokens[4] = 0;
@@ -160,14 +181,14 @@ namespace ExNihilo.Systems.Game.Items
                 }
                 catch (Exception)
                 {
-                    GameContainer.Console.ForceMessage("<warning>", "Ignoring malformed item pack line \""+lines[0]+"\"", Color.DarkOrange, Color.White);
+                    GameContainer.Console.ForceMessage("<warning>", "Ignoring malformed item pack line \"" + lines[0] + "\"", Color.DarkOrange, Color.White);
                 }
                 lines.RemoveAt(0);
             }
             Valid = tokens.All(t => t == 0);
         }
 
-        public static EquipmentInstance GetInstance(Equipment item, Random rand, int level, int qual=-1)
+        public static EquipInstance GetInstance(EquipItem item, Random rand, int level, int qual = -1)
         {
             //Set stats
             //   10 +    3-  12 total points at level    1 with standard mults
@@ -181,28 +202,28 @@ namespace ExNihilo.Systems.Game.Items
             int count, quality = qual;
             if (qual < 0)
             {
-                count = (int) MathD.BellRange(MathD.urand, min, max);
+                count = (int)MathD.BellRange(MathD.urand, min, max);
                 quality = 10 * (count - min) / (max - min); //0-10
                 count /= 5;
             }
             else
             {
                 //inverse calculation from quality->rough count
-                count = (int) ((quality / 10.0 * (max - min) + min) / 5);
+                count = (int)((quality / 10.0 * (max - min) + min) / 5);
             }
 
             var stats = new StatOffset
             {
-                MaxHp = (int) (item._hp * (basic + count)),
-                MaxMp = (int) (item._mp * (basic + count)),
-                Atk = (int) (item._atk * (basic + count)),
-                Def = (int) (item._def * (basic + count)),
-                Luck = (int) (item._luck * (basic + count))
+                MaxHp = (int)(item._hp * (basic + count)),
+                MaxMp = (int)(item._mp * (basic + count)),
+                Atk = (int)(item._atk * (basic + count)),
+                Def = (int)(item._def * (basic + count)),
+                Luck = (int)(item._luck * (basic + count))
             };
 
             //Figure out item's name
             var matName = "";
-            Color color = item.IconColor;
+            var color = item.IconColor;
             if (item._materials.Count > 0)
             {
                 var matSet = quality > 6 ? SuperMaterialSets[item._materials[rand.Next(item._materials.Count)]] : MaterialSets[item._materials[rand.Next(item._materials.Count)]];
@@ -210,19 +231,10 @@ namespace ExNihilo.Systems.Game.Items
                 matName = material.Item1 + " ";
                 color = material.Item2;
             }
-            var trueName = ModifierSet[quality] + matName + item.Name;
-
-            //Figure out quality color if any
-            var textColor = Color.White;
-            if (quality < 3) textColor = Color.DarkRed;
-            else if (quality == 6) textColor = Color.ForestGreen;
-            else if (quality == 7) textColor = Color.DeepSkyBlue;
-            else if (quality == 8) textColor = Color.DarkOrange;
-            else if (quality == 9) textColor = Color.MediumPurple;
-            else if (quality == 10) textColor = ColorScale.GetFromGlobal("Rainbow");
+            var trueName = matName + item.Name;
 
             //Return generated instance of input item
-            return new EquipmentInstance(item, trueName, level, stats, textColor, color);
+            return new EquipInstance(item, level, quality, trueName, stats, color);
         }
     }
 
