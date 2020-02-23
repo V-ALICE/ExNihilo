@@ -14,8 +14,8 @@ namespace ExNihilo.Systems.Backend
     [Serializable]
     public class PackedGame
     {
-        // Update this whenever the save contents changes MMDDYYHH
-        public const string _version = "02182021";
+        // Update this whenever the save contents changes YYMMDDHH
+        public const string _version = "20022300";
 
         //configuration
         private readonly DateTime _lastSaveDate;
@@ -118,7 +118,14 @@ namespace ExNihilo.Systems.Backend
             string fileName = Environment.CurrentDirectory + "/Content/" + file;
             if (_saveSet.ContainsKey(file)) _saveSet[file] = game;
             else _saveSet.Add(file, game);
-            EncryptedSerializer.SerializeOut(fileName, game);
+            try
+            {
+                EncryptedSerializer.SerializeOut(fileName, game);
+            }
+            catch (Exception e)
+            {
+                GameContainer.Console.ForceMessage("<error>", e.Message, Color.DarkRed, ColorScale.White);
+            }
         }
 
         public static bool HasSave(string file)
@@ -146,6 +153,7 @@ namespace ExNihilo.Systems.Backend
                     if (EncryptedSerializer.DeserializeIn(fileName) is PackedGame game)
                     {
                         if (game.Version == PackedGame._version) _saveSet.Add(file, game);
+                        else throw new FormatException(fileName + " is outdated (file version=" + game.Version + " required version="+PackedGame._version);
                     }
                 }
                 catch (Exception e)

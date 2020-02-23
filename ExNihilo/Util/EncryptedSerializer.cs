@@ -1,6 +1,5 @@
 ﻿using System;
 using System.IO;
-using System.Runtime.Serialization;
 using System.Runtime.Serialization.Formatters.Binary;
 using System.Security.Cryptography;
 using System.Text;
@@ -34,34 +33,19 @@ namespace ExNihilo.Util
             if (File.Exists(fileName)) File.Delete(fileName);
 
             var formatter = new BinaryFormatter();
-            try
-            {
-                var test = new MemoryStream();
-                formatter.Serialize(test, o);
-                EncryptFile(fileName, test.ToArray());
-                test.Close();
-            }
-            catch (SerializationException e)
-            {
-                Console.WriteLine(@"Failed to serialize. Reason: " + e.Message);
-            }
+            var test = new MemoryStream();
+            formatter.Serialize(test, o);
+            EncryptFile(fileName, test.ToArray());
+            test.Close();
         }
 
         public static object DeserializeIn(string fileName)
         {
             if (!File.Exists(fileName)) return null;
 
-            object o = null;
-            try
-            {
-                var test = new MemoryStream(DecryptFile(fileName));
-                o = new BinaryFormatter().Deserialize(test);
-                test.Close();
-            }
-            catch (SerializationException e)
-            {
-                Console.WriteLine(@"Failed to deserialize. Reason: " + e.Message);
-            }
+            var test = new MemoryStream(DecryptFile(fileName));
+            var o = new BinaryFormatter().Deserialize(test);
+            test.Close();
             return o;
         }
     }

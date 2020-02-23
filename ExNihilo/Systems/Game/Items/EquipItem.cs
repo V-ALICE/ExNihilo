@@ -11,6 +11,7 @@ using Microsoft.Xna.Framework.Graphics;
 
 namespace ExNihilo.Systems.Game.Items
 {
+    [Serializable]
     public class EquipInstance : ItemInstance
     {
         public readonly StatOffset Stats;

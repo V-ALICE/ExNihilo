@@ -23,6 +23,8 @@ namespace ExNihilo.Sectors
         protected bool _menuActive => _menuPoint != null;
         protected Menu _menuPoint;
 
+        protected InventoryMenu _invRef;
+
         protected PlayerBasedSector(GameContainer container) : base(container)
         {
         }
@@ -35,6 +37,7 @@ namespace ExNihilo.Sectors
             _world?.OnResize(graphicsDevice, gameWindow);
             _debugPosition = new Vector2(1, 1 + TextDrawer.AlphaHeight + TextDrawer.LineSpacer);
             _menuPoint?.OnResize(graphicsDevice, gameWindow);
+            if (!(_menuPoint is InventoryMenu)) _invRef.OnResize(graphicsDevice, gameWindow);
         }
 
         public override void Enter(Point point, Coordinate gameWindow)
@@ -44,8 +47,7 @@ namespace ExNihilo.Sectors
 
         public override void Initialize()
         {
-            MenuHandler = new CommandHandler();
-            MenuHandler.InitializeMenu(this);
+            _invRef = new InventoryMenu(Container);
             _playerHandler = new CommandHandler();
             _playerHandler.InitializePlayer(this);
             _debugPosition = new Vector2(1, 1 + TextDrawer.AlphaHeight + TextDrawer.LineSpacer);
@@ -55,12 +57,12 @@ namespace ExNihilo.Sectors
         public override void LoadContent(GraphicsDevice graphicsDevice, ContentManager content)
         {
             _world.LoadContent(graphicsDevice, content);
+            _invRef.LoadContent(graphicsDevice, content);
         }
 
         public override void Update()
         {
-            if (_menuActive) MenuHandler.UpdateInput();
-            else if (!TypingKeyboard.Active)
+            if (!_menuActive && !TypingKeyboard.Active)
             {
                 _world.ApplyPush(CurrentPush, _systemPushSpeed*CurrentPushMult, _disableCollisions);
                 _playerHandler.UpdateInput();
@@ -92,6 +94,21 @@ namespace ExNihilo.Sectors
                 if (_menuPoint.Dead) _menuPoint = null;
             }
             else base.BackOut();
+        }
+
+        public override void ToggleTabMenu()
+        {
+            if (!_menuActive)
+            {
+                _menuPoint = _invRef;
+                _invRef.Enter(_lastMousePosition);
+                if (_menuActive) _world.Halt();
+            }
+            else if (_menuPoint is InventoryMenu)
+            {
+                _menuPoint.BackOut();
+                if (_menuPoint.Dead) _menuPoint = null;
+            }
         }
 
         public override void OnMoveMouse(Point point)

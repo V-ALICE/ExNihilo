@@ -15,6 +15,18 @@ namespace ExNihilo.Input.Commands.Types
         }
     }
 
+    public class ToggleInventory : GameplayCommand
+    {
+        public ToggleInventory(IPlayer game) : base(game)
+        {
+        }
+
+        public override void Activate()
+        {
+            Receiver.ToggleTabMenu();
+        }
+    }
+
     public class DoubleSpeed : GameplayCommand
     {
         public DoubleSpeed(IPlayer player) : base(player)

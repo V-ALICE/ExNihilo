@@ -333,6 +333,7 @@ namespace ExNihilo
 
         public void OpenConsole(string initMessage="")
         {
+            if (IsMouseVisible) return;
             Console.OpenConsole(initMessage);
         }
 
@@ -382,6 +383,7 @@ namespace ExNihilo
         {
             var item = ItemLoader.GetItem(MathD.urand, 100);
             Console.ForceMessage("<Asura>", item.GetFullName(), Color.Purple, Color.White);
+            Player.Inventory.TryAddItem(item);
         }
     }
 }

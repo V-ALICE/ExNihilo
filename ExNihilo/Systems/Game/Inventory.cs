@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using ExNihilo.Systems.Bases;
 using ExNihilo.Systems.Game.Items;
+using ExNihilo.Systems.Game.Items.ExNihilo.Systems.Game.Items;
 using ExNihilo.Util;
 
 namespace ExNihilo.Systems.Game
@@ -20,7 +21,7 @@ namespace ExNihilo.Systems.Game
         public StatSet Stats;
 
         public readonly EquipInstance[] _equipment = new EquipInstance[7];
-        public readonly ItemInstance[] _inventory = new ItemInstance[InventorySize];
+        public readonly List<ItemInstance> _inventory = new List<ItemInstance>(InventorySize);
 
         private const int InventorySize = 24;
         private const uint BaseNeededExp = 100;
@@ -30,6 +31,8 @@ namespace ExNihilo.Systems.Game
         public uint HeldLevel;
         public uint HeldSkillPoints = 2; //temp until skill set class exists
         public uint HeldExp, NextExp;
+
+        public bool Dirty;
 
         public Inventory()
         {
@@ -93,6 +96,23 @@ namespace ExNihilo.Systems.Game
         {
             HeldGold += change;
             if (HeldGold < 0) HeldGold = 0;
+        }
+
+        public bool CanAddItem()
+        {
+            return _inventory.Count < _inventory.Capacity;
+        }
+        public bool TryAddItem(ItemInstance item)
+        {
+            if (item is InstantInstance)
+            {
+
+            }
+            if (!CanAddItem()) return false;
+
+            _inventory.Add(item);
+            Dirty = true;
+            return true;
         }
 
         public void AddTriggeredOffset(int turns, StatOffset diff)

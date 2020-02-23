@@ -59,18 +59,7 @@ namespace ExNihilo.Input.Commands
             _bucket.Add(new KeyBlock(new TurnLeft(game), new UnTurnLeft(game), false, Keys.Left, Keys.A, Buttons.DPadLeft, Buttons.LeftThumbstickLeft));
             _bucket.Add(new KeyBlock(new TurnRight(game), new UnTurnRight(game), false, Keys.Right, Keys.D, Buttons.DPadRight, Buttons.LeftThumbstickRight));
             _bucket.Add(new KeyBlock(new DoubleSpeed(game), new UnDoubleSpeed(game), false, Keys.LeftShift, Buttons.X, Buttons.Y));
-        }
-
-        public void InitializeMenu(Sector game)
-        {
-            if (_bucket.Count > 0) return;
-
-            _bucket.Add(new KeyBlock(new MenuUp(game), true, Keys.Up, Keys.W, Buttons.DPadUp, Buttons.LeftThumbstickUp));
-            _bucket.Add(new KeyBlock(new MenuDown(game), true, Keys.Down, Keys.S, Buttons.DPadDown, Buttons.LeftThumbstickDown));
-            _bucket.Add(new KeyBlock(new MenuLeft(game), true, Keys.Left, Keys.A, Buttons.DPadLeft, Buttons.LeftThumbstickLeft));
-            _bucket.Add(new KeyBlock(new MenuRight(game), true, Keys.Right, Keys.D, Buttons.DPadRight, Buttons.LeftThumbstickRight));
-            _bucket.Add(new KeyBlock(new MenuSelect(game), false, Keys.Enter, Buttons.A));
-            _bucket.Add(new KeyBlock(new MenuBack(game), false, Keys.Q, Buttons.Start));
+            _bucket.Add(new KeyBlock(new ToggleInventory(game), false, Keys.Tab, Buttons.Start));
         }
 
         public void UpdateInput()

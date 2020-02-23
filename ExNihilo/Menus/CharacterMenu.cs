@@ -1,9 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using ExNihilo.Entity;
-using ExNihilo.Systems;
 using ExNihilo.Systems.Backend;
-using ExNihilo.Systems.Bases;
 using ExNihilo.Systems.Game;
 using ExNihilo.UI;
 using ExNihilo.Util;
@@ -11,6 +8,8 @@ using ExNihilo.Util.Graphics;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
+
+using Position = ExNihilo.Util.Graphics.TextureUtilities.PositionType;
 
 namespace ExNihilo.Menus
 {
@@ -276,68 +275,68 @@ namespace ExNihilo.Menus
                 new ScaleRule(6, ScaleRule.MAX_X, ScaleRule.MAX_Y)
             );
 
-            _panelUI = new UIPanel("this.MenuKing", new Vector2(0.5f, 0.5f), Vector2.One, TextureUtilities.PositionType.Center);
-            _newCharUI = new UIPanel("this.MenuKing", new Vector2(0.5f, 0.5f), Vector2.One, TextureUtilities.PositionType.Center);
+            _panelUI = new UIPanel("this.MenuKing", new Vector2(0.5f, 0.5f), Vector2.One, Position.Center);
+            _newCharUI = new UIPanel("this.MenuKing", new Vector2(0.5f, 0.5f), Vector2.One, Position.Center);
 
             //Main Panel
-            var backdrop = new UIElement("Backdrop", "UI/decor/Backdrop", new Vector2(0.5f, 0.5f), Color.White, _panelUI, TextureUtilities.PositionType.Center);
-            var backButton = new UIClickable("BackButton", "UI/button/SmallButton", new Coordinate(14, -14), ColorScale.White, backdrop, TextureUtilities.PositionType.BottomLeft, TextureUtilities.PositionType.BottomLeft);
-            var backButtonText = new UIText("BackButtonText", new Coordinate(), "Back", ColorScale.Black, backButton, TextureUtilities.PositionType.Center, TextureUtilities.PositionType.Center);
-            var currentCharacterSet = new UIElement("CharacterSet", "UI/field/SevenElementSet", new Coordinate(18, -100), ColorScale.White, backdrop, TextureUtilities.PositionType.BottomLeft, TextureUtilities.PositionType.BottomLeft);
-            var newCharButton = new UIClickable("NewCharButton", "UI/button/SmallButton", new Coordinate(-50, 50), ColorScale.White, backdrop, TextureUtilities.PositionType.TopRight, TextureUtilities.PositionType.TopRight);
-            var newCharButtonText = new UIText("NewCharButtonText", new Coordinate(), "New", ColorScale.Black, newCharButton, TextureUtilities.PositionType.Center, TextureUtilities.PositionType.Center);
-            var changeCharButton = new UIClickable("ChangeCharButton", "UI/button/SmallButton", new Coordinate(0, 25), ColorScale.White, newCharButton, TextureUtilities.PositionType.TopLeft, TextureUtilities.PositionType.BottomLeft);
-            var changeCharButtonText = new UIText("ChangeCharButtonText", new Coordinate(), " @hChange\nCharacter", ColorScale.Black, changeCharButton, TextureUtilities.PositionType.Center, TextureUtilities.PositionType.Center);
-            var charDisplay = new UIDynamicElement("CharacterDisplay", "null", new Coordinate(50, 50), ColorScale.White, backdrop, TextureUtilities.PositionType.TopLeft, TextureUtilities.PositionType.TopLeft);
+            var backdrop = new UIElement("Backdrop", "UI/decor/Backdrop", new Vector2(0.5f, 0.5f), Color.White, _panelUI, Position.Center);
+            var backButton = new UIClickable("BackButton", "UI/button/SmallButton", new Coordinate(14, -14), ColorScale.White, backdrop, Position.BottomLeft, Position.BottomLeft);
+            var backButtonText = new UIText("BackButtonText", new Coordinate(), "Back", ColorScale.Black, backButton, Position.Center, Position.Center);
+            var currentCharacterSet = new UIElement("CharacterSet", "UI/field/SevenElementSet", new Coordinate(18, -100), ColorScale.White, backdrop, Position.BottomLeft, Position.BottomLeft);
+            var newCharButton = new UIClickable("NewCharButton", "UI/button/SmallButton", new Coordinate(-50, 50), ColorScale.White, backdrop, Position.TopRight, Position.TopRight);
+            var newCharButtonText = new UIText("NewCharButtonText", new Coordinate(), "New", ColorScale.Black, newCharButton, Position.Center, Position.Center);
+            var changeCharButton = new UIClickable("ChangeCharButton", "UI/button/SmallButton", new Coordinate(0, 25), ColorScale.White, newCharButton, Position.TopLeft, Position.BottomLeft);
+            var changeCharButtonText = new UIText("ChangeCharButtonText", new Coordinate(), " @hChange\nCharacter", ColorScale.Black, changeCharButton, Position.Center, Position.Center);
+            var charDisplay = new UIDynamicElement("CharacterDisplay", "null", new Coordinate(50, 50), ColorScale.White, backdrop, Position.TopLeft, Position.TopLeft);
 
-            var charArray = new UIPanel("CurrentCharArray", new Coordinate(38, 12), new Coordinate(588, 60), currentCharacterSet, TextureUtilities.PositionType.TopLeft, TextureUtilities.PositionType.TopLeft);
-            var charPanel1 = new UIPanel("CharPanel1", new Coordinate(), new Coordinate(60, 60), charArray, TextureUtilities.PositionType.TopLeft, TextureUtilities.PositionType.TopLeft);
-            var charPanel2 = new UIPanel("CharPanel2", new Coordinate(28, 0), new Coordinate(60, 60), charPanel1, TextureUtilities.PositionType.TopLeft, TextureUtilities.PositionType.TopRight);
-            var charPanel3 = new UIPanel("CharPanel3", new Coordinate(28, 0), new Coordinate(60, 60), charPanel2, TextureUtilities.PositionType.TopLeft, TextureUtilities.PositionType.TopRight);
-            var charPanel4 = new UIPanel("CharPanel4", new Coordinate(28, 0), new Coordinate(60, 60), charPanel3, TextureUtilities.PositionType.TopLeft, TextureUtilities.PositionType.TopRight);
-            var charPanel5 = new UIPanel("CharPanel5", new Coordinate(28, 0), new Coordinate(60, 60), charPanel4, TextureUtilities.PositionType.TopLeft, TextureUtilities.PositionType.TopRight);
-            var charPanel6 = new UIPanel("CharPanel6", new Coordinate(28, 0), new Coordinate(60, 60), charPanel5, TextureUtilities.PositionType.TopLeft, TextureUtilities.PositionType.TopRight);
-            var charPanel7 = new UIPanel("CharPanel7", new Coordinate(28, 0), new Coordinate(60, 60), charPanel6, TextureUtilities.PositionType.TopLeft, TextureUtilities.PositionType.TopRight);
+            var charArray = new UIPanel("CurrentCharArray", new Coordinate(38, 12), new Coordinate(588, 60), currentCharacterSet, Position.TopLeft, Position.TopLeft);
+            var charPanel1 = new UIPanel("CharPanel1", new Coordinate(), new Coordinate(60, 60), charArray, Position.TopLeft, Position.TopLeft);
+            var charPanel2 = new UIPanel("CharPanel2", new Coordinate(28, 0), new Coordinate(60, 60), charPanel1, Position.TopLeft, Position.TopRight);
+            var charPanel3 = new UIPanel("CharPanel3", new Coordinate(28, 0), new Coordinate(60, 60), charPanel2, Position.TopLeft, Position.TopRight);
+            var charPanel4 = new UIPanel("CharPanel4", new Coordinate(28, 0), new Coordinate(60, 60), charPanel3, Position.TopLeft, Position.TopRight);
+            var charPanel5 = new UIPanel("CharPanel5", new Coordinate(28, 0), new Coordinate(60, 60), charPanel4, Position.TopLeft, Position.TopRight);
+            var charPanel6 = new UIPanel("CharPanel6", new Coordinate(28, 0), new Coordinate(60, 60), charPanel5, Position.TopLeft, Position.TopRight);
+            var charPanel7 = new UIPanel("CharPanel7", new Coordinate(28, 0), new Coordinate(60, 60), charPanel6, Position.TopLeft, Position.TopRight);
 
-            var portrait1 = new UIDynamicElement("Portrait1", "null", new Coordinate(), ColorScale.GetFromGlobal("Random"), charPanel1, TextureUtilities.PositionType.Center, TextureUtilities.PositionType.Center);
-            var portrait2 = new UIDynamicElement("Portrait2", "null", new Coordinate(), ColorScale.GetFromGlobal("Random"), charPanel2, TextureUtilities.PositionType.Center, TextureUtilities.PositionType.Center);
-            var portrait3 = new UIDynamicElement("Portrait3", "null", new Coordinate(), ColorScale.GetFromGlobal("Random"), charPanel3, TextureUtilities.PositionType.Center, TextureUtilities.PositionType.Center);
-            var portrait4 = new UIDynamicElement("Portrait4", "null", new Coordinate(), ColorScale.GetFromGlobal("Random"), charPanel4, TextureUtilities.PositionType.Center, TextureUtilities.PositionType.Center);
-            var portrait5 = new UIDynamicElement("Portrait5", "null", new Coordinate(), ColorScale.GetFromGlobal("Random"), charPanel5, TextureUtilities.PositionType.Center, TextureUtilities.PositionType.Center);
-            var portrait6 = new UIDynamicElement("Portrait6", "null", new Coordinate(), ColorScale.GetFromGlobal("Random"), charPanel6, TextureUtilities.PositionType.Center, TextureUtilities.PositionType.Center);
-            var portrait7 = new UIDynamicElement("Portrait7", "null", new Coordinate(), ColorScale.GetFromGlobal("Random"), charPanel7, TextureUtilities.PositionType.Center, TextureUtilities.PositionType.Center);
+            var portrait1 = new UIDynamicElement("Portrait1", "null", new Coordinate(), ColorScale.GetFromGlobal("Random"), charPanel1, Position.Center, Position.Center);
+            var portrait2 = new UIDynamicElement("Portrait2", "null", new Coordinate(), ColorScale.GetFromGlobal("Random"), charPanel2, Position.Center, Position.Center);
+            var portrait3 = new UIDynamicElement("Portrait3", "null", new Coordinate(), ColorScale.GetFromGlobal("Random"), charPanel3, Position.Center, Position.Center);
+            var portrait4 = new UIDynamicElement("Portrait4", "null", new Coordinate(), ColorScale.GetFromGlobal("Random"), charPanel4, Position.Center, Position.Center);
+            var portrait5 = new UIDynamicElement("Portrait5", "null", new Coordinate(), ColorScale.GetFromGlobal("Random"), charPanel5, Position.Center, Position.Center);
+            var portrait6 = new UIDynamicElement("Portrait6", "null", new Coordinate(), ColorScale.GetFromGlobal("Random"), charPanel6, Position.Center, Position.Center);
+            var portrait7 = new UIDynamicElement("Portrait7", "null", new Coordinate(), ColorScale.GetFromGlobal("Random"), charPanel7, Position.Center, Position.Center);
 
-            var deleteButton1 = new UIClickable("Delete1", "UI/button/RedBulb", new Coordinate(), ColorScale.White, charPanel1, TextureUtilities.PositionType.Center, TextureUtilities.PositionType.TopRight);
-            var deleteButton2 = new UIClickable("Delete2", "UI/button/RedBulb", new Coordinate(), ColorScale.White, charPanel2, TextureUtilities.PositionType.Center, TextureUtilities.PositionType.TopRight);
-            var deleteButton3 = new UIClickable("Delete3", "UI/button/RedBulb", new Coordinate(), ColorScale.White, charPanel3, TextureUtilities.PositionType.Center, TextureUtilities.PositionType.TopRight);
-            var deleteButton4 = new UIClickable("Delete4", "UI/button/RedBulb", new Coordinate(), ColorScale.White, charPanel4, TextureUtilities.PositionType.Center, TextureUtilities.PositionType.TopRight);
-            var deleteButton5 = new UIClickable("Delete5", "UI/button/RedBulb", new Coordinate(), ColorScale.White, charPanel5, TextureUtilities.PositionType.Center, TextureUtilities.PositionType.TopRight);
-            var deleteButton6 = new UIClickable("Delete6", "UI/button/RedBulb", new Coordinate(), ColorScale.White, charPanel6, TextureUtilities.PositionType.Center, TextureUtilities.PositionType.TopRight);
-            var deleteButton7 = new UIClickable("Delete7", "UI/button/RedBulb", new Coordinate(), ColorScale.White, charPanel7, TextureUtilities.PositionType.Center, TextureUtilities.PositionType.TopRight);
+            var deleteButton1 = new UIClickable("Delete1", "UI/button/RedBulb", new Coordinate(), ColorScale.White, charPanel1, Position.Center, Position.TopRight);
+            var deleteButton2 = new UIClickable("Delete2", "UI/button/RedBulb", new Coordinate(), ColorScale.White, charPanel2, Position.Center, Position.TopRight);
+            var deleteButton3 = new UIClickable("Delete3", "UI/button/RedBulb", new Coordinate(), ColorScale.White, charPanel3, Position.Center, Position.TopRight);
+            var deleteButton4 = new UIClickable("Delete4", "UI/button/RedBulb", new Coordinate(), ColorScale.White, charPanel4, Position.Center, Position.TopRight);
+            var deleteButton5 = new UIClickable("Delete5", "UI/button/RedBulb", new Coordinate(), ColorScale.White, charPanel5, Position.Center, Position.TopRight);
+            var deleteButton6 = new UIClickable("Delete6", "UI/button/RedBulb", new Coordinate(), ColorScale.White, charPanel6, Position.Center, Position.TopRight);
+            var deleteButton7 = new UIClickable("Delete7", "UI/button/RedBulb", new Coordinate(), ColorScale.White, charPanel7, Position.Center, Position.TopRight);
 
-            var deleteButton1Icon = new UIElement("Delete1Icon", "UI/icon/No", new Coordinate(), ColorScale.Ghost, deleteButton1, TextureUtilities.PositionType.Center, TextureUtilities.PositionType.Center);
-            var deleteButton2Icon = new UIElement("Delete2Icon", "UI/icon/No", new Coordinate(), ColorScale.Ghost, deleteButton2, TextureUtilities.PositionType.Center, TextureUtilities.PositionType.Center);
-            var deleteButton3Icon = new UIElement("Delete3Icon", "UI/icon/No", new Coordinate(), ColorScale.Ghost, deleteButton3, TextureUtilities.PositionType.Center, TextureUtilities.PositionType.Center);
-            var deleteButton4Icon = new UIElement("Delete4Icon", "UI/icon/No", new Coordinate(), ColorScale.Ghost, deleteButton4, TextureUtilities.PositionType.Center, TextureUtilities.PositionType.Center);
-            var deleteButton5Icon = new UIElement("Delete5Icon", "UI/icon/No", new Coordinate(), ColorScale.Ghost, deleteButton5, TextureUtilities.PositionType.Center, TextureUtilities.PositionType.Center);
-            var deleteButton6Icon = new UIElement("Delete6Icon", "UI/icon/No", new Coordinate(), ColorScale.Ghost, deleteButton6, TextureUtilities.PositionType.Center, TextureUtilities.PositionType.Center);
-            var deleteButton7Icon = new UIElement("Delete7Icon", "UI/icon/No", new Coordinate(), ColorScale.Ghost, deleteButton7, TextureUtilities.PositionType.Center, TextureUtilities.PositionType.Center);
+            var deleteButton1Icon = new UIElement("Delete1Icon", "UI/icon/No", new Coordinate(), ColorScale.Ghost, deleteButton1, Position.Center, Position.Center);
+            var deleteButton2Icon = new UIElement("Delete2Icon", "UI/icon/No", new Coordinate(), ColorScale.Ghost, deleteButton2, Position.Center, Position.Center);
+            var deleteButton3Icon = new UIElement("Delete3Icon", "UI/icon/No", new Coordinate(), ColorScale.Ghost, deleteButton3, Position.Center, Position.Center);
+            var deleteButton4Icon = new UIElement("Delete4Icon", "UI/icon/No", new Coordinate(), ColorScale.Ghost, deleteButton4, Position.Center, Position.Center);
+            var deleteButton5Icon = new UIElement("Delete5Icon", "UI/icon/No", new Coordinate(), ColorScale.Ghost, deleteButton5, Position.Center, Position.Center);
+            var deleteButton6Icon = new UIElement("Delete6Icon", "UI/icon/No", new Coordinate(), ColorScale.Ghost, deleteButton6, Position.Center, Position.Center);
+            var deleteButton7Icon = new UIElement("Delete7Icon", "UI/icon/No", new Coordinate(), ColorScale.Ghost, deleteButton7, Position.Center, Position.Center);
 
-            var charInfo1 = new UIElement("CharInfo1", "UI/field/LargeEntryBox", new Coordinate(), ColorScale.White, charPanel1, TextureUtilities.PositionType.BottomLeft, TextureUtilities.PositionType.TopLeft);
-            var charInfo2 = new UIElement("CharInfo2", "UI/field/LargeEntryBox", new Coordinate(), ColorScale.White, charPanel2, TextureUtilities.PositionType.CenterBottom, TextureUtilities.PositionType.TopLeft);
-            var charInfo3 = new UIElement("CharInfo3", "UI/field/LargeEntryBox", new Coordinate(), ColorScale.White, charPanel3, TextureUtilities.PositionType.CenterBottom, TextureUtilities.PositionType.TopLeft);
-            var charInfo4 = new UIElement("CharInfo4", "UI/field/LargeEntryBox", new Coordinate(), ColorScale.White, charPanel4, TextureUtilities.PositionType.CenterBottom, TextureUtilities.PositionType.TopLeft);
-            var charInfo5 = new UIElement("CharInfo5", "UI/field/LargeEntryBox", new Coordinate(), ColorScale.White, charPanel5, TextureUtilities.PositionType.CenterBottom, TextureUtilities.PositionType.TopLeft);
-            var charInfo6 = new UIElement("CharInfo6", "UI/field/LargeEntryBox", new Coordinate(), ColorScale.White, charPanel6, TextureUtilities.PositionType.CenterBottom, TextureUtilities.PositionType.TopLeft);
-            var charInfo7 = new UIElement("CharInfo7", "UI/field/LargeEntryBox", new Coordinate(), ColorScale.White, charPanel7, TextureUtilities.PositionType.BottomRight, TextureUtilities.PositionType.TopLeft);
+            var charInfo1 = new UIElement("CharInfo1", "UI/field/LargeEntryBox", new Coordinate(), ColorScale.White, charPanel1, Position.BottomLeft, Position.TopLeft);
+            var charInfo2 = new UIElement("CharInfo2", "UI/field/LargeEntryBox", new Coordinate(), ColorScale.White, charPanel2, Position.CenterBottom, Position.TopLeft);
+            var charInfo3 = new UIElement("CharInfo3", "UI/field/LargeEntryBox", new Coordinate(), ColorScale.White, charPanel3, Position.CenterBottom, Position.TopLeft);
+            var charInfo4 = new UIElement("CharInfo4", "UI/field/LargeEntryBox", new Coordinate(), ColorScale.White, charPanel4, Position.CenterBottom, Position.TopLeft);
+            var charInfo5 = new UIElement("CharInfo5", "UI/field/LargeEntryBox", new Coordinate(), ColorScale.White, charPanel5, Position.CenterBottom, Position.TopLeft);
+            var charInfo6 = new UIElement("CharInfo6", "UI/field/LargeEntryBox", new Coordinate(), ColorScale.White, charPanel6, Position.CenterBottom, Position.TopLeft);
+            var charInfo7 = new UIElement("CharInfo7", "UI/field/LargeEntryBox", new Coordinate(), ColorScale.White, charPanel7, Position.BottomRight, Position.TopLeft);
 
-            var charInfoText1 = new UIText("CharInfoText1", new Coordinate(14, 14), "Box1", ColorScale.Black, charInfo1, TextureUtilities.PositionType.TopLeft, TextureUtilities.PositionType.TopLeft);
-            var charInfoText2 = new UIText("CharInfoText2", new Coordinate(14, 14), "Box2", ColorScale.Black, charInfo2, TextureUtilities.PositionType.TopLeft, TextureUtilities.PositionType.TopLeft);
-            var charInfoText3 = new UIText("CharInfoText3", new Coordinate(14, 14), "Box3", ColorScale.Black, charInfo3, TextureUtilities.PositionType.TopLeft, TextureUtilities.PositionType.TopLeft);
-            var charInfoText4 = new UIText("CharInfoText4", new Coordinate(14, 14), "Box4", ColorScale.Black, charInfo4, TextureUtilities.PositionType.TopLeft, TextureUtilities.PositionType.TopLeft);
-            var charInfoText5 = new UIText("CharInfoText5", new Coordinate(14, 14), "Box5", ColorScale.Black, charInfo5, TextureUtilities.PositionType.TopLeft, TextureUtilities.PositionType.TopLeft);
-            var charInfoText6 = new UIText("CharInfoText6", new Coordinate(14, 14), "Box6", ColorScale.Black, charInfo6, TextureUtilities.PositionType.TopLeft, TextureUtilities.PositionType.TopLeft);
-            var charInfoText7 = new UIText("CharInfoText7", new Coordinate(14, 14), "Box7", ColorScale.Black, charInfo7, TextureUtilities.PositionType.TopLeft, TextureUtilities.PositionType.TopLeft);
+            var charInfoText1 = new UIText("CharInfoText1", new Coordinate(14, 14), "Box1", ColorScale.Black, charInfo1, Position.TopLeft, Position.TopLeft);
+            var charInfoText2 = new UIText("CharInfoText2", new Coordinate(14, 14), "Box2", ColorScale.Black, charInfo2, Position.TopLeft, Position.TopLeft);
+            var charInfoText3 = new UIText("CharInfoText3", new Coordinate(14, 14), "Box3", ColorScale.Black, charInfo3, Position.TopLeft, Position.TopLeft);
+            var charInfoText4 = new UIText("CharInfoText4", new Coordinate(14, 14), "Box4", ColorScale.Black, charInfo4, Position.TopLeft, Position.TopLeft);
+            var charInfoText5 = new UIText("CharInfoText5", new Coordinate(14, 14), "Box5", ColorScale.Black, charInfo5, Position.TopLeft, Position.TopLeft);
+            var charInfoText6 = new UIText("CharInfoText6", new Coordinate(14, 14), "Box6", ColorScale.Black, charInfo6, Position.TopLeft, Position.TopLeft);
+            var charInfoText7 = new UIText("CharInfoText7", new Coordinate(14, 14), "Box7", ColorScale.Black, charInfo7, Position.TopLeft, Position.TopLeft);
 
             charPanel1.AddTooltip(new Coordinate(60, 60), new Vector2(0, -17), charInfo1, charInfoText1);
             charPanel2.AddTooltip(new Coordinate(60, 60), new Vector2(0, -17), charInfo2, charInfoText2);
@@ -369,38 +368,38 @@ namespace ExNihilo.Menus
             _panelUI.AddElements(backdrop, currentCharacterSet, backButton, backButtonText, newCharButton, newCharButtonText, changeCharButton, changeCharButtonText, charArray, charDisplay);
 
             //New Character Panel
-            var backdrop2 = new UIElement("Backdrop2", "UI/decor/Backdrop", new Vector2(0.5f, 0.5f), Color.White, _newCharUI, TextureUtilities.PositionType.Center);
-            var cancelButton = new UIClickable("CancelButton", "UI/button/SmallButton", new Coordinate(10, -10), ColorScale.White, backdrop2, TextureUtilities.PositionType.BottomLeft, TextureUtilities.PositionType.BottomLeft);
-            var cancelButtonText = new UIText("CancelButtonText", new Coordinate(), "Cancel", ColorScale.Black, cancelButton, TextureUtilities.PositionType.Center, TextureUtilities.PositionType.Center);
-            var confirmButton = new UIClickable("ConfirmButton", "UI/button/SmallButton", new Coordinate(-10, -10), ColorScale.White, backdrop2, TextureUtilities.PositionType.BottomRight, TextureUtilities.PositionType.BottomRight);
-            var confirmButtonText = new UIText("ConfirmButtonText", new Coordinate(), "Confirm", ColorScale.Black, confirmButton, TextureUtilities.PositionType.Center, TextureUtilities.PositionType.Center);
-            var inputBox = new UITogglable("NewCharInputBox", "UI/field/SmallEntryBox", new Coordinate(50, 50), ColorScale.Ghost, backdrop2, TextureUtilities.PositionType.TopLeft, TextureUtilities.PositionType.TopLeft, false, true);
-            var inputBoxText = new UIText("NewCharInputBoxText", new Coordinate(20, 20), "New Char", ColorScale.Black, inputBox, TextureUtilities.PositionType.TopLeft, TextureUtilities.PositionType.TopLeft);
+            var backdrop2 = new UIElement("Backdrop2", "UI/decor/Backdrop", new Vector2(0.5f, 0.5f), Color.White, _newCharUI, Position.Center);
+            var cancelButton = new UIClickable("CancelButton", "UI/button/SmallButton", new Coordinate(10, -10), ColorScale.White, backdrop2, Position.BottomLeft, Position.BottomLeft);
+            var cancelButtonText = new UIText("CancelButtonText", new Coordinate(), "Cancel", ColorScale.Black, cancelButton, Position.Center, Position.Center);
+            var confirmButton = new UIClickable("ConfirmButton", "UI/button/SmallButton", new Coordinate(-10, -10), ColorScale.White, backdrop2, Position.BottomRight, Position.BottomRight);
+            var confirmButtonText = new UIText("ConfirmButtonText", new Coordinate(), "Confirm", ColorScale.Black, confirmButton, Position.Center, Position.Center);
+            var inputBox = new UITogglable("NewCharInputBox", "UI/field/SmallEntryBox", new Coordinate(50, 50), ColorScale.Ghost, backdrop2, Position.TopLeft, Position.TopLeft, false, true);
+            var inputBoxText = new UIText("NewCharInputBoxText", new Coordinate(20, 20), "New Char", ColorScale.Black, inputBox, Position.TopLeft, Position.TopLeft);
 
-            var charDesignPanel = new UIPanel("CharDesignPanel", new Coordinate(-50, 50), new Coordinate(200, 125), backdrop2, TextureUtilities.PositionType.TopRight, TextureUtilities.PositionType.TopRight);
-            var charBodyDisplay = new UIDynamicElement("CharBodyDisplay", "null", new Coordinate(), ColorScale.White, charDesignPanel, TextureUtilities.PositionType.Center, TextureUtilities.PositionType.Center);
-            var charClothDisplay = new UIDynamicElement("CharClothDisplay", "null", new Coordinate(), ColorScale.White, charDesignPanel, TextureUtilities.PositionType.Center, TextureUtilities.PositionType.Center);
-            var charHairDisplay = new UIDynamicElement("CharHairDisplay", "null", new Coordinate(), ColorScale.White, charDesignPanel, TextureUtilities.PositionType.Center, TextureUtilities.PositionType.Center);
+            var charDesignPanel = new UIPanel("CharDesignPanel", new Coordinate(-50, 50), new Coordinate(200, 125), backdrop2, Position.TopRight, Position.TopRight);
+            var charBodyDisplay = new UIDynamicElement("CharBodyDisplay", "null", new Coordinate(), ColorScale.White, charDesignPanel, Position.Center, Position.Center);
+            var charClothDisplay = new UIDynamicElement("CharClothDisplay", "null", new Coordinate(), ColorScale.White, charDesignPanel, Position.Center, Position.Center);
+            var charHairDisplay = new UIDynamicElement("CharHairDisplay", "null", new Coordinate(), ColorScale.White, charDesignPanel, Position.Center, Position.Center);
 
-            var leftHair = new UIClickable("HairLeft", "UI/button/RedBulb", new Vector2(), ColorScale.White, charDesignPanel, TextureUtilities.PositionType.Center);
-            var leftBody = new UIClickable("BodyLeft", "UI/button/GreenBulb", new Vector2(0, 0.33f), ColorScale.White, charDesignPanel, TextureUtilities.PositionType.Center);
-            var leftCloth = new UIClickable("ClothLeft", "UI/button/BlueBulb", new Vector2(0, 0.67f), ColorScale.White, charDesignPanel, TextureUtilities.PositionType.Center);
-            var leftColor = new UIClickable("ColorLeft", "UI/button/BlackBulb", new Vector2(0, 1), ColorScale.White, charDesignPanel, TextureUtilities.PositionType.Center);
+            var leftHair = new UIClickable("HairLeft", "UI/button/RedBulb", new Vector2(), ColorScale.White, charDesignPanel, Position.Center);
+            var leftBody = new UIClickable("BodyLeft", "UI/button/GreenBulb", new Vector2(0, 0.33f), ColorScale.White, charDesignPanel, Position.Center);
+            var leftCloth = new UIClickable("ClothLeft", "UI/button/BlueBulb", new Vector2(0, 0.67f), ColorScale.White, charDesignPanel, Position.Center);
+            var leftColor = new UIClickable("ColorLeft", "UI/button/BlackBulb", new Vector2(0, 1), ColorScale.White, charDesignPanel, Position.Center);
 
-            var rightHair = new UIClickable("HairRight", "UI/button/RedBulb", new Vector2(1, 0), ColorScale.White, charDesignPanel, TextureUtilities.PositionType.Center);
-            var rightBody = new UIClickable("BodyRight", "UI/button/GreenBulb", new Vector2(1, 0.33f), ColorScale.White, charDesignPanel, TextureUtilities.PositionType.Center);
-            var rightCloth = new UIClickable("ClothRight", "UI/button/BlueBulb", new Vector2(1, 0.67f), ColorScale.White, charDesignPanel, TextureUtilities.PositionType.Center);
-            var rightColor = new UIClickable("ColorRight", "UI/button/BlackBulb", new Vector2(1, 1), ColorScale.White, charDesignPanel, TextureUtilities.PositionType.Center);
+            var rightHair = new UIClickable("HairRight", "UI/button/RedBulb", new Vector2(1, 0), ColorScale.White, charDesignPanel, Position.Center);
+            var rightBody = new UIClickable("BodyRight", "UI/button/GreenBulb", new Vector2(1, 0.33f), ColorScale.White, charDesignPanel, Position.Center);
+            var rightCloth = new UIClickable("ClothRight", "UI/button/BlueBulb", new Vector2(1, 0.67f), ColorScale.White, charDesignPanel, Position.Center);
+            var rightColor = new UIClickable("ColorRight", "UI/button/BlackBulb", new Vector2(1, 1), ColorScale.White, charDesignPanel, Position.Center);
 
-            var leftArrow1 = new UIElement("Left1", "UI/icon/Left", new Coordinate(), ColorScale.Ghost, leftHair, TextureUtilities.PositionType.Center, TextureUtilities.PositionType.Center);
-            var leftArrow2 = new UIElement("Left2", "UI/icon/Left", new Coordinate(), ColorScale.Ghost, leftBody, TextureUtilities.PositionType.Center, TextureUtilities.PositionType.Center);
-            var leftArrow3 = new UIElement("Left3", "UI/icon/Left", new Coordinate(), ColorScale.Ghost, leftCloth, TextureUtilities.PositionType.Center, TextureUtilities.PositionType.Center);
-            var leftArrow4 = new UIElement("Left4", "UI/icon/Left", new Coordinate(), ColorScale.Ghost, leftColor, TextureUtilities.PositionType.Center, TextureUtilities.PositionType.Center);
+            var leftArrow1 = new UIElement("Left1", "UI/icon/Left", new Coordinate(), ColorScale.Ghost, leftHair, Position.Center, Position.Center);
+            var leftArrow2 = new UIElement("Left2", "UI/icon/Left", new Coordinate(), ColorScale.Ghost, leftBody, Position.Center, Position.Center);
+            var leftArrow3 = new UIElement("Left3", "UI/icon/Left", new Coordinate(), ColorScale.Ghost, leftCloth, Position.Center, Position.Center);
+            var leftArrow4 = new UIElement("Left4", "UI/icon/Left", new Coordinate(), ColorScale.Ghost, leftColor, Position.Center, Position.Center);
             
-            var rightArrow1 = new UIElement("Right1", "UI/icon/Right", new Coordinate(), ColorScale.Ghost, rightHair, TextureUtilities.PositionType.Center, TextureUtilities.PositionType.Center);
-            var rightArrow2 = new UIElement("Right2", "UI/icon/Right", new Coordinate(), ColorScale.Ghost, rightBody, TextureUtilities.PositionType.Center, TextureUtilities.PositionType.Center);
-            var rightArrow3 = new UIElement("Right3", "UI/icon/Right", new Coordinate(), ColorScale.Ghost, rightCloth, TextureUtilities.PositionType.Center, TextureUtilities.PositionType.Center);
-            var rightArrow4 = new UIElement("Right4", "UI/icon/Right", new Coordinate(), ColorScale.Ghost, rightColor, TextureUtilities.PositionType.Center, TextureUtilities.PositionType.Center);
+            var rightArrow1 = new UIElement("Right1", "UI/icon/Right", new Coordinate(), ColorScale.Ghost, rightHair, Position.Center, Position.Center);
+            var rightArrow2 = new UIElement("Right2", "UI/icon/Right", new Coordinate(), ColorScale.Ghost, rightBody, Position.Center, Position.Center);
+            var rightArrow3 = new UIElement("Right3", "UI/icon/Right", new Coordinate(), ColorScale.Ghost, rightCloth, Position.Center, Position.Center);
+            var rightArrow4 = new UIElement("Right4", "UI/icon/Right", new Coordinate(), ColorScale.Ghost, rightColor, Position.Center, Position.Center);
 
             cancelButton.RegisterCallback(CancelNewChar);
             confirmButton.RegisterCallback(ConfirmNewChar);

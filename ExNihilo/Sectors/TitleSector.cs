@@ -33,8 +33,6 @@ namespace ExNihilo.Sectors
 
         public override void Initialize()
         {
-            MenuHandler = new CommandHandler();
-            MenuHandler.InitializeMenu(this);
             _title = new TitleMenu(Container);
         }
 
@@ -45,7 +43,6 @@ namespace ExNihilo.Sectors
 
         public override void Update()
         {
-            if (!TypingKeyboard.Active) MenuHandler.UpdateInput();
         }
 
         protected override void DrawDebugInfo(SpriteBatch spriteBatch)

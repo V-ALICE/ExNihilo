@@ -70,10 +70,10 @@
     <Compile Include="Entity\EntityTexture.cs" />
     <Compile Include="Input\Commands\Types\ConsoleCommands.cs" />
     <Compile Include="Input\Commands\Types\SuperCommands.cs" />
-    <Compile Include="Input\Commands\Types\MenuCommands.cs" />
     <Compile Include="Input\Controllers\MouseController.cs" />
     <Compile Include="Menus\CharacterMenu.cs" />
     <Compile Include="Menus\DivineMenu.cs" />
+    <Compile Include="Menus\InventoryMenu.cs" />
     <Compile Include="Menus\Menu.cs" />
     <Compile Include="Menus\MultiplayerMenu.cs" />
     <Compile Include="Menus\NoteMenu.cs" />

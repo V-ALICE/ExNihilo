@@ -11,6 +11,7 @@ using Microsoft.Xna.Framework.Graphics;
 
 namespace ExNihilo.Systems.Game.Items
 {
+    [Serializable]
     public class UseInstance : ItemInstance
     {
         public Action<Inventory, List<EntityContainer>> Perform;

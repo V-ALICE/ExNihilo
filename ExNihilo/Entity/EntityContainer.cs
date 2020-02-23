@@ -42,7 +42,7 @@ namespace ExNihilo.Entity
         }
 
         private readonly int[] _textureSet;
-        private readonly Inventory _inventory;
+        public readonly Inventory Inventory;
 
         public PlayerEntityContainer(GraphicsDevice graphics, string name, int body, int hair, int cloth, int color, Inventory inv=null) : base(name)
         {
@@ -51,12 +51,12 @@ namespace ExNihilo.Entity
             var clothSheet = TextureLibrary.Lookup("Char/cloth/" + (cloth + 1));
             Entity = new EntityTexture(graphics, TextureUtilities.CombineTextures(graphics, bodySheet, clothSheet, hairSheet), 1);
             _textureSet = new[] {body, hair, cloth, color};
-            _inventory = inv ?? new Inventory();
+            Inventory = inv ?? new Inventory();
         }
 
         public PackedPlayerEntityContainer GetPacked()
         {
-            return new PackedPlayerEntityContainer {Name = Name, TextureSet = _textureSet, Inventory = _inventory};
+            return new PackedPlayerEntityContainer {Name = Name, TextureSet = _textureSet, Inventory = Inventory};
         }
     }
 }

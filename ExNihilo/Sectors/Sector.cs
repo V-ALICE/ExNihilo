@@ -14,7 +14,6 @@ namespace ExNihilo.Sectors
     public abstract class Sector : IUI, IClickable, ISavable, IPlayer
     {
         protected GameContainer Container;
-        protected CommandHandler MenuHandler;
 
         protected Coordinate CurrentPush;
         protected int CurrentPushMult;
@@ -87,6 +86,11 @@ namespace ExNihilo.Sectors
 
         public virtual void Touch()
         {
+        }
+
+        public virtual void ToggleTabMenu()
+        {
+
         }
     }
 }
