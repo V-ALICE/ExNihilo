@@ -158,7 +158,7 @@ namespace ExNihilo.Systems.Game
 
             if (PlayerOverlay != null)
             {
-                var adjustedOffset = (PlayerOverlay.PlayerCenterScreen - CurrentWorldPosition) * (CurrentWorldScale / oldScale);
+                var adjustedOffset = (CurrentWorldScale / oldScale)*(PlayerOverlay.PlayerCenterScreen - CurrentWorldPosition);
                 PlayerOverlay.OnResize(graphics, gameWindow); //this is warped between these measurements purposefully
                 CurrentWorldPosition = PlayerOverlay.PlayerCenterScreen - adjustedOffset;
             }
@@ -175,12 +175,13 @@ namespace ExNihilo.Systems.Game
             for (int i=_subLevelTextures.Count-1; i>=0; i--)
             {
                 //Parallax -> offset from center of main map applied to sub maps with reduction
-                var pos = PlayerOverlay.PlayerCenterScreen + (CurrentWorldPosition - PlayerOverlay.PlayerCenterScreen) / (i+2);
+                var thing = CurrentWorldPosition - PlayerOverlay.PlayerCenterScreen;
+                var pos = PlayerOverlay.PlayerCenterScreen + new Coordinate(thing.X / (i + 2), thing.Y / (i + 2));
                 var value = 1.0f/(i+2);
                 var color = new Color(value, value, value);
                 var scale = CurrentWorldScale/(i+2);
-                spriteBatch.Draw(_subLevelTextures[i], pos, null, color, 0, Vector2.Zero, scale, SpriteEffects.None, 0);
-                if (D.Bug) LineDrawer.DrawSquare(spriteBatch, pos, scale*_subLevelTextures[i].Width, scale*_subLevelTextures[i].Height, ColorScale.White);
+                spriteBatch.Draw(_subLevelTextures[i], (Vector2)pos, null, color, 0, Vector2.Zero, scale, SpriteEffects.None, 0);
+                if (D.Bug) LineDrawer.DrawSquare(spriteBatch, (Vector2)pos, scale*_subLevelTextures[i].Width, scale*_subLevelTextures[i].Height, ColorScale.White);
             }
             base.Draw(spriteBatch);
             if (D.Bug) LineDrawer.DrawSquare(spriteBatch, CurrentWorldPosition, CurrentWorldScale * WorldTexture.Width, CurrentWorldScale * WorldTexture.Height, ColorScale.White);

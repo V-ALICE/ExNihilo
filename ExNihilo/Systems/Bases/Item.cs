@@ -12,12 +12,12 @@ namespace ExNihilo.Systems.Bases
     {
         public readonly int Level;
         public string Name { get; protected set; }
-        public Texture2D Texture { get; private set; }
+        [NonSerialized] protected AnimatableTexture Texture;
 
         protected readonly int Quality;
-        public ColorScale QualityColor { get; private set; }
+        [NonSerialized] private ColorScale QualityColor;
         protected readonly string ColorName;
-        public ColorScale IconColor { get; protected set; }
+        [NonSerialized] protected ColorScale IconColor;
 
        //These must have 11 elements. Note last element represents perfection
         public static readonly string[] ModifierSet =
@@ -39,10 +39,25 @@ namespace ExNihilo.Systems.Bases
            else QualityColor = Color.Black;
         }
 
-        //TODO: the way this is set up, saving will make a lot of duped image files(?) or no images
+        //TODO: Saving does not hold on to images so those will need to be restored
         public void Restore(Item reference)
         {
             Texture = reference.Texture;
+        }
+
+        public AnimatableTexture GetTexture()
+        {
+            return Texture;
+        }
+
+        public ColorScale GetIconColor()
+        {
+            return IconColor;
+        }
+
+        public ColorScale GetQualityColor()
+        {
+            return QualityColor;
         }
 
         public string GetFullName()
@@ -91,7 +106,7 @@ namespace ExNihilo.Systems.Bases
         public bool Valid { get; protected set; }
         public string Name { get; protected set; }
         public float Chance { get; protected set; }
-        public Texture2D Texture { get; protected set; }
+        public AnimatableTexture Texture { get; protected set; }
         public Color IconColor { get; protected set; }
         public string IconColorLookup { get; protected set; }
 

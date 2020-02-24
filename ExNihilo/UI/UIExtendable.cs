@@ -92,8 +92,8 @@ namespace ExNihilo.UI
         public override bool IsOver(Point mousePos)
         {
             if (TexturePath == "null") return false;
-            int buttonX = (int)(Math.Round(mousePos.X - OriginPosition.X) / CurrentScale);
-            int buttonY = (int)(Math.Round(mousePos.Y - OriginPosition.Y) / CurrentScale);
+            int buttonX = (int)((mousePos.X - OriginPosition.X) / CurrentScale);
+            int buttonY = (int)((mousePos.Y - OriginPosition.Y) / CurrentScale);
             return buttonX >= 0 && buttonY >= 0 && buttonX < MaximumSize.X && buttonY < MaximumSize.Y;
         }
 

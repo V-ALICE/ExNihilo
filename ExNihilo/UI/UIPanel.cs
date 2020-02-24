@@ -105,12 +105,12 @@ namespace ExNihilo.UI
             foreach (var item in Set) item.LoadContent(graphics, content);
         }
 
-        public override void Draw(SpriteBatch spriteBatch, Vector2 rightDownOffset)
+        public override void Draw(SpriteBatch spriteBatch, Coordinate rightDownOffset)
         {
             if (!Loaded) return;
             foreach (var item in Set) item.Draw(spriteBatch, rightDownOffset);
 
-            if (D.Bug) LineDrawer.DrawSquare(spriteBatch, OriginPosition+ rightDownOffset, CurrentPixelSize.X, CurrentPixelSize.Y, Color.White, 5);
+            if (D.Bug) LineDrawer.DrawSquare(spriteBatch, (Vector2)(OriginPosition + rightDownOffset), CurrentPixelSize.X, CurrentPixelSize.Y, Color.White, 5);
         }
 
         public override void Draw(SpriteBatch spriteBatch)
@@ -119,13 +119,13 @@ namespace ExNihilo.UI
             foreach (var item in Set) item.Draw(spriteBatch);
             if (King) DrawFinal(spriteBatch);
 
-            if (D.Bug) LineDrawer.DrawSquare(spriteBatch, OriginPosition, CurrentPixelSize.X, CurrentPixelSize.Y, Color.White, 5);
+            if (D.Bug) LineDrawer.DrawSquare(spriteBatch, (Vector2)OriginPosition, CurrentPixelSize.X, CurrentPixelSize.Y, Color.White, 5);
         }
 
         public void DrawFinal(SpriteBatch spriteBatch)
         {
             foreach (var item in Set) (item as UIPanel)?.DrawFinal(spriteBatch);
-            if (Over) Tooltip?.Draw(spriteBatch, CurrentScale * TooltipOffset + new Vector2(LastMousePos.X - OriginPosition.X, LastMousePos.Y - OriginPosition.Y));
+            if (Over) Tooltip?.Draw(spriteBatch, new Coordinate(LastMousePos.X - OriginPosition.X, LastMousePos.Y - OriginPosition.Y) + (Coordinate)(CurrentScale * TooltipOffset));
         }
 
         public override void OnResize(GraphicsDevice graphics, Coordinate gameWindow)
@@ -150,7 +150,7 @@ namespace ExNihilo.UI
                 else
                 {
                     //Position of king is relative to the space of the screen
-                    OriginPosition = gameWindow * PositionRelativeToBase - TextureOffsetToOrigin;
+                    OriginPosition = (Coordinate)(gameWindow * PositionRelativeToBase) - TextureOffsetToOrigin;
                 }
             }
             else if (IsRelativeToSuperior)
@@ -175,7 +175,7 @@ namespace ExNihilo.UI
                 else
                 {
                     //Position of this element is relative to the space of its base panel
-                    OriginPosition = BaseElement.OriginPosition + BaseElement.CurrentPixelSize * PositionRelativeToBase - TextureOffsetToOrigin;
+                    OriginPosition = (Coordinate)(BaseElement.CurrentPixelSize * PositionRelativeToBase) + BaseElement.OriginPosition - TextureOffsetToOrigin;
                 }
             }
             else base.OnResize(graphics, gameWindow);
@@ -187,8 +187,8 @@ namespace ExNihilo.UI
         public override bool IsOver(Point mousePos)
         {
             if (Disabled) return false;
-            int buttonX = (int)(Math.Round(mousePos.X - OriginPosition.X) / CurrentScale);
-            int buttonY = (int)(Math.Round(mousePos.Y - OriginPosition.Y) / CurrentScale);
+            int buttonX = (int)((mousePos.X - OriginPosition.X) / CurrentScale);
+            int buttonY = (int)((mousePos.Y - OriginPosition.Y) / CurrentScale);
             return buttonX >= 0 && buttonY >= 0 && buttonX < CurrentPixelSize.X / CurrentScale && buttonY < CurrentPixelSize.Y / CurrentScale;
         }
 

@@ -171,8 +171,8 @@ namespace ExNihilo.Menus
                 var rect = new Rectangle(0, sheet.Height / 2, sheet.Width, sheet.Height / 4);
                 var cloth = new AnimatableTexture(TextureUtilities.GetSubTexture(Container.GraphicsDevice, sheet, rect), 4, 4);
                 (_newCharUI.GetElement("CharClothDisplay") as UIDynamicElement)?.ChangeTexture(cloth);
-                (_newCharUI.GetElement("CharBodyDisplay") as UIDynamicElement)?.ResetTexture();
-                (_newCharUI.GetElement("CharHairDisplay") as UIDynamicElement)?.ResetTexture();
+                (_newCharUI.GetElement("CharBodyDisplay") as UIDynamicElement)?.ResetTextureFrame();
+                (_newCharUI.GetElement("CharHairDisplay") as UIDynamicElement)?.ResetTextureFrame();
             }
             else if (package.Caller.StartsWith("Hair"))
             {
@@ -182,8 +182,8 @@ namespace ExNihilo.Menus
                 var rect = new Rectangle(0, sheet.Height / 2, sheet.Width, sheet.Height / 4);
                 var hair = new AnimatableTexture(TextureUtilities.GetSubTexture(Container.GraphicsDevice, sheet, rect), 4, 4);
                 (_newCharUI.GetElement("CharHairDisplay") as UIDynamicElement)?.ChangeTexture(hair);
-                (_newCharUI.GetElement("CharBodyDisplay") as UIDynamicElement)?.ResetTexture();
-                (_newCharUI.GetElement("CharClothDisplay") as UIDynamicElement)?.ResetTexture();
+                (_newCharUI.GetElement("CharBodyDisplay") as UIDynamicElement)?.ResetTextureFrame();
+                (_newCharUI.GetElement("CharClothDisplay") as UIDynamicElement)?.ResetTextureFrame();
             }
             else if (package.Caller.StartsWith("Color"))
             {
@@ -193,8 +193,8 @@ namespace ExNihilo.Menus
                 var rect = new Rectangle(0, sheet.Height / 2, sheet.Width, sheet.Height / 4);
                 var hair = new AnimatableTexture(TextureUtilities.GetSubTexture(Container.GraphicsDevice, sheet, rect), 4, 4);
                 (_newCharUI.GetElement("CharHairDisplay") as UIDynamicElement)?.ChangeTexture(hair);
-                (_newCharUI.GetElement("CharBodyDisplay") as UIDynamicElement)?.ResetTexture();
-                (_newCharUI.GetElement("CharClothDisplay") as UIDynamicElement)?.ResetTexture();
+                (_newCharUI.GetElement("CharBodyDisplay") as UIDynamicElement)?.ResetTextureFrame();
+                (_newCharUI.GetElement("CharClothDisplay") as UIDynamicElement)?.ResetTextureFrame();
             }
             else if (package.Caller.StartsWith("Body"))
             {
@@ -204,8 +204,8 @@ namespace ExNihilo.Menus
                 var rect = new Rectangle(0, sheet.Height / 2, sheet.Width, sheet.Height / 4);
                 var body = new AnimatableTexture(TextureUtilities.GetSubTexture(Container.GraphicsDevice, sheet, rect), 4, 4);
                 (_newCharUI.GetElement("CharBodyDisplay") as UIDynamicElement)?.ChangeTexture(body);
-                (_newCharUI.GetElement("CharClothDisplay") as UIDynamicElement)?.ResetTexture();
-                (_newCharUI.GetElement("CharHairDisplay") as UIDynamicElement)?.ResetTexture();
+                (_newCharUI.GetElement("CharClothDisplay") as UIDynamicElement)?.ResetTextureFrame();
+                (_newCharUI.GetElement("CharHairDisplay") as UIDynamicElement)?.ResetTextureFrame();
             }
         }
 

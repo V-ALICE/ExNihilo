@@ -39,7 +39,7 @@ namespace ExNihilo.Systems.Game.Items
         }
         public override Color[] GetSmartColors(Color basic)
         {
-            return new Color[] { QualityColor, basic, Color.ForestGreen, Color.DarkRed };
+            return new Color[] { GetQualityColor(), basic, Color.ForestGreen, Color.DarkRed };
         }
 
         public string GetSmartDesc(EquipInstance other)

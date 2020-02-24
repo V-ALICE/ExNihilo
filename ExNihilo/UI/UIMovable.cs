@@ -8,7 +8,7 @@ namespace ExNihilo.UI
     public class UIMovable : UIClickable
     {
         protected Point Anchor;
-        protected Vector2 ShiftedPos;
+        protected Coordinate ShiftedPos;
         protected bool Ghosting;
 
         public UIMovable(string name, string path, Vector2 relPos, ColorScale color, UIPanel superior, TextureUtilities.PositionType anchorPoint, 
@@ -33,7 +33,7 @@ namespace ExNihilo.UI
             var opp = BaseElement.CurrentPixelSize + BaseElement.OriginPosition;
             var newX = MathHelper.Clamp(OriginPosition.X + TextureOffsetToOrigin.X, BaseElement.OriginPosition.X, opp.X);
             var newY = MathHelper.Clamp(OriginPosition.Y + TextureOffsetToOrigin.Y, BaseElement.OriginPosition.Y, opp.Y);
-            OriginPosition = new Vector2(newX, newY) - TextureOffsetToOrigin;
+            OriginPosition = new Coordinate(newX, newY) - TextureOffsetToOrigin;
         }
 
         public override void Draw(SpriteBatch spriteBatch)
@@ -81,7 +81,7 @@ namespace ExNihilo.UI
                 var opp = BaseElement.CurrentPixelSize + BaseElement.OriginPosition;
                 var newX = MathHelper.Clamp(OriginPosition.X + TextureOffsetToOrigin.X + point.X - Anchor.X, BaseElement.OriginPosition.X, opp.X);
                 var newY = MathHelper.Clamp(OriginPosition.Y + TextureOffsetToOrigin.Y + point.Y - Anchor.Y, BaseElement.OriginPosition.Y, opp.Y);
-                ShiftedPos = new Vector2(newX, newY) - OriginPosition - TextureOffsetToOrigin;
+                ShiftedPos = new Coordinate(newX, newY) - OriginPosition - TextureOffsetToOrigin;
             }
             else if (OverTexture != null)
             {
@@ -109,7 +109,7 @@ namespace ExNihilo.UI
             {
                 Down = false;
                 OriginPosition += ShiftedPos;
-                ShiftedPos = new Vector2();
+                ShiftedPos = new Coordinate();
 
                 var relX = BaseElement.CurrentPixelSize.X == 0 ? 0
                     : (OriginPosition.X - BaseElement.OriginPosition.X + TextureOffsetToOrigin.X) / BaseElement.CurrentPixelSize.X;

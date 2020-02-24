@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Runtime.Serialization;
 using ExNihilo.Systems.Bases;
 using ExNihilo.Systems.Game.Items;
 using ExNihilo.Systems.Game.Items.ExNihilo.Systems.Game.Items;
@@ -21,9 +22,9 @@ namespace ExNihilo.Systems.Game
         public StatSet Stats;
 
         public readonly EquipInstance[] _equipment = new EquipInstance[7];
-        public readonly List<ItemInstance> _inventory = new List<ItemInstance>(InventorySize);
+        public readonly ItemInstance[] _inventory = new ItemInstance[InventorySize];
 
-        private const int InventorySize = 24;
+        public const int InventorySize = 24;
         private const uint BaseNeededExp = 100;
         private const int BaseHp = 25, BaseMp = 10, BaseAtk = 5, BaseDef = 5, BaseLuck = 0;
 
@@ -47,6 +48,12 @@ namespace ExNihilo.Systems.Game
             };
             NextExp = BaseNeededExp;
             _offsetTriggers = new List<Tuple<int, StatOffset>>();
+        }
+
+        [OnDeserialized]
+        internal void OnDeserialize(StreamingContext context)
+        {
+            Dirty = true;
         }
 
         public void SoftReset()
@@ -98,20 +105,76 @@ namespace ExNihilo.Systems.Game
             if (HeldGold < 0) HeldGold = 0;
         }
 
-        public bool CanAddItem()
+        public int GetFirstOpenInventorySlot()
         {
-            return _inventory.Count < _inventory.Capacity;
+            for (int i = 0; i < _inventory.Length; i++)
+            {
+                if (_inventory[i] is null) return i;
+            }
+
+            return -1;
         }
         public bool TryAddItem(ItemInstance item)
         {
-            if (item is InstantInstance)
+            if (item is InstantInstance inst)
             {
-
+                TapGold(inst.Stats.gold);
+                GainExp((uint) inst.Stats.exp);
+                Offsets.Hp += inst.Stats.hp;
+                Offsets.Mp += inst.Stats.mp;
+                return true;
             }
-            if (!CanAddItem()) return false;
 
-            _inventory.Add(item);
+            var slot = GetFirstOpenInventorySlot();
+            if (slot == -1) return false;
+            _inventory[slot] = item;
+
             Dirty = true;
+            return true;
+        }
+
+        public bool CanGrabItem(int heldSlot, bool heldEquipSlot)
+        {
+            return heldEquipSlot ? _equipment[heldSlot] != null : _inventory[heldSlot] != null;
+        }
+        public bool TrySwapItem(int heldSlot, int destSlot, bool heldEquipSlot, bool destEquipSlot)
+        {
+            if (!CanGrabItem(heldSlot, heldEquipSlot)) return false;
+            if (heldEquipSlot && destEquipSlot) return false;
+            if (heldSlot == destSlot && !heldEquipSlot && !destEquipSlot) return false;
+            var heldItem = heldEquipSlot ? _equipment[heldSlot] : _inventory[heldSlot];
+
+            if (destEquipSlot)
+            {
+                //Equip an item from inventory
+                if (heldItem is EquipInstance heldEquip && heldEquip.Type == (EquipItem.SlotType) destSlot)
+                {
+                    _inventory[heldSlot] = _equipment[destSlot];
+                    _equipment[destSlot] = heldEquip;
+                    return true;
+                }
+
+                return false;
+            }
+
+            if (heldEquipSlot)
+            {
+                //Unequip an item from equipment
+                if (!(heldItem is EquipInstance heldEquip)) return false;
+                var destItem = _inventory[destSlot] as EquipInstance;
+                if (destItem is null || destItem.Type == heldEquip.Type)
+                {
+                    _equipment[heldSlot] = destItem;
+                    _inventory[destSlot] = heldItem;
+                    return true;
+                }
+
+                return false;
+            }
+
+            //Swap two items in inventory
+            _inventory[heldSlot] = _inventory[destSlot];
+            _inventory[destSlot] = heldItem;
             return true;
         }
 

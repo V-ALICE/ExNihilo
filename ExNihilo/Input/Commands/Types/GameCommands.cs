@@ -15,9 +15,9 @@ namespace ExNihilo.Input.Commands.Types
         }
     }
 
-    public class ToggleInventory : GameplayCommand
+    public class ToggleInventory : SuperGameplayCommand
     {
-        public ToggleInventory(IPlayer game) : base(game)
+        public ToggleInventory(ISuperPlayer game) : base(game)
         {
         }
 

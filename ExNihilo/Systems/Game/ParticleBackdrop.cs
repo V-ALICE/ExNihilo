@@ -187,7 +187,7 @@ namespace ExNihilo.Systems.Game
 
         public static void Update()
         {
-            if (_off || _window is null) return;
+            if (_off || _window.Origin()) return;
             var time = (float) UniversalTime.GetLastTickTime(_timerID);
             while (_particles.Count < _max && UniversalTime.GetAFire(_timerID))
             {

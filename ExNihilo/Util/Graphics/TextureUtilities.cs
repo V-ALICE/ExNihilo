@@ -2,10 +2,7 @@
 using System.Drawing;
 using System.Drawing.Imaging;
 using System.IO;
-using System.Linq;
-using System.Linq.Expressions;
 using System.Threading;
-using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Rectangle = Microsoft.Xna.Framework.Rectangle; 
 using FormRectangle = System.Drawing.Rectangle; 
@@ -24,49 +21,36 @@ namespace ExNihilo.Util.Graphics
             Center
         }
 
-        public static Vector2 GetOffset(PositionType anchorType, AnimatableTexture texture)
+        public static Coordinate GetOffset(PositionType anchorType, AnimatableTexture texture)
         {
             return GetOffset(anchorType, new Coordinate(texture.Width, texture.Height));
         }
 
-        public static Vector2 GetOffset(PositionType anchorType, Coordinate pixelSize)
+        public static Coordinate GetOffset(PositionType anchorType, Coordinate pixelSize)
         {
-            Vector2 textureOffsetToOrigin;
             switch (anchorType)
             {
                 case PositionType.TopLeft:
-                    textureOffsetToOrigin = new Vector2(0, 0);
-                    break;
+                    return new Coordinate(0, 0);
                 case PositionType.TopRight:
-                    textureOffsetToOrigin = new Vector2(pixelSize.X, 0);
-                    break;
+                    return new Coordinate(pixelSize.X, 0);
                 case PositionType.BottomLeft:
-                    textureOffsetToOrigin = new Vector2(0, pixelSize.Y);
-                    break;
+                    return new Coordinate(0, pixelSize.Y);
                 case PositionType.BottomRight:
-                    textureOffsetToOrigin = new Vector2(pixelSize.X, pixelSize.Y);
-                    break;
+                    return new Coordinate(pixelSize.X, pixelSize.Y);
                 case PositionType.CenterTop:
-                    textureOffsetToOrigin = new Vector2(pixelSize.X / 2f, 0);
-                    break;
+                    return new Coordinate(pixelSize.X / 2, 0);
                 case PositionType.CenterBottom:
-                    textureOffsetToOrigin = new Vector2(pixelSize.X / 2f, pixelSize.Y);
-                    break;
+                    return new Coordinate(pixelSize.X / 2, pixelSize.Y);
                 case PositionType.CenterLeft:
-                    textureOffsetToOrigin = new Vector2(0, pixelSize.Y / 2f);
-                    break;
+                    return new Coordinate(0, pixelSize.Y / 2);
                 case PositionType.CenterRight:
-                    textureOffsetToOrigin = new Vector2(pixelSize.X, pixelSize.Y / 2f);
-                    break;
+                    return new Coordinate(pixelSize.X, pixelSize.Y / 2);
                 case PositionType.Center:
-                    textureOffsetToOrigin = new Vector2(pixelSize.X / 2f, pixelSize.Y / 2f);
-                    break;
+                    return new Coordinate(pixelSize.X / 2, pixelSize.Y / 2);
                 default:
-                    textureOffsetToOrigin = new Vector2();
-                    break;
+                    return new Coordinate();
             }
-
-            return textureOffsetToOrigin;
         }
 
         public static Texture2D Extend3FramesTo4(GraphicsDevice graphics, Texture2D a)

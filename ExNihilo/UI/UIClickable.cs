@@ -17,12 +17,12 @@ namespace ExNihilo.UI
         public Point ScreenPos;
         public Coordinate ElementPos;
 
-        public UICallbackPackage(string name, Point screen, Vector2 origin, params float[] values)
+        public UICallbackPackage(string name, Point screen, Coordinate origin, params float[] values)
         {
             Caller = name;
             Value = values;
             ScreenPos = screen;
-            ElementPos = new Coordinate((int) Math.Round(screen.X-origin.X), (int) Math.Round(screen.Y-origin.Y));
+            ElementPos = new Coordinate(screen.X-origin.X, screen.Y-origin.Y);
         }
     }
 
@@ -113,8 +113,8 @@ namespace ExNihilo.UI
         {
             if (Disabled) return false;
             if (TexturePath == "null") return false;
-            int buttonX = (int) (Math.Round(mousePos.X - OriginPosition.X)/CurrentScale);
-            int buttonY = (int) (Math.Round(mousePos.Y - OriginPosition.Y)/CurrentScale);
+            int buttonX = (int) ((mousePos.X - OriginPosition.X)/CurrentScale);
+            int buttonY = (int) ((mousePos.Y - OriginPosition.Y)/CurrentScale);
             if (buttonX < 0 || buttonY < 0 || buttonX >= Texture.Width || buttonY >= Texture.Height) return false;
             return Alpha[buttonY * Texture.Width + buttonX] != 0;
         }

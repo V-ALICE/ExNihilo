@@ -49,7 +49,7 @@ namespace ExNihilo.Input.Commands
             _bucket.Add(new KeyBlock(new Uncommand(), new OpenConsoleForCommand(game), false, Keys.OemQuestion));
         }
 
-        public void InitializePlayer(Sector game)
+        public void InitializePlayer(PlayerBasedSector game)
         {
             if (_bucket.Count > 0) return;
 
@@ -59,6 +59,12 @@ namespace ExNihilo.Input.Commands
             _bucket.Add(new KeyBlock(new TurnLeft(game), new UnTurnLeft(game), false, Keys.Left, Keys.A, Buttons.DPadLeft, Buttons.LeftThumbstickLeft));
             _bucket.Add(new KeyBlock(new TurnRight(game), new UnTurnRight(game), false, Keys.Right, Keys.D, Buttons.DPadRight, Buttons.LeftThumbstickRight));
             _bucket.Add(new KeyBlock(new DoubleSpeed(game), new UnDoubleSpeed(game), false, Keys.LeftShift, Buttons.X, Buttons.Y));
+        }
+
+        public void InitializeSuperPlayer(PlayerBasedSector game)
+        {
+            if (_bucket.Count > 0) return;
+
             _bucket.Add(new KeyBlock(new ToggleInventory(game), false, Keys.Tab, Buttons.Start));
         }
 

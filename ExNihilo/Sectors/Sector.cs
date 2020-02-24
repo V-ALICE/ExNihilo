@@ -11,7 +11,7 @@ using Microsoft.Xna.Framework.Graphics;
 
 namespace ExNihilo.Sectors
 {
-    public abstract class Sector : IUI, IClickable, ISavable, IPlayer
+    public abstract class Sector : IUI, IClickable, ISavable
     {
         protected GameContainer Container;
 

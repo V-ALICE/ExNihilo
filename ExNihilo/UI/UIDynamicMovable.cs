@@ -5,15 +5,15 @@ using Microsoft.Xna.Framework;
 
 namespace ExNihilo.UI
 {
-    public class UIDynamicElement : UIElement
+    public class UIDynamicMovable : UIMovable
     {
-        public UIDynamicElement(string name, string path, Vector2 relPos, ColorScale color, UIPanel superior, TextureUtilities.PositionType anchorPoint) : 
-            base(name, path, relPos, color, superior, anchorPoint)
+        public UIDynamicMovable(string name, string path, Vector2 relPos, ColorScale color, UIPanel superior, TextureUtilities.PositionType anchorPoint, bool ghost = false) 
+            : base(name, path, relPos, color, superior, anchorPoint, ghost)
         {
         }
 
-        public UIDynamicElement(string name, string path, Coordinate pixelOffset, ColorScale color, UIElement superior, TextureUtilities.PositionType anchorPoint, 
-            TextureUtilities.PositionType superAnchorType) : base(name, path, pixelOffset, color, superior, anchorPoint, superAnchorType)
+        public UIDynamicMovable(string name, string path, Coordinate pixelOffset, ColorScale color, UIElement superior, TextureUtilities.PositionType anchorPoint, TextureUtilities.PositionType superAnchorPoint, bool ghost = false)
+            : base(name, path, pixelOffset, color, superior, anchorPoint, superAnchorPoint, ghost)
         {
         }
 
@@ -37,7 +37,7 @@ namespace ExNihilo.UI
             Texture = texture.Copy();
             CurrentPixelSize = new Coordinate((int)(CurrentScale * Texture.Width), (int)(CurrentScale * Texture.Height));
             TextureOffsetToOrigin = TextureUtilities.GetOffset(AnchorType, CurrentPixelSize);
-            
+
             if (AbsoluteOffset)
             {
                 //Position of this element is relative to the origin of its base element in scaled pixels

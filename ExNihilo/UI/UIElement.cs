@@ -14,8 +14,8 @@ namespace ExNihilo.UI
         protected TextureUtilities.PositionType AnchorType, SuperAnchorType;
         protected AnimatableTexture Texture;
         protected ColorScale ColorScale;
-        protected Vector2 PositionRelativeToBase, TextureOffsetToOrigin;
-        protected Coordinate PixelOffsetFromBase, LastResizeWindow;
+        protected Vector2 PositionRelativeToBase;
+        protected Coordinate PixelOffsetFromBase, LastResizeWindow, TextureOffsetToOrigin;
         protected ScaleRuleSet ScaleRules;
         protected UIElement BaseElement;
         protected readonly string TexturePath;
@@ -23,7 +23,7 @@ namespace ExNihilo.UI
 
         public float CurrentScale { get; protected set; }
         public string GivenName { get; protected set; }
-        public Vector2 OriginPosition { get; protected set; }
+        public Coordinate OriginPosition { get; protected set; }
         public Coordinate CurrentPixelSize { get; protected set; }
 
         public UIElement(string name, string path, Vector2 relPos, ColorScale color, UIPanel superior, TextureUtilities.PositionType anchorPoint)
@@ -82,7 +82,7 @@ namespace ExNihilo.UI
             Loaded = true;
             if (ScaleRules is null) ScaleRules = TextureLibrary.DefaultScaleRuleSet;
             Texture = TextureLibrary.Lookup(TexturePath);
-            if (CurrentPixelSize is null) CurrentPixelSize = new Coordinate((int) (CurrentScale*Texture.Width), (int) (CurrentScale*Texture.Height));
+            if (CurrentPixelSize.Origin()) CurrentPixelSize = new Coordinate((int) (CurrentScale*Texture.Width), (int) (CurrentScale*Texture.Height));
             TextureOffsetToOrigin = TextureUtilities.GetOffset(AnchorType, CurrentPixelSize);
             LastResizeWindow = new Coordinate();
         }
@@ -112,14 +112,14 @@ namespace ExNihilo.UI
             else  
             {
                 //Position of this element is relative to the space of its base panel
-                OriginPosition = BaseElement.OriginPosition + BaseElement.CurrentPixelSize * PositionRelativeToBase - TextureOffsetToOrigin;
+                OriginPosition = (Coordinate)(BaseElement.CurrentPixelSize * PositionRelativeToBase) + BaseElement.OriginPosition - TextureOffsetToOrigin;
             }
         }
 
-        public virtual void Draw(SpriteBatch spriteBatch, Vector2 rightDownOffset)
+        public virtual void Draw(SpriteBatch spriteBatch, Coordinate rightDownOffset)
         {
             if (!Loaded) return;
-            Texture.Draw(spriteBatch, OriginPosition+rightDownOffset, ColorScale?.Get() ?? Color.White, CurrentScale);
+            Texture.Draw(spriteBatch, OriginPosition + rightDownOffset, ColorScale?.Get() ?? Color.White, CurrentScale);
         }
 
         public virtual void Draw(SpriteBatch spriteBatch)

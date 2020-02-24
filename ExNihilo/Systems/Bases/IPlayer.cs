@@ -6,6 +6,5 @@
         void PushY(int y);
         void PushMult(int mult);
         void Touch();
-        void ToggleTabMenu();
     }
 }

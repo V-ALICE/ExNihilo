@@ -11,9 +11,9 @@ using Microsoft.Xna.Framework.Graphics;
 
 namespace ExNihilo.Sectors
 {
-    public abstract class PlayerBasedSector : Sector
+    public abstract class PlayerBasedSector : Sector, ISuperPlayer, IPlayer
     {
-        protected CommandHandler _playerHandler;
+        protected CommandHandler _playerHandler, _superPlayerHandler;
         protected Vector2 _debugPosition;
         protected Point _lastMousePosition;
         protected World _world;
@@ -50,6 +50,8 @@ namespace ExNihilo.Sectors
             _invRef = new InventoryMenu(Container);
             _playerHandler = new CommandHandler();
             _playerHandler.InitializePlayer(this);
+            _superPlayerHandler = new CommandHandler();
+            _superPlayerHandler.InitializeSuperPlayer(this);
             _debugPosition = new Vector2(1, 1 + TextDrawer.AlphaHeight + TextDrawer.LineSpacer);
             _lastMousePosition = new Point();
         }
@@ -62,7 +64,9 @@ namespace ExNihilo.Sectors
 
         public override void Update()
         {
-            if (!_menuActive && !TypingKeyboard.Active)
+            if (TypingKeyboard.Active) return;
+            _superPlayerHandler.UpdateInput();
+            if (!_menuActive)
             {
                 _world.ApplyPush(CurrentPush, _systemPushSpeed*CurrentPushMult, _disableCollisions);
                 _playerHandler.UpdateInput();

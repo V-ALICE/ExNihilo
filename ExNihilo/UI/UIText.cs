@@ -52,7 +52,7 @@ namespace ExNihilo.UI
             else
             {
                 //Position of this element is relative to the space of its base panel
-                OriginPosition = BaseElement.OriginPosition + BaseElement.CurrentPixelSize * PositionRelativeToBase - TextureOffsetToOrigin;
+                OriginPosition = (Coordinate)(BaseElement.CurrentPixelSize * PositionRelativeToBase) + BaseElement.OriginPosition - TextureOffsetToOrigin;
             }
         }
 
@@ -74,16 +74,16 @@ namespace ExNihilo.UI
             LastResizeWindow = new Coordinate();
         }
 
-        public override void Draw(SpriteBatch spriteBatch, Vector2 rightDownOffset)
+        public override void Draw(SpriteBatch spriteBatch, Coordinate rightDownOffset)
         {
             if (!Loaded) return;
-            TextDrawer.DrawSmartText(spriteBatch, OriginPosition+ rightDownOffset, Text, CurrentScale, param, Colors);
+            TextDrawer.DrawSmartText(spriteBatch, (Vector2) (OriginPosition + rightDownOffset), Text, CurrentScale, param, Colors);
         }
 
         public override void Draw(SpriteBatch spriteBatch)
         {
             if (!Loaded) return;
-            TextDrawer.DrawSmartText(spriteBatch, OriginPosition, Text, CurrentScale, param, Colors);
+            TextDrawer.DrawSmartText(spriteBatch, (Vector2)OriginPosition, Text, CurrentScale, param, Colors);
         }
     }
 }

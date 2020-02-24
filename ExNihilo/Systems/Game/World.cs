@@ -82,11 +82,11 @@ namespace ExNihilo.Systems.Game
                 {
                     ResetWorldPos = false;
                     PlayerOverlay.OnResize(graphics, gameWindow);
-                    CurrentWorldPosition = PlayerOverlay.PlayerCenterScreen - CurrentWorldScale * new Vector2(400, 200);
+                    CurrentWorldPosition = PlayerOverlay.PlayerCenterScreen - new Vector2(CurrentWorldScale*400, CurrentWorldScale*200);
                 }
                 else
                 {
-                    var adjustedOffset = (PlayerOverlay.PlayerCenterScreen - CurrentWorldPosition) * (CurrentWorldScale / oldScale);
+                    var adjustedOffset = (CurrentWorldScale / oldScale) * (PlayerOverlay.PlayerCenterScreen - CurrentWorldPosition);
                     PlayerOverlay.OnResize(graphics, gameWindow); //this is specifically warped between these measurements 
                     CurrentWorldPosition = PlayerOverlay.PlayerCenterScreen - adjustedOffset;
                 }
@@ -95,7 +95,7 @@ namespace ExNihilo.Systems.Game
 
         public virtual void Draw(SpriteBatch spriteBatch)
         {
-            spriteBatch.Draw(WorldTexture, CurrentWorldPosition, null, Color.White, 0, Vector2.Zero, CurrentWorldScale, SpriteEffects.None, 0);
+            spriteBatch.Draw(WorldTexture, (Vector2)CurrentWorldPosition, null, Color.White, 0, Vector2.Zero, CurrentWorldScale, SpriteEffects.None, 0);
         }
 
         public virtual void DrawOverlays(SpriteBatch spriteBatch)
@@ -103,13 +103,13 @@ namespace ExNihilo.Systems.Game
             PlayerOverlay?.Draw(spriteBatch);
             foreach (var item in Overlays)
             {
-                var pos = CurrentWorldPosition + CurrentWorldScale * item.Item2;
+                var pos = (Coordinate)(CurrentWorldPosition + CurrentWorldScale * item.Item2);
                 item.Item1.Draw(spriteBatch, pos, ColorScale.White, CurrentWorldScale);
             }
 
             if (D.Bug && PlayerOverlay != null)
             {
-                LineDrawer.DrawSquare(spriteBatch, CurrentWorldScale * PlayerCustomHitBoxOffset + PlayerOverlay.PlayerCenterScreen, CurrentWorldScale * PlayerCustomHitBox.X, CurrentWorldScale * PlayerCustomHitBox.Y, Color.Red);
+                LineDrawer.DrawSquare(spriteBatch, PlayerOverlay.PlayerCenterScreen + CurrentWorldScale * PlayerCustomHitBoxOffset, CurrentWorldScale * PlayerCustomHitBox.X, CurrentWorldScale * PlayerCustomHitBox.Y, Color.Red);
             }
         }
 
@@ -121,8 +121,8 @@ namespace ExNihilo.Systems.Game
 
             var tileSize = (int) (CurrentWorldScale * TileSize);
             var moveOffset = 50 * CurrentWorldScale * mult * (float)UniversalTime.GetLastTickTime(TimerID) * push; //offset from current position 
-            var hitBox = CurrentWorldScale * PlayerCustomHitBox;
-            var hitBoxOffset = CurrentWorldScale * PlayerCustomHitBoxOffset + PlayerOverlay.PlayerCenterScreen - CurrentWorldPosition;
+            var hitBox = (Coordinate)(CurrentWorldScale * PlayerCustomHitBox);
+            var hitBoxOffset = PlayerOverlay.PlayerCenterScreen + CurrentWorldScale * PlayerCustomHitBoxOffset - CurrentWorldPosition;
             var hitBoxMovedOffset = hitBoxOffset + moveOffset;
 
             if (!ignoreWalls && Map.CheckIllegalPosition(tileSize, hitBox, hitBoxMovedOffset))
@@ -156,8 +156,7 @@ namespace ExNihilo.Systems.Game
 
         public Interactive CheckForInteraction()
         {
-            var offset = PlayerOverlay.PlayerCenterScreen - CurrentWorldPosition +
-                         TextureUtilities.GetOffset(TextureUtilities.PositionType.Center, PlayerCustomHitBox);
+            var offset = PlayerOverlay.PlayerCenterScreen + TextureUtilities.GetOffset(TextureUtilities.PositionType.Center, PlayerCustomHitBox) - CurrentWorldPosition;
             return Map.GetInteractive((int) (CurrentWorldScale * TileSize), offset, 1);
         }
 

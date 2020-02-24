@@ -15,12 +15,12 @@ namespace ExNihilo.Entity
         private EntityContainer _entity;
         private float _currentScale;
 
-        public Vector2 PlayerCenterScreen { get; private set; }
+        public Coordinate PlayerCenterScreen { get; private set; }
 
         public PlayerOverlay(EntityContainer entity)
         {
             _currentScale = 1;
-            PlayerCenterScreen = new Vector2();
+            PlayerCenterScreen = new Coordinate();
             _entity = entity;
         }
 
@@ -31,7 +31,7 @@ namespace ExNihilo.Entity
         public void OnResize(GraphicsDevice graphics, Coordinate gameWindow)
         {
             _currentScale = _rules.GetScale(gameWindow);
-            PlayerCenterScreen = new Vector2(gameWindow.X / 2, gameWindow.Y / 2) - TextureUtilities.GetOffset(TextureUtilities.PositionType.Center, _entity.Texture);
+            PlayerCenterScreen = new Coordinate(gameWindow.X / 2, gameWindow.Y / 2) - TextureUtilities.GetOffset(TextureUtilities.PositionType.Center, _entity.Texture);
         }
 
         public void Draw(SpriteBatch spriteBatch)

@@ -1,11 +1,8 @@
-﻿using System.Threading.Tasks;
-using ExNihilo.Entity;
-using ExNihilo.Menus;
-using ExNihilo.Systems;
+﻿using ExNihilo.Entity;
 using ExNihilo.Systems.Backend;
 using ExNihilo.Systems.Game;
 using ExNihilo.Util;
-using ExNihilo.Util.Graphics;
+using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
 
@@ -14,8 +11,6 @@ namespace ExNihilo.Sectors
     public class VoidSector : PlayerBasedSector
     {
         //TODO: add inventory, entityList
-
-        //private Menu _inventoryMenu;
 
         private Level ActiveLevel => _world as Level;
         private PlayerEntityContainer Player => Container.Player;
@@ -27,23 +22,16 @@ namespace ExNihilo.Sectors
 /********************************************************************
 ------->Game loop
 ********************************************************************/
-        public override void OnResize(GraphicsDevice graphicsDevice, Coordinate gameWindow)
-        {
-            base.OnResize(graphicsDevice, gameWindow);
-            //_inventoryMenu.OnResize(graphicsDevice, gameWindow);
-        }
-
         public override void Initialize()
         {
             base.Initialize();
             _world = new Level();
-            //_inventoryMenu = new InventoryMenu(Container, _inventory);
         }
 
-        public override void LoadContent(GraphicsDevice graphicsDevice, ContentManager content)
+        public override void Enter(Point point, Coordinate gameWindow)
         {
-            base.LoadContent(graphicsDevice, content);
-            //_inventory.LoadContent(graphicsDevice, content);
+            _invRef.SetReference(Player.Inventory);
+            base.Enter(point, gameWindow);
         }
 
         public override void Leave(GameContainer.SectorID newSector)
@@ -54,11 +42,6 @@ namespace ExNihilo.Sectors
                 Container.Pack();
                 AudioManager.PlaySong("Outerworld", true);
             }
-        }
-
-        public override void Update()
-        {
-            base.Update();
         }
 
         protected override void DrawDebugInfo(SpriteBatch spriteBatch)

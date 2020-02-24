@@ -38,6 +38,12 @@ namespace ExNihilo.Sectors
             _voidMenu.OnResize(graphics, gameWindow);
         }
 
+        public override void Enter(Point point, Coordinate gameWindow)
+        {
+            _invRef.SetReference(Player.Inventory);
+            base.Enter(point, gameWindow);
+        }
+
         public override void Leave(GameContainer.SectorID newSector)
         {
             if (newSector == GameContainer.SectorID.Loading)
@@ -78,16 +84,6 @@ namespace ExNihilo.Sectors
             _world.AddInteractive(new MenuInteractive("Island", _multiplayerMenu), 13, 43);
         }
 
-        public override void Update()
-        {
-            base.Update();
-        }
-
-        protected override void DrawDebugInfo(SpriteBatch spriteBatch)
-        {
-            base.DrawDebugInfo(spriteBatch);
-        }
-
         public override void Draw(SpriteBatch spriteBatch, bool drawDebugInfo)
         {
             _world.Draw(spriteBatch);
@@ -110,7 +106,12 @@ namespace ExNihilo.Sectors
                     _voidMenu.BackOut();
                     Container.StartNewGame();
                 }
-                if (_menuPoint.Dead) _menuPoint = null;
+
+                if (_menuPoint.Dead)
+                {
+                    if (_menuPoint is CharacterMenu) _invRef.SetReference(Player.Inventory);
+                    _menuPoint = null;
+                }
             }
         }
 

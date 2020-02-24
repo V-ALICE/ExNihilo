@@ -49,15 +49,15 @@ namespace ExNihilo.Input.Commands.Types
         public abstract void Activate();
     }
 
-    /*public abstract class PlayerCommand : ICommand
+    public abstract class SuperGameplayCommand : ICommand
     {
-        protected PlayerEntity Receiver { get; private set; }
-        protected PlayerCommand(PlayerEntity receiver)
+        protected readonly ISuperPlayer Receiver;
+        protected SuperGameplayCommand(ISuperPlayer receiver)
         {
             Receiver = receiver;
         }
         public abstract void Activate();
-    }*/
+    }
 
     public class Uncommand : ICommand
     {

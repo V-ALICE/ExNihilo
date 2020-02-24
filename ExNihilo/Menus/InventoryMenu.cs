@@ -1,4 +1,5 @@
-﻿using ExNihilo.Systems.Game;
+﻿using ExNihilo.Systems.Backend;
+using ExNihilo.Systems.Game;
 using ExNihilo.UI;
 using ExNihilo.Util;
 using ExNihilo.Util.Graphics;
@@ -13,7 +14,9 @@ namespace ExNihilo.Menus
     public class InventoryMenu : Menu
     {
         private Inventory _invRef;
-        private readonly UIPanel _panelUI, _equipRef, _itemRef;
+        private readonly UIPanel _panelUI;
+        private readonly UIElement[] _equips = new UIElement[7];
+        private readonly UIElement[] _items = new UIElement[Inventory.InventorySize];
         private readonly UIText descTextBox;
         private Point _lastMousePosition;
         private Coordinate _lastWindowSize;
@@ -34,44 +37,47 @@ namespace ExNihilo.Menus
             descTextBox = new UIText("DescriptionBox", new Coordinate(), "", new ColorScale[0], textBox, Position.TopLeft, Position.TopLeft);
             //TODO: add trash can somewhere
 
-            _equipRef = new UIPanel("EquipmentZone", new Coordinate(0, 0), new Vector2(1, 1), equipmentSet, Position.TopLeft, Position.TopLeft);
-            _itemRef = new UIPanel("ItemZone", new Coordinate(0, 0), new Vector2(1, 1), inventorySet, Position.TopLeft, Position.TopLeft);
+            var _equipRef = new UIPanel("EquipmentZone", new Coordinate(0, 0), new Coordinate(), equipmentSet, Position.TopLeft, Position.TopLeft);
+            var _itemRef = new UIPanel("ItemZone", new Coordinate(0, 0), new Coordinate(), inventorySet, Position.TopLeft, Position.TopLeft);
 
-            var equip0 = new UIDynamicElement("Equip0", "null", new Coordinate(), ColorScale.White, _equipRef, Position.TopLeft, Position.TopLeft);
-            var equip1 = new UIDynamicElement("Equip1", "null", new Coordinate(), ColorScale.White, _equipRef, Position.TopLeft, Position.TopLeft);
-            var equip2 = new UIDynamicElement("Equip2", "null", new Coordinate(), ColorScale.White, _equipRef, Position.TopLeft, Position.TopLeft);
-            var equip3 = new UIDynamicElement("Equip3", "null", new Coordinate(), ColorScale.White, _equipRef, Position.TopLeft, Position.TopLeft);
-            var equip4 = new UIDynamicElement("Equip4", "null", new Coordinate(), ColorScale.White, _equipRef, Position.TopLeft, Position.TopLeft);
-            var equip5 = new UIDynamicElement("Equip5", "null", new Coordinate(), ColorScale.White, _equipRef, Position.TopLeft, Position.TopLeft);
-            var equip6 = new UIDynamicElement("Equip6", "null", new Coordinate(), ColorScale.White, _equipRef, Position.TopLeft, Position.TopLeft);
+            _equips[0] = new UIDynamicElement("Equip0", "null", new Coordinate(), ColorScale.White, _equipRef, Position.TopLeft, Position.TopLeft);
+            _equips[1] = new UIDynamicElement("Equip1", "null", new Coordinate(), ColorScale.White, _equipRef, Position.TopLeft, Position.TopLeft);
+            _equips[2] = new UIDynamicElement("Equip2", "null", new Coordinate(), ColorScale.White, _equipRef, Position.TopLeft, Position.TopLeft);
+            _equips[3] = new UIDynamicElement("Equip3", "null", new Coordinate(), ColorScale.White, _equipRef, Position.TopLeft, Position.TopLeft);
+            _equips[4] = new UIDynamicElement("Equip4", "null", new Coordinate(), ColorScale.White, _equipRef, Position.TopLeft, Position.TopLeft);
+            _equips[5] = new UIDynamicElement("Equip5", "null", new Coordinate(), ColorScale.White, _equipRef, Position.TopLeft, Position.TopLeft);
+            _equips[6] = new UIDynamicElement("Equip6", "null", new Coordinate(), ColorScale.White, _equipRef, Position.TopLeft, Position.TopLeft);
 
-            var item0 = new UIDynamicElement("Item0", "null", new Coordinate(), ColorScale.White, _itemRef, Position.TopLeft, Position.TopLeft);
-            var item1 = new UIDynamicElement("Item1", "null", new Coordinate(), ColorScale.White, _itemRef, Position.TopLeft, Position.TopLeft);
-            var item2 = new UIDynamicElement("Item2", "null", new Coordinate(), ColorScale.White, _itemRef, Position.TopLeft, Position.TopLeft);
-            var item3 = new UIDynamicElement("Item3", "null", new Coordinate(), ColorScale.White, _itemRef, Position.TopLeft, Position.TopLeft);
-            var item4 = new UIDynamicElement("Item4", "null", new Coordinate(), ColorScale.White, _itemRef, Position.TopLeft, Position.TopLeft);
-            var item5 = new UIDynamicElement("Item5", "null", new Coordinate(), ColorScale.White, _itemRef, Position.TopLeft, Position.TopLeft);
-            var item6 = new UIDynamicElement("Item6", "null", new Coordinate(), ColorScale.White, _itemRef, Position.TopLeft, Position.TopLeft);
-            var item7 = new UIDynamicElement("Item7", "null", new Coordinate(), ColorScale.White, _itemRef, Position.TopLeft, Position.TopLeft);
-            var item8 = new UIDynamicElement("Item8", "null", new Coordinate(), ColorScale.White, _itemRef, Position.TopLeft, Position.TopLeft);
-            var item9 = new UIDynamicElement("Item9", "null", new Coordinate(), ColorScale.White, _itemRef, Position.TopLeft, Position.TopLeft);
-            var item10 = new UIDynamicElement("Item10", "null", new Coordinate(), ColorScale.White, _itemRef, Position.TopLeft, Position.TopLeft);
-            var item11 = new UIDynamicElement("Item11", "null", new Coordinate(), ColorScale.White, _itemRef, Position.TopLeft, Position.TopLeft);
-            var item12 = new UIDynamicElement("Item12", "null", new Coordinate(), ColorScale.White, _itemRef, Position.TopLeft, Position.TopLeft);
-            var item13 = new UIDynamicElement("Item13", "null", new Coordinate(), ColorScale.White, _itemRef, Position.TopLeft, Position.TopLeft);
-            var item14 = new UIDynamicElement("Item14", "null", new Coordinate(), ColorScale.White, _itemRef, Position.TopLeft, Position.TopLeft);
-            var item15 = new UIDynamicElement("Item15", "null", new Coordinate(), ColorScale.White, _itemRef, Position.TopLeft, Position.TopLeft);
-            var item16 = new UIDynamicElement("Item16", "null", new Coordinate(), ColorScale.White, _itemRef, Position.TopLeft, Position.TopLeft);
-            var item17 = new UIDynamicElement("Item17", "null", new Coordinate(), ColorScale.White, _itemRef, Position.TopLeft, Position.TopLeft);
-            var item18 = new UIDynamicElement("Item18", "null", new Coordinate(), ColorScale.White, _itemRef, Position.TopLeft, Position.TopLeft);
-            var item19 = new UIDynamicElement("Item19", "null", new Coordinate(), ColorScale.White, _itemRef, Position.TopLeft, Position.TopLeft);
-            var item20 = new UIDynamicElement("Item20", "null", new Coordinate(), ColorScale.White, _itemRef, Position.TopLeft, Position.TopLeft);
-            var item21 = new UIDynamicElement("Item21", "null", new Coordinate(), ColorScale.White, _itemRef, Position.TopLeft, Position.TopLeft);
-            var item22 = new UIDynamicElement("Item22", "null", new Coordinate(), ColorScale.White, _itemRef, Position.TopLeft, Position.TopLeft);
-            var item23 = new UIDynamicElement("Item23", "null", new Coordinate(), ColorScale.White, _itemRef, Position.TopLeft, Position.TopLeft);
+            _items[0] = new UIDynamicElement("Item0", "null", new Coordinate(8, 8), ColorScale.White, _itemRef, Position.TopLeft, Position.TopLeft);
+            _items[1] = new UIDynamicElement("Item1", "null", new Coordinate(144, 0), ColorScale.White, _items[0], Position.TopLeft, Position.TopLeft);
+            _items[2] = new UIDynamicElement("Item2", "null", new Coordinate(144, 0), ColorScale.White, _items[1], Position.TopLeft, Position.TopLeft);
+            _items[3] = new UIDynamicElement("Item3", "null", new Coordinate(144, 0), ColorScale.White, _items[2], Position.TopLeft, Position.TopLeft);
+            _items[4] = new UIDynamicElement("Item4", "null", new Coordinate(144, 0), ColorScale.White, _items[3], Position.TopLeft, Position.TopLeft);
+            _items[5] = new UIDynamicElement("Item5", "null", new Coordinate(144, 0), ColorScale.White, _items[4], Position.TopLeft, Position.TopLeft);
+            _items[6] = new UIDynamicElement("Item6", "null", new Coordinate(144, 0), ColorScale.White, _items[5], Position.TopLeft, Position.TopLeft);
+            _items[7] = new UIDynamicElement("Item7", "null", new Coordinate(144, 0), ColorScale.White, _items[6], Position.TopLeft, Position.TopLeft);
+            _items[8] = new UIDynamicElement("Item8", "null", new Coordinate(0, 144), ColorScale.White, _items[0], Position.TopLeft, Position.TopLeft);
+            _items[9] = new UIDynamicElement("Item9", "null", new Coordinate(144, 0), ColorScale.White, _items[8], Position.TopLeft, Position.TopLeft);
+            _items[10] = new UIDynamicElement("Item10", "null", new Coordinate(144, 0), ColorScale.White, _items[9], Position.TopLeft, Position.TopLeft);
+            _items[11] = new UIDynamicElement("Item11", "null", new Coordinate(144, 0), ColorScale.White, _items[10], Position.TopLeft, Position.TopLeft);
+            _items[12] = new UIDynamicElement("Item12", "null", new Coordinate(144, 0), ColorScale.White, _items[11], Position.TopLeft, Position.TopLeft);
+            _items[13] = new UIDynamicElement("Item13", "null", new Coordinate(144, 0), ColorScale.White, _items[12], Position.TopLeft, Position.TopLeft);
+            _items[14] = new UIDynamicElement("Item14", "null", new Coordinate(144, 0), ColorScale.White, _items[13], Position.TopLeft, Position.TopLeft);
+            _items[15] = new UIDynamicElement("Item15", "null", new Coordinate(144, 0), ColorScale.White, _items[14], Position.TopLeft, Position.TopLeft);
+            _items[16] = new UIDynamicElement("Item16", "null", new Coordinate(0, 144), ColorScale.White, _items[8], Position.TopLeft, Position.TopLeft);
+            _items[17] = new UIDynamicElement("Item17", "null", new Coordinate(144, 0), ColorScale.White, _items[16], Position.TopLeft, Position.TopLeft);
+            _items[18] = new UIDynamicElement("Item18", "null", new Coordinate(144, 0), ColorScale.White, _items[17], Position.TopLeft, Position.TopLeft);
+            _items[19] = new UIDynamicElement("Item19", "null", new Coordinate(144, 0), ColorScale.White, _items[18], Position.TopLeft, Position.TopLeft);
+            _items[20] = new UIDynamicElement("Item20", "null", new Coordinate(144, 0), ColorScale.White, _items[19], Position.TopLeft, Position.TopLeft);
+            _items[21] = new UIDynamicElement("Item21", "null", new Coordinate(144, 0), ColorScale.White, _items[20], Position.TopLeft, Position.TopLeft);
+            _items[22] = new UIDynamicElement("Item22", "null", new Coordinate(144, 0), ColorScale.White, _items[21], Position.TopLeft, Position.TopLeft);
+            _items[23] = new UIDynamicElement("Item23", "null", new Coordinate(144, 0), ColorScale.White, _items[22], Position.TopLeft, Position.TopLeft);
 
-            _equipRef.AddElements(equip0, equip1, equip2, equip3, equip4, equip5, equip6);
-            _itemRef.AddElements(item0, item1, item2, item3, item4, item5, item6, item7, item8, item9, item10, item11, item12, item13, item14, item15, item16, item17, item18, item19, item20, item21, item22, item23);
+            _equipRef.AddElements(_equips);
+            SetRulesAll(TextureLibrary.HalfScaleRuleSet, _equips);
+            _itemRef.AddElements(_items);
+            SetRulesAll(TextureLibrary.HalfScaleRuleSet, _items);
+
             _panelUI.AddElements(backdrop, inventoryBars, textBox, equipmentSet, inventorySet, _equipRef, _itemRef);
         }
 
@@ -86,7 +92,32 @@ namespace ExNihilo.Menus
             base.Enter(point);
             if (!_invRef.Dirty) return;
             
-            //TODO: reload inventory display
+            for (int i = 0; i < _invRef._equipment.Length; i++)
+            {
+                var element = _equips[i] as UIDynamicElement;
+                if (_invRef._equipment[i] is null)
+                {
+                    element?.SetNullTexture();
+                }
+                else
+                {
+                    element?.ChangeTexture(_invRef._equipment[i].GetTexture());
+                    element?.ChangeColor(_invRef._equipment[i].GetIconColor());
+                }
+            }
+            for (int i = 0; i < _invRef._inventory.Length; i++)
+            {
+                var element = _items[i] as UIDynamicElement;
+                if (_invRef._inventory[i] is null)
+                {
+                    element?.SetNullTexture();
+                }
+                else
+                {
+                    element?.ChangeTexture(_invRef._inventory[i].GetTexture());
+                    element?.ChangeColor(_invRef._inventory[i].GetIconColor());
+                }
+            }
 
             _invRef.Dirty = false;
         }

@@ -99,6 +99,7 @@
     <Compile Include="Systems\Bases\IPlayer.cs" />
     <Compile Include="Systems\Backend\Console.cs" />
     <Compile Include="Systems\Bases\ISavable.cs" />
+    <Compile Include="Systems\Bases\ISuperPlayer.cs" />
     <Compile Include="Systems\Bases\Item.cs" />
     <Compile Include="Systems\Bases\ITypable.cs" />
     <Compile Include="Systems\Backend\InteractionMap.cs" />
@@ -119,6 +120,7 @@
     <Compile Include="UI\Bases\IScalable.cs" />
     <Compile Include="UI\UIClickable.cs" />
     <Compile Include="UI\UIDynamicElement.cs" />
+    <Compile Include="UI\UIDynamicMovable.cs" />
     <Compile Include="UI\UIElement.cs" />
     <Compile Include="UI\UIExtendable.cs" />
     <Compile Include="UI\UIMovable.cs" />
