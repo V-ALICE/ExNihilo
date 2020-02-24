@@ -9,19 +9,21 @@ namespace ExNihilo.UI
     {
         protected Point Anchor;
         protected Coordinate ShiftedPos;
-        protected bool Ghosting;
+        protected bool Ghosting, TrueMove;
 
         public UIMovable(string name, string path, Vector2 relPos, ColorScale color, UIPanel superior, TextureUtilities.PositionType anchorPoint, 
-           bool ghost = false) : base(name, path, relPos, color, superior, anchorPoint)
+           bool ghost = false, bool allowMove=true) : base(name, path, relPos, color, superior, anchorPoint)
         {
             Ghosting = ghost;
+            TrueMove = allowMove;
         }
 
         //Right now Movables can't be absolute because relative positioning is required for resizing screen adjustments
-        protected UIMovable(string name, string path, Coordinate pixelOffset, ColorScale color, UIElement superior, TextureUtilities.PositionType anchorPoint, 
-            TextureUtilities.PositionType superAnchorPoint, bool ghost = false) : base(name, path, pixelOffset, color, superior, anchorPoint, superAnchorPoint)
+        public UIMovable(string name, string path, Coordinate pixelOffset, ColorScale color, UIElement superior, TextureUtilities.PositionType anchorPoint,
+            TextureUtilities.PositionType superAnchorPoint, bool ghost = false, bool allowMove = true) : base(name, path, pixelOffset, color, superior, anchorPoint, superAnchorPoint)
         {
             Ghosting = ghost;
+            TrueMove = allowMove;
         }
 
         public override void OnResize(GraphicsDevice graphics, Coordinate gameWindow)
@@ -29,10 +31,12 @@ namespace ExNihilo.UI
             if (!Loaded || WasResized(gameWindow)) return;
             base.OnResize(graphics, gameWindow);
 
+            //TODO: doesn't work for absolute offsets
             //Make sure moved elements don't go out of bounds
             var opp = BaseElement.CurrentPixelSize + BaseElement.OriginPosition;
-            var newX = MathHelper.Clamp(OriginPosition.X + TextureOffsetToOrigin.X, BaseElement.OriginPosition.X, opp.X);
-            var newY = MathHelper.Clamp(OriginPosition.Y + TextureOffsetToOrigin.Y, BaseElement.OriginPosition.Y, opp.Y);
+            var newX = MathHelper.Clamp(OriginPosition.X + TextureOffsetToOrigin.X, BaseElement.OriginPosition.X, opp.X - CurrentPixelSize.X);
+            var newY = MathHelper.Clamp(OriginPosition.Y + TextureOffsetToOrigin.Y, BaseElement.OriginPosition.Y, opp.Y - CurrentPixelSize.Y);
+            //OriginPosition = (Coordinate) ((new Coordinate(newX, newY) - TextureOffsetToOrigin) * PositionRelativeToBase);
             OriginPosition = new Coordinate(newX, newY) - TextureOffsetToOrigin;
         }
 
@@ -79,13 +83,13 @@ namespace ExNihilo.UI
             if (Down)
             {
                 var opp = BaseElement.CurrentPixelSize + BaseElement.OriginPosition;
-                var newX = MathHelper.Clamp(OriginPosition.X + TextureOffsetToOrigin.X + point.X - Anchor.X, BaseElement.OriginPosition.X, opp.X);
-                var newY = MathHelper.Clamp(OriginPosition.Y + TextureOffsetToOrigin.Y + point.Y - Anchor.Y, BaseElement.OriginPosition.Y, opp.Y);
+                var newX = MathHelper.Clamp(OriginPosition.X + TextureOffsetToOrigin.X + point.X - Anchor.X, BaseElement.OriginPosition.X, opp.X - CurrentPixelSize.X);
+                var newY = MathHelper.Clamp(OriginPosition.Y + TextureOffsetToOrigin.Y + point.Y - Anchor.Y, BaseElement.OriginPosition.Y, opp.Y - CurrentPixelSize.Y);
                 ShiftedPos = new Coordinate(newX, newY) - OriginPosition - TextureOffsetToOrigin;
             }
             else if (OverTexture != null)
             {
-                Down = IsOver(point);
+                Over = IsOver(point);
             }
         }
 
@@ -108,16 +112,17 @@ namespace ExNihilo.UI
             if (Down)
             {
                 Down = false;
-                OriginPosition += ShiftedPos;
+                var potPosition = OriginPosition + ShiftedPos;
                 ShiftedPos = new Coordinate();
 
                 var relX = BaseElement.CurrentPixelSize.X == 0 ? 0
-                    : (OriginPosition.X - BaseElement.OriginPosition.X + TextureOffsetToOrigin.X) / BaseElement.CurrentPixelSize.X;
+                    : (potPosition.X - BaseElement.OriginPosition.X + TextureOffsetToOrigin.X) / BaseElement.CurrentPixelSize.X;
                 var relY = BaseElement.CurrentPixelSize.Y == 0 ? 0
-                    : (OriginPosition.Y - BaseElement.OriginPosition.Y + TextureOffsetToOrigin.Y) / BaseElement.CurrentPixelSize.Y;
+                    : (potPosition.Y - BaseElement.OriginPosition.Y + TextureOffsetToOrigin.Y) / BaseElement.CurrentPixelSize.Y;
                 PositionRelativeToBase = new Vector2(relX, relY);
 
-                Function?.Invoke(new UICallbackPackage(GivenName, point, OriginPosition));
+                Function?.Invoke(new UICallbackPackage(GivenName, point, potPosition));
+                if (TrueMove) OriginPosition = potPosition;
                 Over = IsOver(point);
             }
         }

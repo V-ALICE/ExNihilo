@@ -119,8 +119,6 @@
     <Compile Include="UI\Bases\IClickable.cs" />
     <Compile Include="UI\Bases\IScalable.cs" />
     <Compile Include="UI\UIClickable.cs" />
-    <Compile Include="UI\UIDynamicElement.cs" />
-    <Compile Include="UI\UIDynamicMovable.cs" />
     <Compile Include="UI\UIElement.cs" />
     <Compile Include="UI\UIExtendable.cs" />
     <Compile Include="UI\UIMovable.cs" />

@@ -159,5 +159,16 @@ namespace ExNihilo.UI
             Disabled = false;
         }
 
+        public override void ChangeTexture(AnimatableTexture texture)
+        {
+            base.ChangeTexture(texture);
+            Alpha = Texture.GetAlphaMask();
+        }
+
+        public override void ChangeTexture(string path)
+        {
+            base.ChangeTexture(path);
+            Alpha = Texture.GetAlphaMask();
+        }
     }
 }
