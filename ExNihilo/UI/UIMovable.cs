@@ -97,9 +97,9 @@ namespace ExNihilo.UI
             }
         }
 
-        public override void OnMoveMouse(Point point)
+        public override bool OnMoveMouse(Point point)
         {
-            if (Disabled) return;
+            if (Disabled) return false;
             if (Down)
             {
                 //var opp = BaseElement.CurrentPixelSize + BaseElement.OriginPosition;
@@ -108,10 +108,13 @@ namespace ExNihilo.UI
                 //ShiftedPos = new Coordinate(newX, newY) - OriginPosition - TextureOffsetToOrigin;
                 ShiftedPos = new Coordinate(point.X - Anchor.X, point.Y - Anchor.Y);
             }
-            else if (OverTexture != null)
+            if (OverTexture != null || OverColor != null)
             {
                 Over = IsOver(point);
+                return Over;
             }
+
+            return false;
         }
 
         public override bool OnLeftClick(Point point)

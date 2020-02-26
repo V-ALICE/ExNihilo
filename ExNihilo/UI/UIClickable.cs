@@ -119,17 +119,25 @@ namespace ExNihilo.UI
             return Alpha[buttonY * Texture.Width + buttonX] != 0;
         }
 
-        public virtual void OnMoveMouse(Point point)
+        public void ForceNotOver()
         {
-            if (Disabled) return;
+            Over = false;
+        }
+        public virtual bool OnMoveMouse(Point point)
+        {
+            if (Disabled) return false;
             if (AllowMulligan && Down)
             {
                 Down = IsOver(point);
+                return Down;
             }
-            else if (!Down && (OverTexture != null || OverColor != null))
+            if ((OverTexture != null || OverColor != null))
             {
                 Over = IsOver(point);
+                return Over;
             }
+
+            return false;
         }
 
         public virtual bool OnLeftClick(Point point)
@@ -143,9 +151,12 @@ namespace ExNihilo.UI
         public virtual void OnLeftRelease(Point point)
         {
             if (Disabled) return;
-            if (Down) Function?.Invoke(new UICallbackPackage(GivenName, point, OriginPosition));
+            if (Down)
+            {
+                Function?.Invoke(new UICallbackPackage(GivenName, point, OriginPosition));
+                Over = IsOver(point);
+            }
             Down = false;
-            Over = IsOver(point);
         }
 
         public virtual void Disable(ColorScale c)

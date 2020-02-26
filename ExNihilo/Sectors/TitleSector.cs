@@ -72,9 +72,10 @@ namespace ExNihilo.Sectors
             _title.ReceiveCommand(command);
         }
 
-        public override void OnMoveMouse(Point point)
+        public override bool OnMoveMouse(Point point)
         {
             _title.OnMoveMouse(point);
+            return false;
         }
 
         public override bool OnLeftClick(Point point)

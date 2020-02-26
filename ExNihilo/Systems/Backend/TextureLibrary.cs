@@ -41,6 +41,7 @@ namespace ExNihilo.Systems.Backend
                 }
                 catch (KeyNotFoundException)
                 {
+                    GameContainer.Console.ForceMessage("<warning>", "No such texture \"" + fullPath + "\"", Color.DarkOrange, Color.White);
                     return _null;
                 }
             }

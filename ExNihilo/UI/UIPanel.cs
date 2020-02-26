@@ -196,17 +196,25 @@ namespace ExNihilo.UI
             return buttonX >= 0 && buttonY >= 0 && buttonX < CurrentPixelSize.X / CurrentScale && buttonY < CurrentPixelSize.Y / CurrentScale;
         }
 
-        public override void OnMoveMouse(Point point)
+        public override bool OnMoveMouse(Point point)
         {
+            var found = false;
+            for (int i = Set.Count - 1; i >= 0; i--)
+            {
+                if (Set[i] is UIClickable click)
+                {
+                    if (found) click.ForceNotOver();
+                    else if (click.OnMoveMouse(point)) found = true;
+                }
+            }
             if (!Disabled && Tooltip != null)
             {
                 LastMousePos = point;
                 Over = IsOver(point);
+                return Over;
             }
-            foreach (var item in Set)
-            {
-                if (item is UIClickable click) click.OnMoveMouse(point);
-            }
+
+            return false;
         }
 
         public override bool OnLeftClick(Point point)

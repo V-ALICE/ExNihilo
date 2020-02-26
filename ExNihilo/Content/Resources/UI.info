@@ -37,11 +37,13 @@ button/BlackBulbDown 	360 224  28 28
 button/RadioUnselected 	276 252  24 24
 button/RadioSelected 	300 252  24 24
 
-icon/Left   324 252 12 16
-icon/Right  336 252 12 16
-icon/Up     348 252 16 12
-icon/Down   348 264 16 12
-icon/Yes    364 252 16 14
-icon/No     380 252 12 12
-icon/Plus   392 252 16 16
-icon/Minus  392 258 16  4
+icon/Left    324 252 12 16
+icon/Right   336 252 12 16
+icon/Up      348 252 16 12
+icon/Down    348 264 16 12
+icon/Yes     364 252 16 14
+icon/No      380 252 12 12
+icon/Plus    328 268 16 16
+icon/Minus   328 274 16  4
+icon/Cancel  364 266 20 20
+icon/Undo    384 266 22 14

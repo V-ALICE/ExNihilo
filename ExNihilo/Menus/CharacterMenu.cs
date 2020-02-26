@@ -477,7 +477,7 @@ namespace ExNihilo.Menus
             }
         }
 
-        public override void OnMoveMouse(Point point)
+        public override bool OnMoveMouse(Point point)
         {
             _lastMousePosition = point;
             switch (_type)
@@ -492,6 +492,8 @@ namespace ExNihilo.Menus
                     _warningMessage.OnMoveMouse(point);
                     break;
             }
+
+            return false;
         }
 
         public override bool OnLeftClick(Point point)

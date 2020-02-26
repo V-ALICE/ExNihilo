@@ -14,6 +14,11 @@ namespace ExNihilo.Menus
 {
     public class InventoryMenu : Menu
     {
+        private void UndoDelete(UICallbackPackage package)
+        {
+            _invRef.TryRestoreTrashedItem();
+            UpdateDisplay();
+        }
         private void MoveItem(UICallbackPackage package)
         {
             //Change slots in inventory object and update this menu display accordingly
@@ -73,7 +78,7 @@ namespace ExNihilo.Menus
         private readonly UIElement[] _equips = new UIElement[7];
         private readonly UIElement[] _items = new UIElement[Inventory.InventorySize];
         private readonly UIClickable _trash;
-        private readonly UIText descText;
+        //private readonly UIText descText;
         private Point _lastMousePosition;
         private Coordinate _lastWindowSize;
         private int _iconRefSize = 128; //TODO: set this in a smarter way 
@@ -89,7 +94,7 @@ namespace ExNihilo.Menus
             var textBox = new UIElement("TextBox", "UI/field/LargeEntryBox", new Coordinate(-14, 14), ColorScale.White, backdrop, Position.TopRight, Position.TopRight);
             var inventorySet = new UIElement("InventorySet", "UI/field/ThreeRowElementSet", new Coordinate(0, -14), ColorScale.White, backdrop, Position.CenterBottom, Position.CenterBottom);
             var equipmentSet = new UIElement("EquipmentSet", "UI/field/SevenElementSet", new Coordinate(0, -5), ColorScale.White, inventorySet, Position.CenterBottom, Position.CenterTop);
-            descText = new UIText("DescriptionBox", new Coordinate(14, 14), "0123456789012345678901234567890\n1\n2\n3\n4\n5\n6\n7\n8", new ColorScale[0], textBox, Position.TopLeft, Position.TopLeft);
+            var descText = new UIText("DescriptionBox", new Coordinate(14, 14), "0123456789012345678901234567890\n1\n2\n3\n4\n5\n6\n7\n8", new ColorScale[0], textBox, Position.TopLeft, Position.TopLeft);
             
             var _equipRef = new UIPanel("EquipmentZone", new Coordinate(), new Coordinate(664, 80), equipmentSet, Position.TopLeft, Position.TopLeft);
             var weapSlot = new UIElement("WeapSlot", "Icon/overlay/weapon", new Coordinate(36, 8), ColorScale.White, _equipRef, Position.TopLeft, Position.TopLeft);
@@ -134,17 +139,21 @@ namespace ExNihilo.Menus
             _items[22] = new UIMovable("Item22", "null", new Coordinate(440, 152), ColorScale.White, _itemRef, Vector2.Zero, Vector2.One, Position.TopLeft, Position.TopLeft, true, false);
             //_items[23] = new UIMovable("Item23", "null", new Coordinate(512, 152), ColorScale.White, _itemRef, Vector2.Zero, Vector2.One, Position.TopLeft, Position.TopLeft, true, false);
 
-            //TODO: add undo button somewhere
             _trash = new UIClickable("Trash", "Icon/action/toss", new Coordinate(512, 152), ColorScale.Grey, _itemRef, Position.TopLeft, Position.TopLeft);
             _trash.SetRules(TextureLibrary.HalfScaleRuleSet);
             _trash.SetExtraStates("", "", Color.DarkRed, Color.DarkRed);
+
+            var undoButton = new UIClickable("UndoButton", "UI/button/BlackBulb", new Coordinate(), ColorScale.White, _trash, Position.Center, Position.TopRight);
+            var undoButtonIcon = new UIElement("UndoButtonIcon", "UI/icon/Undo", new Coordinate(), ColorScale.White, undoButton, Position.Center, Position.Center);
+            undoButton.RegisterCallback(UndoDelete);
+            undoButton.SetExtraStates("UI/button/BlackBulbDown", "UI/button/BlackBulbOver");
 
             _equipRef.AddElements(weapSlot, headSlot, chestSlot, handsSlot, legsSlot, feetSlot, accSlot);
             _equipRef.AddElements(_equips);
             SetRulesAll(TextureLibrary.HalfScaleRuleSet, _equips);
             RegisterAll(MoveItem, _equips);
 
-            _itemRef.AddElements(_trash);
+            _itemRef.AddElements(_trash, undoButton, undoButtonIcon);
             _itemRef.AddElements(_items);
             SetRulesAll(TextureLibrary.HalfScaleRuleSet, _items);
             RegisterAll(MoveItem, _items);
@@ -190,6 +199,9 @@ namespace ExNihilo.Menus
                 }
             }
 
+            if (_invRef.CanRestoreTrashedItem()) (_panelUI.GetElement("UndoButton") as UIClickable)?.Enable();
+            else (_panelUI.GetElement("UndoButton") as UIClickable)?.Disable(ColorScale.Ghost);
+
             _invRef.Dirty = false;
         }
         public override void Enter(Point point)
@@ -214,10 +226,11 @@ namespace ExNihilo.Menus
             _panelUI.Draw(spriteBatch);
         }
 
-        public override void OnMoveMouse(Point point)
+        public override bool OnMoveMouse(Point point)
         {
             _lastMousePosition = point;
             _panelUI.OnMoveMouse(point);
+            return false;
         }
 
         public override bool OnLeftClick(Point point)

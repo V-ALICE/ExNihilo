@@ -189,10 +189,7 @@ namespace ExNihilo.Systems
             _helpInfo.Add("exit",
                 "\n/exit -> Exits the game. This operates the same as the title menu exit button");
 
-            _helpInfo.Add("export",
-                "\n/export -> Save the current level as a PNG file to the maps directory");
-
-            _helpInfo.Add("exportall",
+            _helpInfo.Add("exportmap",
                 "\n/exportall -> Save the current level set as PNG files to the maps directory");
 
             _helpInfo.Add("ascend",
@@ -271,21 +268,6 @@ namespace ExNihilo.Systems
                 _elevatedMode = true;
             }
             _basicCommands.Add("ascend", AscendPlayer);
-            
-            //Exports the current map to a file
-            void ExportMap(string args)
-            {
-                if (GameContainer.ActiveSectorID != GameContainer.SectorID.Void)
-                {
-                    Log.ForceMessage("<error>", "Can only export map from within the void", Color.DarkRed, Color.White);
-                    return;
-                }
-
-                if (args.Length != 0) Log.ForceMessage("<warning>", "Ignoring unexpected argument(s) \"" + args + "\"", Color.DarkOrange, Color.White);
-                Log.ForceMessage("<Asura>", "Outputting current map to the maps directory", Color.Purple, Color.White);
-                _theVoid.PrintMap();
-            }
-            _basicCommands.Add("export", ExportMap);
 
             //Exports the current map set to a file
             void ExportAllMaps(string args)
@@ -300,7 +282,7 @@ namespace ExNihilo.Systems
                 Log.ForceMessage("<Asura>", "Outputting current map set to the maps directory", Color.Purple, Color.White);
                 _theVoid.PrintMap(true);
             }
-            _basicCommands.Add("exportall", ExportAllMaps);
+            _basicCommands.Add("exportmap", ExportAllMaps);
 
             //Shows the current seed value
             void Seed(string args)

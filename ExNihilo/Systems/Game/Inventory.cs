@@ -153,8 +153,13 @@ namespace ExNihilo.Systems.Game
             return true;
         }
 
+        public bool CanRestoreTrashedItem()
+        {
+            return _lastTrashedItem != null && GetFirstOpenInventorySlot() != -1;
+        }
         public bool TryRestoreTrashedItem()
         {
+            if (_lastTrashedItem == null) return false;
             var b = TryAddItem(_lastTrashedItem);
             if (b) _lastTrashedItem = null;
             return b;

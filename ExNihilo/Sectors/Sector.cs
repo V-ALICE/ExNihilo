@@ -62,7 +62,7 @@ namespace ExNihilo.Sectors
             Container.RequestSectorChange(sector);
         }
 
-        public abstract void OnMoveMouse(Point point);
+        public abstract bool OnMoveMouse(Point point);
         public abstract bool OnLeftClick(Point point);
         public abstract void OnLeftRelease(Point point);
 

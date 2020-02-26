@@ -452,10 +452,11 @@ namespace ExNihilo.Menus
             ActivePanel().Draw(spriteBatch);
         }
 
-        public override void OnMoveMouse(Point point)
+        public override bool OnMoveMouse(Point point)
         {
             ActivePanel().OnMoveMouse(point);
             _lastMousePosition = point;
+            return false;
         }
 
         public override bool OnLeftClick(Point point)

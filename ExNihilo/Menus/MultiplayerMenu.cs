@@ -69,10 +69,11 @@ namespace ExNihilo.Menus
             else _panelUI.Draw(spriteBatch);
         }
 
-        public override void OnMoveMouse(Point point)
+        public override bool OnMoveMouse(Point point)
         {
             if (_showingNote) _note.OnMoveMouse(point);
             else _panelUI.OnMoveMouse(point);
+            return false;
         }
 
         public override bool OnLeftClick(Point point)

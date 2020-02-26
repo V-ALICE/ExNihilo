@@ -114,7 +114,7 @@ namespace ExNihilo.Menus
 
         public abstract void Draw(SpriteBatch spriteBatch);
 
-        public abstract void OnMoveMouse(Point point);
+        public abstract bool OnMoveMouse(Point point);
 
         public abstract bool OnLeftClick(Point point);
 

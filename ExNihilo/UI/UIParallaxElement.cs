@@ -23,9 +23,10 @@ namespace ExNihilo.UI
             Weight = weight;
         }
 
-        public override void OnMoveMouse(Point point)
+        public override bool OnMoveMouse(Point point)
         {
             AdjustedOrigin = new Vector2(LastAnchor.X - Weight * point.X, LastAnchor.Y - Weight * point.Y);
+            return false;
         }
 
         public override void Draw(SpriteBatch spriteBatch)

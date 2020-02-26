@@ -97,9 +97,10 @@ namespace ExNihilo.UI
             return buttonX >= 0 && buttonY >= 0 && buttonX < MaximumSize.X && buttonY < MaximumSize.Y;
         }
 
-        public override void OnMoveMouse(Point point)
+        public override bool OnMoveMouse(Point point)
         {
             if (Down) ReinterpretScalar(point);
+            return false;
         }
 
         public override bool OnLeftClick(Point point)
