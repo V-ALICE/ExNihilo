@@ -122,11 +122,13 @@ namespace ExNihilo.UI
         public virtual void OnMoveMouse(Point point)
         {
             if (Disabled) return;
-            if ((AllowMulligan && Down) || (!Down && OverTexture != null))
+            if (AllowMulligan && Down)
             {
-                var isOver = IsOver(point);
-                if (Down && AllowMulligan) Down = isOver;
-                if (!Down && OverTexture != null) Over = isOver;
+                Down = IsOver(point);
+            }
+            else if (!Down && (OverTexture != null || OverColor != null))
+            {
+                Over = IsOver(point);
             }
         }
 

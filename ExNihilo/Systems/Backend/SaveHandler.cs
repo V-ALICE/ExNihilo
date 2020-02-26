@@ -15,7 +15,7 @@ namespace ExNihilo.Systems.Backend
     public class PackedGame
     {
         // Update this whenever the save contents changes YYMMDDHH
-        public const string _version = "20022300";
+        public const string _version = "20022520";
 
         //configuration
         private readonly DateTime _lastSaveDate;

@@ -22,6 +22,14 @@ namespace ExNihilo.Systems.Game.Items
             Stats = stats;
             Name = fullName;
             IconColor = icon;
+            if (item.IconColorLookup.Length == 0)
+            {
+                r = icon.Get().R;
+                g = icon.Get().G;
+                b = icon.Get().B;
+                a = icon.Get().A;
+            }
+
             Type = item.Slot;
         }
 
@@ -168,13 +176,14 @@ namespace ExNihilo.Systems.Game.Items
                             tokens[2] = 0;
                             break;
                         case "COLOR":
-                            IconColor = new Color(int.Parse(set[1]), int.Parse(set[2]), int.Parse(set[3]));
+                            if (set.Length == 2) IconColorLookup = set[1];
+                            else IconColor = new Color(int.Parse(set[1]), int.Parse(set[2]), int.Parse(set[3]));
                             tokens[4] = 0;
                             break;
                         case "NEW":
                         case "OPEN":
                             Valid = tokens.All(t => t == 0);
-                            UID = name + Texture.TextureStrip.Name;
+                            UID = name + Chance;
                             //These symbolize the end of the current item if they appear
                             return;
                         default:
@@ -188,7 +197,7 @@ namespace ExNihilo.Systems.Game.Items
                 lines.RemoveAt(0);
             }
             Valid = tokens.All(t => t == 0);
-            UID = name + Texture.TextureStrip.Name;
+            UID = name + Chance;
         }
 
         public static EquipInstance GetInstance(EquipItem item, Random rand, int level, int qual = -1)

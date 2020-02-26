@@ -217,5 +217,33 @@ namespace ExNihilo.Systems.Game.Items
 
             return null;
         }
+
+        public static bool RestoreItemInstance(ItemInstance item)
+        {
+            if (item is EquipInstance e)
+            {
+                foreach (var i in _equipSet[e.Type])
+                {
+                    if (i.UID == e.UID)
+                    {
+                        item.Restore(i);
+                        return true;
+                    } 
+                }
+            }
+            else if (item is UseInstance u)
+            {
+                foreach (var i in _useSet)
+                {
+                    if (i.UID == u.UID)
+                    {
+                        item.Restore(i);
+                        return true;
+                    }
+                }
+            }
+
+            return false;
+        }
     }
 }

@@ -17,7 +17,8 @@ namespace ExNihilo.Systems.Bases
 
         protected readonly int Quality;
         [NonSerialized] private ColorScale QualityColor;
-        protected readonly string ColorName;
+        protected string ColorName;
+        protected int r, g, b, a;
         [NonSerialized] protected ColorScale IconColor;
 
        //These must have 11 elements. Note last element represents perfection
@@ -28,9 +29,8 @@ namespace ExNihilo.Systems.Bases
         };
 
         [OnDeserialized]
-        internal void OnDeserialize(StreamingContext context)
+        internal void OnDeserialized(StreamingContext context)
         {
-           if (ColorName.Length > 0) IconColor = ColorScale.GetFromGlobal(ColorName);
            if (Quality < 3) QualityColor = Color.DarkRed;
            else if (Quality == 6) QualityColor = Color.ForestGreen;
            else if (Quality == 7) QualityColor = Color.DeepSkyBlue;
@@ -38,9 +38,10 @@ namespace ExNihilo.Systems.Bases
            else if (Quality == 9) QualityColor = Color.MediumPurple;
            else if (Quality == 10) QualityColor = ColorScale.GetFromGlobal("Rainbow");
            else QualityColor = Color.Black;
+
+           IconColor = ColorName.Length > 0 ? ColorScale.GetFromGlobal(ColorName) : (ColorScale)new Color(r, g, b, a);
         }
 
-        //TODO: Saving does not hold on to images so those will need to be restored
         public void Restore(Item reference)
         {
             Texture = reference.Texture;
@@ -83,6 +84,10 @@ namespace ExNihilo.Systems.Bases
             Texture = item.Texture;
             IconColor = item.IconColor;
             ColorName = item.IconColorLookup;
+            r = item.IconColor.R;
+            g = item.IconColor.G;
+            b = item.IconColor.B;
+            a = item.IconColor.A;
             Quality = quality;
 
             if (Quality < 3) QualityColor = Color.DarkRed;
@@ -116,6 +121,8 @@ namespace ExNihilo.Systems.Bases
         protected Item(ItemType type)
         {
             Type = type;
+            IconColorLookup = "";
+            IconColor = new Color();
         }
 
     }

@@ -47,10 +47,22 @@ namespace ExNihilo.Menus
                     }
                 }
             }
-            
-            if (endSlotNum != -1 && _invRef.TrySwapItem(startSlotNum, endSlotNum, startSlotEquip, endSlotEquip))
+
+            if (endSlotNum == -1)
             {
-                //Something changed so this menu needs to update
+                var rect = new Rectangle(_trash.OriginPosition.X, _trash.OriginPosition.Y,
+                    (int)(_trash.CurrentScale * _iconRefSize), (int)(_trash.CurrentScale * _iconRefSize));
+                if (rect.Contains(package.ScreenPos))
+                {
+                    //Throw item away
+                    _invRef.RemoveItem(startSlotNum, startSlotEquip, true);
+                    //TODO: this can be made to only update the one affected object instead
+                    UpdateDisplay();
+                }
+            }
+            else if (_invRef.TrySwapItem(startSlotNum, endSlotNum, startSlotEquip, endSlotEquip))
+            {
+                //Swapping items
                 //TODO: this can be made to only update the two affected objects instead
                 UpdateDisplay();
             }
@@ -60,6 +72,7 @@ namespace ExNihilo.Menus
         private readonly UIPanel _panelUI;
         private readonly UIElement[] _equips = new UIElement[7];
         private readonly UIElement[] _items = new UIElement[Inventory.InventorySize];
+        private readonly UIClickable _trash;
         private readonly UIText descText;
         private Point _lastMousePosition;
         private Coordinate _lastWindowSize;
@@ -77,8 +90,7 @@ namespace ExNihilo.Menus
             var inventorySet = new UIElement("InventorySet", "UI/field/ThreeRowElementSet", new Coordinate(0, -14), ColorScale.White, backdrop, Position.CenterBottom, Position.CenterBottom);
             var equipmentSet = new UIElement("EquipmentSet", "UI/field/SevenElementSet", new Coordinate(0, -5), ColorScale.White, inventorySet, Position.CenterBottom, Position.CenterTop);
             descText = new UIText("DescriptionBox", new Coordinate(14, 14), "0123456789012345678901234567890\n1\n2\n3\n4\n5\n6\n7\n8", new ColorScale[0], textBox, Position.TopLeft, Position.TopLeft);
-            //TODO: add trash can somewhere
-
+            
             var _equipRef = new UIPanel("EquipmentZone", new Coordinate(), new Coordinate(664, 80), equipmentSet, Position.TopLeft, Position.TopLeft);
             var weapSlot = new UIElement("WeapSlot", "Icon/overlay/weapon", new Coordinate(36, 8), ColorScale.White, _equipRef, Position.TopLeft, Position.TopLeft);
             var headSlot = new UIElement("HeadSlot", "Icon/overlay/head", new Coordinate(124, 8), ColorScale.White, _equipRef, Position.TopLeft, Position.TopLeft);
@@ -120,12 +132,19 @@ namespace ExNihilo.Menus
             _items[20] = new UIMovable("Item20", "null", new Coordinate(296, 152), ColorScale.White, _itemRef, Vector2.Zero, Vector2.One, Position.TopLeft, Position.TopLeft, true, false);
             _items[21] = new UIMovable("Item21", "null", new Coordinate(368, 152), ColorScale.White, _itemRef, Vector2.Zero, Vector2.One, Position.TopLeft, Position.TopLeft, true, false);
             _items[22] = new UIMovable("Item22", "null", new Coordinate(440, 152), ColorScale.White, _itemRef, Vector2.Zero, Vector2.One, Position.TopLeft, Position.TopLeft, true, false);
-            _items[23] = new UIMovable("Item23", "null", new Coordinate(512, 152), ColorScale.White, _itemRef, Vector2.Zero, Vector2.One, Position.TopLeft, Position.TopLeft, true, false);
+            //_items[23] = new UIMovable("Item23", "null", new Coordinate(512, 152), ColorScale.White, _itemRef, Vector2.Zero, Vector2.One, Position.TopLeft, Position.TopLeft, true, false);
+
+            //TODO: add undo button somewhere
+            _trash = new UIClickable("Trash", "Icon/action/toss", new Coordinate(512, 152), ColorScale.Grey, _itemRef, Position.TopLeft, Position.TopLeft);
+            _trash.SetRules(TextureLibrary.HalfScaleRuleSet);
+            _trash.SetExtraStates("", "", Color.DarkRed, Color.DarkRed);
 
             _equipRef.AddElements(weapSlot, headSlot, chestSlot, handsSlot, legsSlot, feetSlot, accSlot);
             _equipRef.AddElements(_equips);
             SetRulesAll(TextureLibrary.HalfScaleRuleSet, _equips);
             RegisterAll(MoveItem, _equips);
+
+            _itemRef.AddElements(_trash);
             _itemRef.AddElements(_items);
             SetRulesAll(TextureLibrary.HalfScaleRuleSet, _items);
             RegisterAll(MoveItem, _items);
@@ -139,7 +158,7 @@ namespace ExNihilo.Menus
             _invRef = reference;
         }
 
-        private void UpdateDisplay()
+        public void UpdateDisplay()
         {
             if (!_invRef.Dirty) return;
 

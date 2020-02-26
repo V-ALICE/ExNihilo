@@ -25,7 +25,9 @@ namespace ExNihilo.Systems.Game
         public readonly EquipInstance[] _equipment = new EquipInstance[7];
         public readonly ItemInstance[] _inventory = new ItemInstance[InventorySize];
 
-        public const int InventorySize = 24;
+        private ItemInstance _lastTrashedItem;
+
+        public const int InventorySize = 23;
         private const uint BaseNeededExp = 100;
         private const int BaseHp = 25, BaseMp = 10, BaseAtk = 5, BaseDef = 5, BaseLuck = 0;
 
@@ -52,9 +54,20 @@ namespace ExNihilo.Systems.Game
         }
 
         [OnDeserialized]
-        internal void OnDeserialize(StreamingContext context)
+        internal void OnDeserialized(StreamingContext context)
         {
             Dirty = true;
+            foreach (var e in _equipment)
+            {
+                if (e is null) continue;
+                ItemLoader.RestoreItemInstance(e);
+            }
+
+            foreach (var i in _inventory)
+            {
+                if (i is null) continue;
+                ItemLoader.RestoreItemInstance(i);
+            }
         }
 
         public void SoftReset()
@@ -140,10 +153,35 @@ namespace ExNihilo.Systems.Game
             return true;
         }
 
-        public void RemoveItem(int slot, bool equipSlot)
+        public bool TryRestoreTrashedItem()
         {
-            if (equipSlot) _equipment[slot] = null;
-            else _inventory[slot] = null;
+            var b = TryAddItem(_lastTrashedItem);
+            if (b) _lastTrashedItem = null;
+            return b;
+        }
+        public void RemoveItem(int slot, bool equipSlot, bool trash=false)
+        {
+            if (trash)
+            {
+                if (equipSlot)
+                {
+                    _lastTrashedItem = _equipment[slot];
+                    _equipment[slot] = null;
+                }
+                else
+                {
+                    _lastTrashedItem = _inventory[slot];
+
+                    _inventory[slot] = null;
+                }
+            }
+            else
+            {
+                if (equipSlot) _equipment[slot] = null;
+                else _inventory[slot] = null;
+            }
+
+            Dirty = true;
         }
 
         public bool CanGrabItem(int heldSlot, bool heldEquipSlot)

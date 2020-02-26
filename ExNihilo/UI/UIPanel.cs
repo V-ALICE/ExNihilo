@@ -124,7 +124,11 @@ namespace ExNihilo.UI
 
         public void DrawFinal(SpriteBatch spriteBatch)
         {
-            foreach (var item in Set) (item as UIPanel)?.DrawFinal(spriteBatch);
+            foreach (var item in Set)
+            {
+                if (item is UIPanel p) p.DrawFinal(spriteBatch);
+                else if (item is UIMovable m) m.DrawFinal(spriteBatch);
+            }
             if (Over) Tooltip?.Draw(spriteBatch, new Coordinate(LastMousePos.X - OriginPosition.X, LastMousePos.Y - OriginPosition.Y) + (Coordinate)(CurrentScale * TooltipOffset));
         }
 

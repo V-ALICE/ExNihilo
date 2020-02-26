@@ -14,18 +14,44 @@ namespace ExNihilo.Systems.Game.Items
     [Serializable]
     public class UseInstance : ItemInstance
     {
-        public Action<Inventory, List<EntityContainer>> Perform;
+        private List<UseItem.AOE> Perform;
+        private int _mp, _hp;
 
-        public UseInstance(Item item, int level, int quality, Action<Inventory, List<EntityContainer>> action) : base(item, level, quality)
+        public void Activate(Inventory a, List<EntityContainer> b)
+        {
+            if (Perform.Contains(UseItem.AOE.PLAYER) || Perform.Contains(UseItem.AOE.ALL))
+            {
+                a.Offsets.Hp += _hp;
+                a.Offsets.Mp += _mp;
+            }
+
+            if (Perform.Contains(UseItem.AOE.ALL) || Perform.Contains(UseItem.AOE.MULTIENEMY))
+            {
+                foreach (var e in b)
+                {
+                    //e.Offsets.Hp += (int)(item._hp * (basic + count));
+                    //e.Offsets.Mp += (int)(item._mp * (basic + count));
+                }
+            }
+            else if (Perform.Contains(UseItem.AOE.ENEMY))
+            {
+                //b[0].Offsets.Hp += (int)(item._hp * (basic + count));
+                //b[0].Offsets.Mp += (int)(item._mp * (basic + count));
+            }
+        }
+
+        public UseInstance(Item item, int level, int quality, int mp, int hp, List<UseItem.AOE> action) : base(item, level, quality)
         {
             Perform = action;
+            _mp = mp;
+            _hp = hp;
         }
 
     }
 
     public class UseItem : Item
     {
-        private enum AOE
+        public enum AOE
         {
             PLAYER, ENEMY, MULTIENEMY, ALL
         }
@@ -71,13 +97,14 @@ namespace ExNihilo.Systems.Game.Items
                             tokens[2] = 0;
                             break;
                         case "COLOR":
-                            IconColor = new Color(int.Parse(set[1]), int.Parse(set[2]), int.Parse(set[3]));
+                            if (set.Length == 2) IconColorLookup = set[1];
+                            else IconColor = new Color(int.Parse(set[1]), int.Parse(set[2]), int.Parse(set[3]));
                             tokens[1] = 0;
                             break;
                         case "NEW":
                         case "OPEN":
                             Valid = tokens.All(t => t == 0);
-                            UID = name + Texture.TextureStrip.Name;
+                            UID = name + Chance;
                             //These symbolize the end of the current item if they appear
                             return;
                         default:
@@ -91,7 +118,7 @@ namespace ExNihilo.Systems.Game.Items
                 lines.RemoveAt(0);
             }
             Valid = tokens.All(t => t == 0);
-            UID = name + Texture.TextureStrip.Name;
+            UID = name + Chance;
         }
 
         public static UseInstance GetInstance(UseItem item, Random rand, int level, int qual = -1)
@@ -113,30 +140,10 @@ namespace ExNihilo.Systems.Game.Items
                 count = (int) ((quality / 10.0 * (max - min) + min) / 4);
             }
 
-            void DoStuff(Inventory a, List<EntityContainer> b)
-            {
-                if (item._flags.Contains(AOE.PLAYER) || item._flags.Contains(AOE.ALL))
-                {
-                    a.Offsets.Hp += (int)(item._hp * (basic + count));
-                    a.Offsets.Mp += (int)(item._mp * (basic + count));
-                }
+            var mp = (int) ((basic + count) * item._mp);
+            var hp = (int) ((basic + count) * item._hp);
 
-                if (item._flags.Contains(AOE.ALL) || item._flags.Contains(AOE.MULTIENEMY))
-                {
-                    foreach (var e in b)
-                    {
-                        //e.Offsets.Hp += (int)(item._hp * (basic + count));
-                        //e.Offsets.Mp += (int)(item._mp * (basic + count));
-                    }
-                }
-                else if (item._flags.Contains(AOE.ENEMY))
-                {
-                    //b[0].Offsets.Hp += (int)(item._hp * (basic + count));
-                    //b[0].Offsets.Mp += (int)(item._mp * (basic + count));
-                }
-            }
-
-            return new UseInstance(item, level, quality, DoStuff);
+            return new UseInstance(item, level, quality, mp, hp, item._flags);
         }
     }
 }

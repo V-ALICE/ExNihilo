@@ -10,8 +10,6 @@ namespace ExNihilo.Sectors
 {
     public class VoidSector : PlayerBasedSector
     {
-        //TODO: add inventory, entityList
-
         private Level ActiveLevel => _world as Level;
         private PlayerEntityContainer Player => Container.Player;
 

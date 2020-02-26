@@ -41,10 +41,7 @@ namespace ExNihilo.Menus
 ********************************************************************/
         private void SwapToTitleFromLoad(UICallbackPackage package)
         {
-            if (_deleteMode)
-            {
-                ((UITogglable)_loadUI.GetElement("DeleteFileButton"))?.ForcePush(false);
-            }
+            _deleteMode = false;
             _type = CurrentMenu.Title;
             _titleUI.OnMoveMouse(_lastMousePosition);
         }
@@ -129,17 +126,26 @@ namespace ExNihilo.Menus
 ********************************************************************/
         private void ToggleLoadButtons()
         {
+            var button1 = _loadUI.GetElement(SaveHandler.FILE_1) as UIClickable;
+            var button2 = _loadUI.GetElement(SaveHandler.FILE_2) as UIClickable;
+            var button3 = _loadUI.GetElement(SaveHandler.FILE_3) as UIClickable;
             if (_deleteMode)
             {
-                if (!SaveHandler.HasSave(SaveHandler.FILE_1)) (_loadUI.GetElement(SaveHandler.FILE_1) as UIClickable)?.Disable(ColorScale.Grey);
-                if (!SaveHandler.HasSave(SaveHandler.FILE_2)) (_loadUI.GetElement(SaveHandler.FILE_2) as UIClickable)?.Disable(ColorScale.Grey);
-                if (!SaveHandler.HasSave(SaveHandler.FILE_3)) (_loadUI.GetElement(SaveHandler.FILE_3) as UIClickable)?.Disable(ColorScale.Grey);
+                if (SaveHandler.HasSave(SaveHandler.FILE_1)) button1?.ChangeColor(Color.Red);
+                else button1?.Disable(ColorScale.Grey);
+                if (SaveHandler.HasSave(SaveHandler.FILE_2)) button2?.ChangeColor(Color.Red);
+                else button2?.Disable(ColorScale.Grey);
+                if (SaveHandler.HasSave(SaveHandler.FILE_3)) button3?.ChangeColor(Color.Red);
+                else button3?.Disable(ColorScale.Grey);
             }
             else
             {
-                if (!SaveHandler.HasSave(SaveHandler.FILE_1)) (_loadUI.GetElement(SaveHandler.FILE_1) as UIClickable)?.Enable();
-                if (!SaveHandler.HasSave(SaveHandler.FILE_2)) (_loadUI.GetElement(SaveHandler.FILE_2) as UIClickable)?.Enable();
-                if (!SaveHandler.HasSave(SaveHandler.FILE_3)) (_loadUI.GetElement(SaveHandler.FILE_3) as UIClickable)?.Enable();
+                button1?.ChangeColor(ColorScale.White);
+                button2?.ChangeColor(ColorScale.White);
+                button3?.ChangeColor(ColorScale.White);
+                if (!SaveHandler.HasSave(SaveHandler.FILE_1)) button1?.Enable();
+                if (!SaveHandler.HasSave(SaveHandler.FILE_2)) button2?.Enable();
+                if (!SaveHandler.HasSave(SaveHandler.FILE_3)) button3?.Enable();
             }
         }
 
@@ -189,7 +195,9 @@ namespace ExNihilo.Menus
 
         private void ToggleDeleteMode(UICallbackPackage package)
         {
-            _deleteMode = package.Value[0] > 0;
+            _deleteMode = !_deleteMode;
+            var delText = _loadUI.GetElement("DeleteFileButtonText") as UIText;
+            delText?.SetText(_deleteMode ? "Cancel" : "Delete File", ColorScale.Black);
             ToggleLoadButtons();
         }
 
@@ -235,7 +243,8 @@ namespace ExNihilo.Menus
             _type = CurrentMenu.Play;
             _loadUI.OnMoveMouse(_lastMousePosition);
             _slot = "";
-            (_newGameUI.GetElement("NewGameInputBoxText") as UIText)?.SetText("");
+            _deleteMode = false;
+            (_newGameUI.GetElement("NewGameInputBoxText") as UIText)?.SetText("New File");
         }
 
 /********************************************************************
@@ -349,13 +358,13 @@ namespace ExNihilo.Menus
 
             // Load Menu setup
             var loadPanel = new UIPanel("LoadFilePanel", new Vector2(0.5f, 1), new Vector2(0, 0.5f), PositionType.CenterBottom);
-            var loadFile1 = new UIClickable(SaveHandler.FILE_1, "UI/button/BigButton", new Vector2(0, 0), ColorScale.White, loadPanel, PositionType.CenterTop);
-            var loadFile2 = new UIClickable(SaveHandler.FILE_2, "UI/button/BigButton", new Coordinate(0, 10), ColorScale.White, loadFile1, PositionType.CenterTop, PositionType.CenterBottom);
-            var loadFile3 = new UIClickable(SaveHandler.FILE_3, "UI/button/BigButton", new Coordinate(0, 10), ColorScale.White, loadFile2, PositionType.CenterTop, PositionType.CenterBottom);
+            var loadFile1 = new UIClickable(SaveHandler.FILE_1, "UI/button/BigButton", new Vector2(0, 0), ColorScale.White, loadPanel, PositionType.CenterTop, true);
+            var loadFile2 = new UIClickable(SaveHandler.FILE_2, "UI/button/BigButton", new Coordinate(0, 10), ColorScale.White, loadFile1, PositionType.CenterTop, PositionType.CenterBottom, true);
+            var loadFile3 = new UIClickable(SaveHandler.FILE_3, "UI/button/BigButton", new Coordinate(0, 10), ColorScale.White, loadFile2, PositionType.CenterTop, PositionType.CenterBottom, true);
             var loadFile1Text = new UIText(SaveHandler.FILE_1 + "Text", new Coordinate(), "", ColorScale.Black, loadFile1, PositionType.Center, PositionType.Center);
             var loadFile2Text = new UIText(SaveHandler.FILE_2 + "Text", new Coordinate(), "", ColorScale.Black, loadFile2, PositionType.Center, PositionType.Center);
             var loadFile3Text = new UIText(SaveHandler.FILE_3 + "Text", new Coordinate(), "", ColorScale.Black, loadFile3, PositionType.Center, PositionType.Center);
-            var deleteFileButton = new UITogglable("DeleteFileButton", "UI/button/SmallButton", new Coordinate(-10, -10), ColorScale.White, _loadUI, PositionType.BottomRight, PositionType.BottomRight, false);
+            var deleteFileButton = new UIClickable("DeleteFileButton", "UI/button/SmallButton", new Coordinate(-10, -10), ColorScale.White, _loadUI, PositionType.BottomRight, PositionType.BottomRight);
             var deleteFileButtonText = new UIText("DeleteFileButtonText", new Coordinate(), "Delete File", ColorScale.Black, deleteFileButton, PositionType.Center, PositionType.Center);
             var backButton2 = new UIClickable("BackButton", "UI/button/SmallButton", new Coordinate(10, -10), ColorScale.White, _loadUI, PositionType.BottomLeft, PositionType.BottomLeft);
             var backButtonText2 = new UIText("BackButtonText", new Coordinate(), "Back", ColorScale.Black, backButton2, PositionType.Center, PositionType.Center);
@@ -364,7 +373,8 @@ namespace ExNihilo.Menus
             backButton2.RegisterCallback(SwapToTitleFromLoad);
             RegisterAll(SelectLoad, loadFile1, loadFile2, loadFile3);
             SetExtrasAll("UI/button/BigButtonDown", "UI/button/BigButtonOver", null, null, loadFile1, loadFile2, loadFile3);
-            SetExtrasAll("UI/button/SmallButtonDown", "UI/button/SmallButtonOver", null, null, deleteFileButton, backButton2);
+            backButton2.SetExtraStates("UI/button/SmallButtonDown", "UI/button/SmallButtonOver");
+            deleteFileButton.SetExtraStates("UI/button/SmallButtonDown", "UI/button/SmallButtonOver");
 
             loadPanel.AddElements(loadFile1, loadFile2, loadFile3, loadFile1Text, loadFile2Text, loadFile3Text);
             _loadUI.AddElements(backButton2, backButtonText2, deleteFileButton, deleteFileButtonText, loadPanel, titleDisplay);

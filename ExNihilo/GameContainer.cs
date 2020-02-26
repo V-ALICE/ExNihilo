@@ -181,7 +181,6 @@ namespace ExNihilo
 
             SaveHandler.LoadParameters();
             PushParameters(SaveHandler.Parameters);
-            SaveHandler.LoadAllSaves(SaveHandler.FILE_1, SaveHandler.FILE_2, SaveHandler.FILE_3);
             ParticleBackdrop.AddDefault(GraphicsDevice);
 
             _sectorDirectory = new Dictionary<SectorID, Sector>
@@ -197,6 +196,7 @@ namespace ExNihilo
             base.Initialize();
             //ForceWindowUpdate(1920, 1080);
             CheckForWindowUpdate();
+            SaveHandler.LoadAllSaves(SaveHandler.FILE_1, SaveHandler.FILE_2, SaveHandler.FILE_3);
             ActiveSector?.Enter(_lastMousePosition, _windowSize);
 
             //AudioManager.Pause(true);

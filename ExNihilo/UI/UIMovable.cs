@@ -67,14 +67,8 @@ namespace ExNihilo.UI
             {
                 if (Ghosting)
                 {
-                    //TODO: ghost needs to display on top of everything else
-                    var ghost = ColorScale.Get();
-                    ghost.A /= 4;
-
                     if (DownTexture != null) DownTexture.Draw(spriteBatch, OriginPosition, DownColor?.Get() ?? ColorScale.Get(), CurrentScale);
                     else Texture.Draw(spriteBatch, OriginPosition, DownColor?.Get() ?? ColorScale.Get(), CurrentScale);
-
-                    Texture.Draw(spriteBatch, OriginPosition + ShiftedPos, ghost, CurrentScale);
                 }
                 else
                 {
@@ -90,6 +84,16 @@ namespace ExNihilo.UI
             else
             {
                 Texture.Draw(spriteBatch, OriginPosition, ColorScale.Get(), CurrentScale);
+            }
+        }
+
+        public void DrawFinal(SpriteBatch spriteBatch)
+        {
+            if (Down && Ghosting)
+            {
+                var ghost = ColorScale.Get();
+                ghost.A /= 4;
+                Texture.Draw(spriteBatch, OriginPosition + ShiftedPos, ghost, CurrentScale);
             }
         }
 
