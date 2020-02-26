@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Runtime.Serialization;
 using ExNihilo.Systems.Bases;
 using ExNihilo.Systems.Game.Items;
@@ -105,6 +106,12 @@ namespace ExNihilo.Systems.Game
             if (HeldGold < 0) HeldGold = 0;
         }
 
+        public StatOffset GetArmorOffset()
+        {
+            var offset = new StatOffset();
+            return _equipment.Where(e => !(e is null)).Aggregate(offset, (current, e) => current + e.Stats);
+        }
+
         public int GetFirstOpenInventorySlot()
         {
             for (int i = 0; i < _inventory.Length; i++)
@@ -133,6 +140,12 @@ namespace ExNihilo.Systems.Game
             return true;
         }
 
+        public void RemoveItem(int slot, bool equipSlot)
+        {
+            if (equipSlot) _equipment[slot] = null;
+            else _inventory[slot] = null;
+        }
+
         public bool CanGrabItem(int heldSlot, bool heldEquipSlot)
         {
             return heldEquipSlot ? _equipment[heldSlot] != null : _inventory[heldSlot] != null;
@@ -151,6 +164,7 @@ namespace ExNihilo.Systems.Game
                 {
                     _inventory[heldSlot] = _equipment[destSlot];
                     _equipment[destSlot] = heldEquip;
+                    Dirty = true;
                     return true;
                 }
 
@@ -162,10 +176,11 @@ namespace ExNihilo.Systems.Game
                 //Unequip an item from equipment
                 if (!(heldItem is EquipInstance heldEquip)) return false;
                 var destItem = _inventory[destSlot] as EquipInstance;
-                if (destItem is null || destItem.Type == heldEquip.Type)
+                if (_inventory[destSlot] is null || (destItem != null && destItem.Type == heldEquip.Type))
                 {
                     _equipment[heldSlot] = destItem;
                     _inventory[destSlot] = heldItem;
+                    Dirty = true;
                     return true;
                 }
 
@@ -175,6 +190,7 @@ namespace ExNihilo.Systems.Game
             //Swap two items in inventory
             _inventory[heldSlot] = _inventory[destSlot];
             _inventory[destSlot] = heldItem;
+            Dirty = true;
             return true;
         }
 

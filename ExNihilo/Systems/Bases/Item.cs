@@ -10,6 +10,7 @@ namespace ExNihilo.Systems.Bases
     [Serializable]
     public abstract class ItemInstance
     {
+        public readonly string UID;
         public readonly int Level;
         public string Name { get; protected set; }
         [NonSerialized] protected AnimatableTexture Texture;
@@ -76,6 +77,7 @@ namespace ExNihilo.Systems.Bases
 
         protected ItemInstance(Item item, int level, int quality)
         {
+            UID = item.UID;
             Level = level;
             Name = item.Name;
             Texture = item.Texture;
@@ -109,6 +111,7 @@ namespace ExNihilo.Systems.Bases
         public AnimatableTexture Texture { get; protected set; }
         public Color IconColor { get; protected set; }
         public string IconColorLookup { get; protected set; }
+        public string UID { get; protected set; }
 
         protected Item(ItemType type)
         {

@@ -75,6 +75,10 @@ namespace ExNihilo.Util
         {
             return new Vector2(a.X * b.X, a.Y * b.Y);
         }
+        public static Vector2 operator *(Vector2 a, Coordinate b)
+        {
+            return new Vector2(a.X * b.X, a.Y * b.Y);
+        }
 
         public static Vector2 operator *(float a, Coordinate b)
         {

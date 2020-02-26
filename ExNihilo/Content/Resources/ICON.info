@@ -46,3 +46,21 @@ skill/heal       640 768 128 128
 skill/thorns     768 768 128 128
 skill/death      896 768 128 128
 skill/poisonres    0 896 128 128
+
+pop/emptybox      0 256  64  64
+pop/box          64 256  64  64
+pop/speak       128 256  64  64
+pop/bank        192 256  64  64
+pop/stairs        0 320  64  64
+pop/gold         64 320  64  64
+pop/fight       128 320  64  64
+pop/anvil       192 320  64  64
+pop/relapse       0 512  64  64
+
+overlay/weapon   64 512  64  64
+overlay/head    128 512  64  64
+overlay/chest   192 512  64  64
+overlay/hands     0 576  64  64
+overlay/legs     64 576  64  64
+overlay/feet    128 576  64  64
+overlay/acc     192 576  64  64

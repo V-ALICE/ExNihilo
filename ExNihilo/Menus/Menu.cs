@@ -83,6 +83,11 @@ namespace ExNihilo.Menus
         {
             foreach (var element in elements) element.RegisterCallback(action);
         }
+        protected void RegisterAll(Action<UICallbackPackage> action, params UIElement[] elements)
+        {
+            //Elements must actually be clickables or else this will just fail
+            foreach (var element in elements) ((UIClickable)element).RegisterCallback(action);
+        }
 
         protected void DisableAll(ColorScale color, params UIClickable[] elements)
         {

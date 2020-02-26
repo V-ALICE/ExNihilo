@@ -174,6 +174,7 @@ namespace ExNihilo.Systems.Game.Items
                         case "NEW":
                         case "OPEN":
                             Valid = tokens.All(t => t == 0);
+                            UID = name + Texture.TextureStrip.Name;
                             //These symbolize the end of the current item if they appear
                             return;
                         default:
@@ -187,6 +188,7 @@ namespace ExNihilo.Systems.Game.Items
                 lines.RemoveAt(0);
             }
             Valid = tokens.All(t => t == 0);
+            UID = name + Texture.TextureStrip.Name;
         }
 
         public static EquipInstance GetInstance(EquipItem item, Random rand, int level, int qual = -1)
