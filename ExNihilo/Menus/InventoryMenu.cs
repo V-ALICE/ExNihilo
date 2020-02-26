@@ -156,6 +156,7 @@ namespace ExNihilo.Menus
         {
             //This gets called initially and when characters change
             _invRef = reference;
+            _invRef.Dirty = true;
         }
 
         public void UpdateDisplay()
