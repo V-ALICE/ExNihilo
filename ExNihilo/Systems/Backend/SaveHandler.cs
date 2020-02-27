@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using ExNihilo.Entity;
+using ExNihilo.Menus;
 using ExNihilo.Systems.Game;
 using ExNihilo.Util;
 using ExNihilo.Util.Graphics;
@@ -27,7 +28,7 @@ namespace ExNihilo.Systems.Backend
         public bool InVoid;
 
         //data
-        public List<PlayerEntityContainer.PackedPlayerEntityContainer> SavedCharacters { get; }
+        public PlayerEntityContainer.PackedPlayerEntityContainer[] SavedCharacters;
         public int CurrentPlayer;
         public int Floor, Parallax, Seed;
         public MapGenerator.Type GenType;
@@ -67,10 +68,8 @@ namespace ExNihilo.Systems.Backend
             Version = _version;
             _lastSaveDate = DateTime.Now;
             FormatTitleCard();
-            SavedCharacters = new List<PlayerEntityContainer.PackedPlayerEntityContainer>
-            {
-                new PlayerEntityContainer(game.GraphicsDevice, "Player", 0,0,0,0).GetPacked()
-            };
+            SavedCharacters = new PlayerEntityContainer.PackedPlayerEntityContainer[CharacterMenu.MAX_CHARACTERS];
+            SavedCharacters[0] = new PlayerEntityContainer(game.GraphicsDevice, "Player", 0, 0, 0, 0).GetPacked();
             CurrentPlayer = 0;
             InVoid = false;
             Floor = 1;

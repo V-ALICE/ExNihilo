@@ -40,7 +40,7 @@ namespace ExNihilo.Sectors
 
         public override void Enter(Point point, Coordinate gameWindow)
         {
-            _invRef.SetReference(Player.Inventory);
+            _invRef.SetReference(Player);
             base.Enter(point, gameWindow);
         }
 
@@ -79,7 +79,7 @@ namespace ExNihilo.Sectors
             var river = new MenuInteractive("River", _fishMenu);
             _world.AddInteractive(river, 12, 6, 2);
             _world.AddInteractive(river, 15, 8, 1, 2);
-            _world.AddInteractive(new MenuInteractive("Void", _voidMenu), 23, 21);
+            _world.AddInteractive(new MenuInteractive("Void", _voidMenu), 22, 21, 2, 2);
             _world.AddInteractive(new MenuInteractive("Pond", _characterMenu), 44, 3, 2, 2);
             _world.AddInteractive(new MenuInteractive("Island", _multiplayerMenu), 13, 43);
         }
@@ -109,7 +109,7 @@ namespace ExNihilo.Sectors
 
                 if (_menuPoint.Dead)
                 {
-                    if (_menuPoint is CharacterMenu) _invRef.SetReference(Player.Inventory);
+                    if (_menuPoint is CharacterMenu) _invRef.SetReference(Player);
                     _menuPoint = null;
                 }
             }

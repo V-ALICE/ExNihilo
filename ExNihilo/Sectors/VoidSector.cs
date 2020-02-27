@@ -28,7 +28,7 @@ namespace ExNihilo.Sectors
 
         public override void Enter(Point point, Coordinate gameWindow)
         {
-            _invRef.SetReference(Player.Inventory);
+            _invRef.SetReference(Player);
             base.Enter(point, gameWindow);
         }
 

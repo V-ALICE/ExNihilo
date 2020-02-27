@@ -8,7 +8,6 @@ using ExNihilo.Util.Graphics;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
-
 using Position = ExNihilo.Util.Graphics.TextureUtilities.PositionType;
 
 namespace ExNihilo.Menus
@@ -23,43 +22,28 @@ namespace ExNihilo.Menus
             Dead = true;
         }
 
-        private void CheckDeleteCharButtons()
-        {
-            if (!(_panelUI.GetElement("CurrentCharArray") is UIPanel panel)) return;
-            if (_characters.Count > 1 && _currentChar != 0) (panel.GetElement("CharPanel1") as UIPanel)?.Enable();
-            else (panel.GetElement("CharPanel1") as UIPanel)?.Disable(ColorScale.Grey);
-            for (int i = 1; i < MAX_CHARACTERS; i++)
-            {
-                var del = panel.GetElement("CharPanel"+(i+1)) as UIPanel;
-                if (i < _characters.Count && _currentChar != i) del?.Enable();
-                else del?.Disable(ColorScale.Grey);
-            }
-        }
-
         private void DeleteChar()
         {
-            if (!(_panelUI.GetElement("CurrentCharArray") is UIPanel panel)) return;
+            /* Process for deleting a character
+             * Character slot is set to null
+             * Panel is disabled
+             * Portrait is cleared
+             * Tooltip is cleared (for good measure)
+             * Delete button is disabled
+             * Enable new character button because there will always be an open slot post delete
+             */
+            _chars[_charInJeopardy] = null;
+            var panel = _panelUI.GetElement("CharPanel" + (_charInJeopardy + 1)) as UIPanel;
+            panel?.GetElement("Portrait" + (_charInJeopardy + 1))?.ChangeTexture(TextureLibrary.Lookup("null"));
+            var text = panel?.GetElement("CharInfoText" + (_charInJeopardy + 1)) as UIText;
+            text?.SetText("", ColorScale.Black);
+            panel?.Disable(ColorScale.Grey);
+            (_panelUI.GetElement("Delete" + (_charInJeopardy + 1)) as UIClickable)?.Disable(ColorScale.Grey);
 
-            if (_charInJeopardy < _currentChar) _currentChar--;
-            if (_charInJeopardy <= _selectedChar && _selectedChar != 0) _selectedChar--;
-            (_panelUI.GetElement("CharacterDisplay") as UIElement)?.ChangeTexture(_characters[_selectedChar].Entity.GetTexture(EntityTexture.State.DownMoving));
-
-            _characters.RemoveAt(_charInJeopardy);
-            for (int i = 0; i < MAX_CHARACTERS; i++)
-            {
-                var tex = i < _characters.Count ? _characters[i].Entity.GetTexture(EntityTexture.State.Down) : (AnimatableTexture)TextureLibrary.Lookup("null");
-                (panel.GetElement("Portrait" + (i + 1)) as UIElement)?.ChangeTexture(tex);
-            }
-            
-            if (_characters.Count < MAX_CHARACTERS)
-            {
-                (_panelUI.GetElement("NewCharButton") as UIClickable)?.Enable();
-            }
-            CheckDeleteCharButtons();
-            if (_selectedChar == _currentChar) (_panelUI.GetElement("ChangeCharButton") as UIClickable)?.Disable(ColorScale.Grey);
-            else (_panelUI.GetElement("ChangeCharButton") as UIClickable)?.Enable();
-
-            Container.Pack();
+            _selectedChar = _currentChar;
+            _panelUI.GetElement("CharacterDisplay")?.ChangeTexture(_chars[_selectedChar].Entity.GetTexture(EntityTexture.State.DownMoving));
+            (_panelUI.GetElement("NewCharButton") as UIClickable)?.Enable();
+            Container.Pack(); //Save game
         }
 
         private void WarnOnDelete(UICallbackPackage package)
@@ -89,7 +73,7 @@ namespace ExNihilo.Menus
                     break;
             }
 
-            var message = "Are you sure you want to\ndelete " + _characters[_charInJeopardy].Name + "?";
+            var message = "Are you sure you want to\ndelete " + _chars[_charInJeopardy].Name + "?";
             _warningMessage = new NoteMenu(Container, message, false);
             _warningMessage.LoadContent(Container.GraphicsDevice, Container.Content);
             _type = CurrentMenu.Warning;
@@ -106,11 +90,20 @@ namespace ExNihilo.Menus
 
         private void ChangeChar(UICallbackPackage package)
         {
-            _characters[_selectedChar].Entity.SetState(_world.GetCurrentState());
+            /* Process for swapping characters
+             * Delete button for old character is enabled
+             * Delete button for new character is disabled
+             * Set current character as new character
+             * Main portrait is set as new character
+             * Disable change character button since the selected and current characters are the same
+             */
+            (_panelUI.GetElement("Delete" + (_currentChar + 1)) as UIClickable)?.Enable();
+            (_panelUI.GetElement("Delete" + (_selectedChar + 1)) as UIClickable)?.Disable(ColorScale.Grey);
+            _chars[_selectedChar].Entity.SetState(_world.GetCurrentState());
             _currentChar = _selectedChar;
-            _world.SwapEntity(_characters[_currentChar]);
+            _world.SwapEntity(_chars[_currentChar]);
             (_panelUI.GetElement("ChangeCharButton") as UIClickable)?.Disable(ColorScale.Grey);
-            CheckDeleteCharButtons();
+            Container.Pack(); //Save game
         }
 
         private void SelectChar(UICallbackPackage package)
@@ -141,13 +134,13 @@ namespace ExNihilo.Menus
                     break;
             }
 
-            if (tmp >= _characters.Count) return;
+            if (_chars[tmp] is null) return;
 
             _selectedChar = tmp;
             if (_selectedChar == _currentChar) (_panelUI.GetElement("ChangeCharButton") as UIClickable)?.Disable(ColorScale.Grey);
             else (_panelUI.GetElement("ChangeCharButton") as UIClickable)?.Enable();
 
-            (_panelUI.GetElement("CharacterDisplay") as UIElement)?.ChangeTexture(_characters[_selectedChar].Entity.GetTexture(EntityTexture.State.DownMoving));
+            _panelUI.GetElement("CharacterDisplay")?.ChangeTexture(_chars[_selectedChar].Entity.GetTexture(EntityTexture.State.DownMoving));
         }
 
 /********************************************************************
@@ -170,9 +163,9 @@ namespace ExNihilo.Menus
                 var sheet = TextureLibrary.Lookup("Char/cloth/" + (_cloth+1));
                 var rect = new Rectangle(0, sheet.Height / 2, sheet.Width, sheet.Height / 4);
                 var cloth = new AnimatableTexture(TextureUtilities.GetSubTexture(Container.GraphicsDevice, sheet, rect), 4, 4);
-                (_newCharUI.GetElement("CharClothDisplay") as UIElement)?.ChangeTexture(cloth);
-                (_newCharUI.GetElement("CharBodyDisplay") as UIElement)?.ResetTextureFrame();
-                (_newCharUI.GetElement("CharHairDisplay") as UIElement)?.ResetTextureFrame();
+                _newCharUI.GetElement("CharClothDisplay")?.ChangeTexture(cloth);
+                _newCharUI.GetElement("CharBodyDisplay")?.ResetTextureFrame();
+                _newCharUI.GetElement("CharHairDisplay")?.ResetTextureFrame();
             }
             else if (package.Caller.StartsWith("Hair"))
             {
@@ -181,9 +174,9 @@ namespace ExNihilo.Menus
                 var sheet = TextureLibrary.Lookup("Char/hair/" + (_hair+1) + "-" + (_color+1));
                 var rect = new Rectangle(0, sheet.Height / 2, sheet.Width, sheet.Height / 4);
                 var hair = new AnimatableTexture(TextureUtilities.GetSubTexture(Container.GraphicsDevice, sheet, rect), 4, 4);
-                (_newCharUI.GetElement("CharHairDisplay") as UIElement)?.ChangeTexture(hair);
-                (_newCharUI.GetElement("CharBodyDisplay") as UIElement)?.ResetTextureFrame();
-                (_newCharUI.GetElement("CharClothDisplay") as UIElement)?.ResetTextureFrame();
+                _newCharUI.GetElement("CharHairDisplay")?.ChangeTexture(hair);
+                _newCharUI.GetElement("CharBodyDisplay")?.ResetTextureFrame();
+                _newCharUI.GetElement("CharClothDisplay")?.ResetTextureFrame();
             }
             else if (package.Caller.StartsWith("Color"))
             {
@@ -192,9 +185,9 @@ namespace ExNihilo.Menus
                 var sheet = TextureLibrary.Lookup("Char/hair/" + (_hair+1) + "-" + (_color+1));
                 var rect = new Rectangle(0, sheet.Height / 2, sheet.Width, sheet.Height / 4);
                 var hair = new AnimatableTexture(TextureUtilities.GetSubTexture(Container.GraphicsDevice, sheet, rect), 4, 4);
-                (_newCharUI.GetElement("CharHairDisplay") as UIElement)?.ChangeTexture(hair);
-                (_newCharUI.GetElement("CharBodyDisplay") as UIElement)?.ResetTextureFrame();
-                (_newCharUI.GetElement("CharClothDisplay") as UIElement)?.ResetTextureFrame();
+                _newCharUI.GetElement("CharHairDisplay")?.ChangeTexture(hair);
+                _newCharUI.GetElement("CharBodyDisplay")?.ResetTextureFrame();
+                _newCharUI.GetElement("CharClothDisplay")?.ResetTextureFrame();
             }
             else if (package.Caller.StartsWith("Body"))
             {
@@ -203,9 +196,9 @@ namespace ExNihilo.Menus
                 var sheet = TextureLibrary.Lookup("Char/base/" + (_body+1));
                 var rect = new Rectangle(0, sheet.Height / 2, sheet.Width, sheet.Height / 4);
                 var body = new AnimatableTexture(TextureUtilities.GetSubTexture(Container.GraphicsDevice, sheet, rect), 4, 4);
-                (_newCharUI.GetElement("CharBodyDisplay") as UIElement)?.ChangeTexture(body);
-                (_newCharUI.GetElement("CharClothDisplay") as UIElement)?.ResetTextureFrame();
-                (_newCharUI.GetElement("CharHairDisplay") as UIElement)?.ResetTextureFrame();
+                _newCharUI.GetElement("CharBodyDisplay")?.ChangeTexture(body);
+                _newCharUI.GetElement("CharClothDisplay")?.ResetTextureFrame();
+                _newCharUI.GetElement("CharHairDisplay")?.ResetTextureFrame();
             }
         }
 
@@ -214,18 +207,30 @@ namespace ExNihilo.Menus
             if (!(_newCharUI.GetElement("NewCharInputBoxText") is UIText text) || text.Text.Length == 0) return;
 
             var newChar = new PlayerEntityContainer(Container.GraphicsDevice, text.Text, _body, _hair, _cloth, _color);
-            _characters.Add(newChar);
-            (_panelUI.GetElement("Portrait" + _characters.Count) as UIElement)?.ChangeTexture(newChar.Texture);
-            CheckDeleteCharButtons();
+            var slot = GetFirstOpening();
+            _chars[slot] = newChar;
 
+            /* Process for creating a new character
+             * Empty character panel is enabled
+             * Portrait is set as new character
+             * Tooltip text is set as info for new character
+             * Delete button for new character is enabled (since new character isn't swapped to automatically) 
+             */
+            var panel = _panelUI.GetElement("CharPanel" + (slot + 1)) as UIPanel;
+            panel?.Enable();
+            panel?.GetElement("Portrait" + (slot+1))?.ChangeTexture(newChar.Texture);
+            var t = panel?.GetElement("CharInfoText" + (slot + 1)) as UIText;
+            t?.SetText(_chars[slot].ToString(), ColorScale.Black);
+            (panel?.GetElement("Delete" + (slot + 1)) as UIClickable)?.Enable();
+            
             _type = CurrentMenu.Main;
             _panelUI.OnMoveMouse(_lastMousePosition);
-            if (_characters.Count == MAX_CHARACTERS)
+            if (slot == MAX_CHARACTERS-1)
             {
                 (_panelUI.GetElement("NewCharButton") as UIClickable)?.Disable(ColorScale.Grey);
             }
             ResetNewChar(Container.GraphicsDevice);
-            Container.Pack();
+            Container.Pack(); //Save game
         }
 
         private void PrepForTextEntry(UICallbackPackage package)
@@ -259,9 +264,9 @@ namespace ExNihilo.Menus
         private bool _textEntryMode;
         private Point _lastMousePosition;
         private Coordinate _lastWindowSize;
-        private readonly List<PlayerEntityContainer> _characters = new List<PlayerEntityContainer>();
+        private readonly PlayerEntityContainer[] _chars = new PlayerEntityContainer[MAX_CHARACTERS];
 
-        private const int MAX_NEWCHAR_TEXT_SIZE = 15, MAX_CHARACTERS = 7;
+        public const int MAX_NEWCHAR_TEXT_SIZE = 15, MAX_CHARACTERS = 7;
         private const int _bodyCount = 3, _hairCount = 42, _clothCount = 43, _colorCount = 10;
 
         public CharacterMenu(GameContainer container, World world) : base(container)
@@ -428,11 +433,24 @@ namespace ExNihilo.Menus
             _textEntryMode = false;
             _type = CurrentMenu.Main;
             _selectedChar = _currentChar;
+
+            var text = _panelUI.GetElement("CharInfoText" + (_currentChar + 1)) as UIText;
+            text?.SetText(_chars[_currentChar].ToString(), ColorScale.Black);
             (_panelUI.GetElement("ChangeCharButton") as UIClickable)?.Disable(ColorScale.Grey);
-            (_panelUI.GetElement("CharacterDisplay") as UIElement)?.ChangeTexture(_characters[_selectedChar].Entity.GetTexture(EntityTexture.State.DownMoving));
+            _panelUI.GetElement("CharacterDisplay")?.ChangeTexture(_chars[_selectedChar].Entity.GetTexture(EntityTexture.State.DownMoving));
         }
 
-        protected void ResetNewChar(GraphicsDevice graphics)
+        private int GetFirstOpening()
+        {
+            for (int i = 0; i < _chars.Length; i++)
+            {
+                if (_chars[i] is null) return i;
+            }
+
+            return -1;
+        }
+
+        private void ResetNewChar(GraphicsDevice graphics)
         {
             _body = _hair = _cloth = _color = 0;
             var sheet = TextureLibrary.Lookup("Char/base/" + (_body + 1));
@@ -440,9 +458,9 @@ namespace ExNihilo.Menus
             var body = new AnimatableTexture(TextureUtilities.GetSubTexture(graphics, sheet, rect), 4, 4);
             var cloth = new AnimatableTexture(TextureUtilities.GetSubTexture(graphics, TextureLibrary.Lookup("Char/cloth/" + (_cloth + 1)), rect), 4, 4);
             var hair = new AnimatableTexture(TextureUtilities.GetSubTexture(graphics, TextureLibrary.Lookup("Char/hair/" + (_hair + 1) + "-" + (_color + 1)), rect), 4, 4);
-            (_newCharUI.GetElement("CharBodyDisplay") as UIElement)?.ChangeTexture(body);
-            (_newCharUI.GetElement("CharClothDisplay") as UIElement)?.ChangeTexture(cloth);
-            (_newCharUI.GetElement("CharHairDisplay") as UIElement)?.ChangeTexture(hair);
+            _newCharUI.GetElement("CharBodyDisplay")?.ChangeTexture(body);
+            _newCharUI.GetElement("CharClothDisplay")?.ChangeTexture(cloth);
+            _newCharUI.GetElement("CharHairDisplay")?.ChangeTexture(hair);
         }
 
         public override void LoadContent(GraphicsDevice graphics, ContentManager content)
@@ -489,6 +507,7 @@ namespace ExNihilo.Menus
                     _newCharUI.OnMoveMouse(point);
                     break;
                 case CurrentMenu.Warning:
+                    _panelUI.OnMoveMouse(point);
                     _warningMessage.OnMoveMouse(point);
                     break;
             }
@@ -565,35 +584,49 @@ namespace ExNihilo.Menus
         public override void Pack(PackedGame game)
         {
             //save characters
-            game.SavedCharacters.Clear();
-            foreach (var c in _characters)
-            {
-                game.SavedCharacters.Add(c.GetPacked());
-            }
+            var arr = new PlayerEntityContainer.PackedPlayerEntityContainer[MAX_CHARACTERS];
+            for (int i = 0; i < _chars.Length; i++) arr[i] = _chars[i]?.GetPacked();
+            game.SavedCharacters = arr;
+            game.CurrentPlayer = _currentChar;
         }
 
         public override void Unpack(PackedGame game)
         {
             //take characters
-            _characters.Clear();
-            foreach (var c in game.SavedCharacters)
+            for (int i=0; i<game.SavedCharacters.Length; i++)
             {
-                var player = new PlayerEntityContainer(Container.GraphicsDevice, c.Name, c.TextureSet[0], c.TextureSet[1], c.TextureSet[2], c.TextureSet[3], c.Inventory);
-                _characters.Add(player);
-                (_panelUI.GetElement("Portrait" + _characters.Count) as UIElement)?.ChangeTexture(player.Entity.GetTexture(EntityTexture.State.Down));
+                var c = game.SavedCharacters[i];
+                if (c is null)
+                {
+                    var panel = _panelUI.GetElement("CharPanel" + (i + 1)) as UIPanel;
+                    panel?.GetElement("Portrait" + (i + 1))?.ChangeTexture(TextureLibrary.Lookup("null"));
+                    var text = panel?.GetElement("CharInfoText" + (i + 1)) as UIText;
+                    text?.SetText("", ColorScale.Black);
+                    panel?.Disable(ColorScale.Grey);
+                    (_panelUI.GetElement("Delete" + (i + 1)) as UIClickable)?.Disable(ColorScale.Grey);
+                }
+                else
+                {
+                    _chars[i] = new PlayerEntityContainer(Container.GraphicsDevice, c.Name, c.TextureSet[0], c.TextureSet[1], c.TextureSet[2], c.TextureSet[3], c.Inventory);
+                    var panel = _panelUI.GetElement("CharPanel" + (i + 1)) as UIPanel;
+                    panel?.Enable();
+                    panel?.GetElement("Portrait" + (i + 1))?.ChangeTexture(_chars[i].Entity.GetTexture(EntityTexture.State.Down));
+                    var text = panel?.GetElement("CharInfoText" + (i + 1)) as UIText;
+                    text?.SetText(_chars[i].ToString(), ColorScale.Black);
+                    var delete = panel?.GetElement("Delete" + (i + 1)) as UIClickable;
+                    if (i == game.CurrentPlayer) delete?.Disable(ColorScale.Grey);
+                    else delete?.Enable();
+                }
             }
-            for (int i = game.SavedCharacters.Count; i < MAX_CHARACTERS; i++)
-            {
-                (_panelUI.GetElement("Portrait" + (i + 1)) as UIElement)?.ChangeTexture(TextureLibrary.Lookup("null"));
-            }
-            CheckDeleteCharButtons();
+
+            if (GetFirstOpening() == -1) (_panelUI.GetElement("NewCharButton") as UIClickable)?.Disable(ColorScale.Grey);
             _selectedChar = _currentChar = game.CurrentPlayer;
-            (_panelUI.GetElement("CharacterDisplay") as UIElement)?.ChangeTexture(_characters[_selectedChar].Entity.GetTexture(EntityTexture.State.DownMoving));
+            _panelUI.GetElement("CharacterDisplay")?.ChangeTexture(_chars[_selectedChar].Entity.GetTexture(EntityTexture.State.DownMoving));
         }
 
         public PlayerEntityContainer GetCurrentChar()
         {
-            return _characters.Count > 0 ? _characters[_currentChar] : null;
+            return _chars[_currentChar];
         }
     }
 }

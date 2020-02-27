@@ -1,5 +1,4 @@
 ﻿using System;
-using ExNihilo.Systems;
 using ExNihilo.Systems.Backend;
 using ExNihilo.Systems.Game;
 using ExNihilo.Util;
@@ -52,6 +51,11 @@ namespace ExNihilo.Entity
             Entity = new EntityTexture(graphics, TextureUtilities.CombineTextures(graphics, bodySheet, clothSheet, hairSheet), 1);
             _textureSet = new[] {body, hair, cloth, color};
             Inventory = inv ?? new Inventory();
+        }
+
+        public override string ToString()
+        {
+            return Name + " the Adventurer\n" + Inventory;
         }
 
         public PackedPlayerEntityContainer GetPacked()

@@ -175,6 +175,7 @@ namespace ExNihilo.Menus
         {
             if (_deleteMode)
             {
+                //TODO: make a popup warning for this?
                 SaveHandler.DeleteSave(package.Caller);
                 UpdateLoadButtonText();
                 ToggleLoadButtons();

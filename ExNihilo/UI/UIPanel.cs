@@ -109,6 +109,7 @@ namespace ExNihilo.UI
         {
             if (!Loaded) return;
             foreach (var item in Set) item.Draw(spriteBatch, rightDownOffset);
+            if (King) DrawFinal(spriteBatch);
 
             if (D.Bug) LineDrawer.DrawSquare(spriteBatch, (Vector2)(OriginPosition + rightDownOffset), CurrentPixelSize.X, CurrentPixelSize.Y, Color.White, 5);
         }
@@ -247,6 +248,7 @@ namespace ExNihilo.UI
                 if (item is UIClickable click) click.Enable();
             }
             Tooltip?.Enable();
+            Disabled = false;
         }
 
         public override void Disable(ColorScale c)
@@ -256,6 +258,7 @@ namespace ExNihilo.UI
                 if (item is UIClickable click) click.Disable(c);
             }
             Tooltip?.Disable(c);
+            Disabled = true;
         }
 
         public virtual UIElement GetElement(string title)

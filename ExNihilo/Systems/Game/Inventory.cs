@@ -22,24 +22,26 @@ namespace ExNihilo.Systems.Game
         private List<Tuple<int, StatOffset>> _offsetTriggers;
         public StatSet Stats;
 
+        //TODO: putting on armor makes current health ratio go down
         public readonly EquipInstance[] _equipment = new EquipInstance[7];
         public readonly ItemInstance[] _inventory = new ItemInstance[InventorySize];
 
         private ItemInstance _lastTrashedItem;
 
         public const int InventorySize = 23;
-        private const uint BaseNeededExp = 100;
+        private const int BaseNeededExp = 100;
         private const int BaseHp = 25, BaseMp = 10, BaseAtk = 5, BaseDef = 5, BaseLuck = 0;
 
         public long HeldGold;
-        public uint HeldLevel;
-        public uint HeldSkillPoints = 2; //temp until skill set class exists
-        public uint HeldExp, NextExp;
+        public int HeldLevel;
+        public int HeldSkillPoints = 2; //temp until skill set class exists
+        public int HeldExp, NextExp;
 
         public bool Dirty;
 
         public Inventory()
         {
+            HeldLevel = 1;
             Offsets = new StatOffset();
             Stats = new StatSet
             {
@@ -76,7 +78,7 @@ namespace ExNihilo.Systems.Game
             _offsetTriggers.Clear();
         }
 
-        private void SettleStats(uint count)
+        private void SettleStats(int count)
         {
             for (int j = 0; j < count; j++)
             {
@@ -88,7 +90,7 @@ namespace ExNihilo.Systems.Game
                 else if (mark == 4) Stats.Luck++;
             }
         }
-        public void LevelUp(uint count = 1)
+        public void LevelUp(int count = 1)
         {
             SoftReset();
             for (uint i = 0; i < count; i++)
@@ -98,13 +100,13 @@ namespace ExNihilo.Systems.Game
                 HeldSkillPoints += HeldLevel < 5 ? 1 : HeldLevel / 5;
             }
         }
-        public void GainExp(uint exp)
+        public void GainExp(int exp)
         {
             HeldExp += exp;
             while (HeldExp > NextExp)
             {
                 HeldExp -= NextExp;
-                NextExp = (uint) (1.25 * NextExp);
+                NextExp = (int) (1.25 * NextExp);
                 LevelUp();
             }
         }
@@ -124,6 +126,20 @@ namespace ExNihilo.Systems.Game
             var offset = new StatOffset();
             return _equipment.Where(e => !(e is null)).Aggregate(offset, (current, e) => current + e.Stats);
         }
+        public StatOffset GetTrueStats()
+        {
+            return Stats + (Offsets + GetArmorOffset());
+        }
+        public float GetHealthAsPercentage()
+        {
+            var total = GetTrueStats();
+            return (float)total.Hp / total.MaxHp;
+        }
+        public float GetManaAsPercentage()
+        {
+            var total = GetTrueStats();
+            return (float)total.Mp / total.MaxMp;
+        }
 
         public int GetFirstOpenInventorySlot()
         {
@@ -139,7 +155,7 @@ namespace ExNihilo.Systems.Game
             if (item is InstantInstance inst)
             {
                 TapGold(inst.Stats.gold);
-                GainExp((uint) inst.Stats.exp);
+                GainExp(inst.Stats.exp);
                 Offsets.Hp += inst.Stats.hp;
                 Offsets.Mp += inst.Stats.mp;
                 return true;
@@ -256,6 +272,19 @@ namespace ExNihilo.Systems.Game
                     else _offsetTriggers[j] = new Tuple<int, StatOffset>(_offsetTriggers[j].Item1-1, _offsetTriggers[j].Item2);
                 }
             }
+        }
+
+        public override string ToString()
+        {
+            var total = GetTrueStats();
+            return "Level: " + HeldLevel + "\n" +
+                   "Gold:  " + HeldGold + "\n" +
+                   "EXP:   " + HeldExp + "/" + NextExp + "\n" +
+                   "HP:    " + total.Hp + "/" + total.MaxHp + "\n" +
+                   "MP:    " + total.Mp + "/" + total.MaxMp + "\n" +
+                   "ATK:   " + total.Atk + "\n" +
+                   "DEF:   " + total.Def + "\n" +
+                   "LUCK:  " + total.Luck;
         }
     }
 }
