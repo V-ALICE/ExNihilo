@@ -19,7 +19,7 @@ namespace ExNihilo.UI
         protected ScaleRuleSet ScaleRules;
         protected UIElement BaseElement;
         protected string TexturePath;
-        protected bool AbsoluteOffset, Loaded;
+        protected bool AbsoluteOffset, Loaded, DontDrawThis;
 
         public float CurrentScale { get; protected set; }
         public string GivenName { get; protected set; }
@@ -118,13 +118,13 @@ namespace ExNihilo.UI
 
         public virtual void Draw(SpriteBatch spriteBatch, Coordinate rightDownOffset)
         {
-            if (!Loaded) return;
+            if (!Loaded || DontDrawThis) return;
             Texture.Draw(spriteBatch, OriginPosition + rightDownOffset, ColorScale?.Get() ?? Color.White, CurrentScale);
         }
 
         public virtual void Draw(SpriteBatch spriteBatch)
         {
-            if (!Loaded) return;
+            if (!Loaded || DontDrawThis) return;
             Texture.Draw(spriteBatch, OriginPosition, ColorScale?.Get() ?? Color.White, CurrentScale);
         }
 
@@ -187,6 +187,11 @@ namespace ExNihilo.UI
                 //Position of this element is relative to the space of its base panel
                 OriginPosition = (Coordinate)(BaseElement.CurrentPixelSize * PositionRelativeToBase) + BaseElement.OriginPosition - TextureOffsetToOrigin;
             }
+        }
+
+        public virtual void AllowDraw(bool t)
+        {
+            DontDrawThis = !t;
         }
 
     }

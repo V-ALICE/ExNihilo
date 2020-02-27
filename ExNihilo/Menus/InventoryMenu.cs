@@ -170,30 +170,43 @@ namespace ExNihilo.Menus
         {
             if (!_playerRef.Inventory.Dirty) return;
 
-            for (int i = 0; i < _playerRef.Inventory._equipment.Length; i++)
+            var hpPips = (int)(_playerRef.Inventory.GetHealthAsPercentage() * 10);
+            var mpPips = (int)(_playerRef.Inventory.GetManaAsPercentage() * 10);
+            var expPips = (int)(_playerRef.Inventory.GetExpAsPercentage() * 10);
+            var hpSet = _panelUI.GetElement("HPPipSet") as UIPanel;
+            var mpSet = _panelUI.GetElement("MPPipSet") as UIPanel;
+            var expSet = _panelUI.GetElement("EXPPipSet") as UIPanel;
+            for (int i = 0; i < 10; i++)
+            {
+                hpSet?.GetElement("HPPip" + i).AllowDraw(hpPips > i);
+                mpSet?.GetElement("MPPip" + i).AllowDraw(mpPips > i);
+                expSet?.GetElement("EXPPip" + i).AllowDraw(expPips > i);
+            }
+
+            for (int i = 0; i < _playerRef.Inventory.Equipment.Length; i++)
             {
                 var element = _equips[i] as UIMovable;
-                if (_playerRef.Inventory._equipment[i] is null)
+                if (_playerRef.Inventory.Equipment[i] is null)
                 {
                     element?.SetNullTexture();
                 }
                 else
                 {
-                    element?.ChangeTexture(_playerRef.Inventory._equipment[i].GetTexture());
-                    element?.ChangeColor(_playerRef.Inventory._equipment[i].GetIconColor());
+                    element?.ChangeTexture(_playerRef.Inventory.Equipment[i].GetTexture());
+                    element?.ChangeColor(_playerRef.Inventory.Equipment[i].GetIconColor());
                 }
             }
-            for (int i = 0; i < _playerRef.Inventory._inventory.Length; i++)
+            for (int i = 0; i < _playerRef.Inventory.Items.Length; i++)
             {
                 var element = _items[i] as UIMovable;
-                if (_playerRef.Inventory._inventory[i] is null)
+                if (_playerRef.Inventory.Items[i] is null)
                 {
                     element?.SetNullTexture();
                 }
                 else
                 {
-                    element?.ChangeTexture(_playerRef.Inventory._inventory[i].GetTexture());
-                    element?.ChangeColor(_playerRef.Inventory._inventory[i].GetIconColor());
+                    element?.ChangeTexture(_playerRef.Inventory.Items[i].GetTexture());
+                    element?.ChangeColor(_playerRef.Inventory.Items[i].GetIconColor());
                 }
             }
 

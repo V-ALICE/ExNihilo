@@ -76,13 +76,13 @@ namespace ExNihilo.UI
 
         public override void Draw(SpriteBatch spriteBatch, Coordinate rightDownOffset)
         {
-            if (!Loaded) return;
+            if (!Loaded || DontDrawThis) return;
             TextDrawer.DrawSmartText(spriteBatch, (Vector2) (OriginPosition + rightDownOffset), Text, CurrentScale, param, Colors);
         }
 
         public override void Draw(SpriteBatch spriteBatch)
         {
-            if (!Loaded) return;
+            if (!Loaded || DontDrawThis) return;
             TextDrawer.DrawSmartText(spriteBatch, (Vector2)OriginPosition, Text, CurrentScale, param, Colors);
         }
     }

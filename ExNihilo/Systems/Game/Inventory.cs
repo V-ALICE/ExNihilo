@@ -6,6 +6,7 @@ using ExNihilo.Systems.Bases;
 using ExNihilo.Systems.Game.Items;
 using ExNihilo.Systems.Game.Items.ExNihilo.Systems.Game.Items;
 using ExNihilo.Util;
+using Microsoft.Xna.Framework;
 
 namespace ExNihilo.Systems.Game
 {
@@ -18,13 +19,13 @@ namespace ExNihilo.Systems.Game
     [Serializable]
     public class Inventory
     {
-        public StatOffset Offsets;
-        private List<Tuple<int, StatOffset>> _offsetTriggers;
-        public StatSet Stats;
+        private StatOffset _offsets;
+        private readonly List<Tuple<int, StatOffset>> _offsetTriggers;
+        private StatSet _stats;
 
         //TODO: putting on armor makes current health ratio go down
-        public readonly EquipInstance[] _equipment = new EquipInstance[7];
-        public readonly ItemInstance[] _inventory = new ItemInstance[InventorySize];
+        public readonly EquipInstance[] Equipment = new EquipInstance[7];
+        public readonly ItemInstance[] Items = new ItemInstance[InventorySize];
 
         private ItemInstance _lastTrashedItem;
 
@@ -42,8 +43,8 @@ namespace ExNihilo.Systems.Game
         public Inventory()
         {
             HeldLevel = 1;
-            Offsets = new StatOffset();
-            Stats = new StatSet
+            _offsets = new StatOffset();
+            _stats = new StatSet
             {
                 MaxHp = BaseHp,
                 MaxMp = BaseMp,
@@ -59,13 +60,13 @@ namespace ExNihilo.Systems.Game
         internal void OnDeserialized(StreamingContext context)
         {
             Dirty = true;
-            foreach (var e in _equipment)
+            foreach (var e in Equipment)
             {
                 if (e is null) continue;
                 ItemLoader.RestoreItemInstance(e);
             }
 
-            foreach (var i in _inventory)
+            foreach (var i in Items)
             {
                 if (i is null) continue;
                 ItemLoader.RestoreItemInstance(i);
@@ -74,7 +75,7 @@ namespace ExNihilo.Systems.Game
 
         public void SoftReset()
         {
-            Offsets = new StatOffset();
+            _offsets = new StatOffset();
             _offsetTriggers.Clear();
         }
 
@@ -83,11 +84,11 @@ namespace ExNihilo.Systems.Game
             for (int j = 0; j < count; j++)
             {
                 var mark = MathD.urand.Next(5);
-                if (mark == 0) Stats.MaxHp++;
-                else if (mark == 1) Stats.MaxMp++;
-                else if (mark == 2) Stats.Atk++;
-                else if (mark == 3) Stats.Def++;
-                else if (mark == 4) Stats.Luck++;
+                if (mark == 0) _stats.MaxHp++;
+                else if (mark == 1) _stats.MaxMp++;
+                else if (mark == 2) _stats.Atk++;
+                else if (mark == 3) _stats.Def++;
+                else if (mark == 4) _stats.Luck++;
             }
         }
         public void LevelUp(int count = 1)
@@ -124,11 +125,11 @@ namespace ExNihilo.Systems.Game
         public StatOffset GetArmorOffset()
         {
             var offset = new StatOffset();
-            return _equipment.Where(e => !(e is null)).Aggregate(offset, (current, e) => current + e.Stats);
+            return Equipment.Where(e => !(e is null)).Aggregate(offset, (current, e) => current + e.Stats);
         }
         public StatOffset GetTrueStats()
         {
-            return Stats + (Offsets + GetArmorOffset());
+            return _stats + (_offsets + GetArmorOffset());
         }
         public float GetHealthAsPercentage()
         {
@@ -140,12 +141,31 @@ namespace ExNihilo.Systems.Game
             var total = GetTrueStats();
             return (float)total.Mp / total.MaxMp;
         }
+        public float GetExpAsPercentage()
+        {
+            return (float) HeldExp / NextExp;
+        }
+
+        public void AdjustHPMP(int hp, int mp)
+        {
+            Dirty = true;
+            _offsets.Hp += hp;
+            _offsets.Mp += mp;
+            if (_offsets.Hp > 0) _offsets.Hp = 0;
+            if (_offsets.Mp > 0) _offsets.Mp = 0;
+        }
+        public void SetHPMP(int hp = -1, int mp = -1)
+        {
+            var total = GetTrueStats();
+            if (hp != -1) _offsets.Hp = hp - total.MaxHp;
+            if (mp != -1) _offsets.Mp = mp - total.MaxMp;
+        }
 
         public int GetFirstOpenInventorySlot()
         {
-            for (int i = 0; i < _inventory.Length; i++)
+            for (int i = 0; i < Items.Length; i++)
             {
-                if (_inventory[i] is null) return i;
+                if (Items[i] is null) return i;
             }
 
             return -1;
@@ -156,14 +176,14 @@ namespace ExNihilo.Systems.Game
             {
                 TapGold(inst.Stats.gold);
                 GainExp(inst.Stats.exp);
-                Offsets.Hp += inst.Stats.hp;
-                Offsets.Mp += inst.Stats.mp;
+                _offsets.Hp += inst.Stats.hp;
+                _offsets.Mp += inst.Stats.mp;
                 return true;
             }
 
             var slot = GetFirstOpenInventorySlot();
             if (slot == -1) return false;
-            _inventory[slot] = item;
+            Items[slot] = item;
 
             Dirty = true;
             return true;
@@ -186,20 +206,20 @@ namespace ExNihilo.Systems.Game
             {
                 if (equipSlot)
                 {
-                    _lastTrashedItem = _equipment[slot];
-                    _equipment[slot] = null;
+                    _lastTrashedItem = Equipment[slot];
+                    Equipment[slot] = null;
                 }
                 else
                 {
-                    _lastTrashedItem = _inventory[slot];
+                    _lastTrashedItem = Items[slot];
 
-                    _inventory[slot] = null;
+                    Items[slot] = null;
                 }
             }
             else
             {
-                if (equipSlot) _equipment[slot] = null;
-                else _inventory[slot] = null;
+                if (equipSlot) Equipment[slot] = null;
+                else Items[slot] = null;
             }
 
             Dirty = true;
@@ -207,22 +227,22 @@ namespace ExNihilo.Systems.Game
 
         public bool CanGrabItem(int heldSlot, bool heldEquipSlot)
         {
-            return heldEquipSlot ? _equipment[heldSlot] != null : _inventory[heldSlot] != null;
+            return heldEquipSlot ? Equipment[heldSlot] != null : Items[heldSlot] != null;
         }
         public bool TrySwapItem(int heldSlot, int destSlot, bool heldEquipSlot, bool destEquipSlot)
         {
             if (!CanGrabItem(heldSlot, heldEquipSlot)) return false;
             if (heldEquipSlot && destEquipSlot) return false;
             if (heldSlot == destSlot && !heldEquipSlot && !destEquipSlot) return false;
-            var heldItem = heldEquipSlot ? _equipment[heldSlot] : _inventory[heldSlot];
+            var heldItem = heldEquipSlot ? Equipment[heldSlot] : Items[heldSlot];
 
             if (destEquipSlot)
             {
                 //Equip an item from inventory
                 if (heldItem is EquipInstance heldEquip && heldEquip.Type == (EquipItem.SlotType) destSlot)
                 {
-                    _inventory[heldSlot] = _equipment[destSlot];
-                    _equipment[destSlot] = heldEquip;
+                    Items[heldSlot] = Equipment[destSlot];
+                    Equipment[destSlot] = heldEquip;
                     Dirty = true;
                     return true;
                 }
@@ -234,11 +254,11 @@ namespace ExNihilo.Systems.Game
             {
                 //Unequip an item from equipment
                 if (!(heldItem is EquipInstance heldEquip)) return false;
-                var destItem = _inventory[destSlot] as EquipInstance;
-                if (_inventory[destSlot] is null || (destItem != null && destItem.Type == heldEquip.Type))
+                var destItem = Items[destSlot] as EquipInstance;
+                if (Items[destSlot] is null || (destItem != null && destItem.Type == heldEquip.Type))
                 {
-                    _equipment[heldSlot] = destItem;
-                    _inventory[destSlot] = heldItem;
+                    Equipment[heldSlot] = destItem;
+                    Items[destSlot] = heldItem;
                     Dirty = true;
                     return true;
                 }
@@ -247,8 +267,8 @@ namespace ExNihilo.Systems.Game
             }
 
             //Swap two items in inventory
-            _inventory[heldSlot] = _inventory[destSlot];
-            _inventory[destSlot] = heldItem;
+            Items[heldSlot] = Items[destSlot];
+            Items[destSlot] = heldItem;
             Dirty = true;
             return true;
         }
@@ -256,7 +276,7 @@ namespace ExNihilo.Systems.Game
         public void AddTriggeredOffset(int turns, StatOffset diff)
         {
             _offsetTriggers.Add(new Tuple<int, StatOffset>(turns, diff));
-            Offsets += diff;
+            _offsets += diff;
         }
         public void PassTurn(int count=1)
         {
@@ -266,7 +286,7 @@ namespace ExNihilo.Systems.Game
                 {
                     if (_offsetTriggers[j].Item1 == 1)
                     {
-                        Offsets -= _offsetTriggers[j].Item2;
+                        _offsets -= _offsetTriggers[j].Item2;
                         _offsetTriggers.RemoveAt(j);
                     }
                     else _offsetTriggers[j] = new Tuple<int, StatOffset>(_offsetTriggers[j].Item1-1, _offsetTriggers[j].Item2);

@@ -107,7 +107,7 @@ namespace ExNihilo.UI
 
         public override void Draw(SpriteBatch spriteBatch, Coordinate rightDownOffset)
         {
-            if (!Loaded) return;
+            if (!Loaded || DontDrawThis) return;
             foreach (var item in Set) item.Draw(spriteBatch, rightDownOffset);
             if (King) DrawFinal(spriteBatch);
 

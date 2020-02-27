@@ -88,7 +88,7 @@ namespace ExNihilo.UI
 
         public override void Draw(SpriteBatch spriteBatch)
         {
-            if (!Loaded) return;
+            if (!Loaded || DontDrawThis) return;
             if (Disabled)
             {
                 Texture.Draw(spriteBatch, OriginPosition, DisabledColor?.Get() ?? ColorScale.Get(), CurrentScale);

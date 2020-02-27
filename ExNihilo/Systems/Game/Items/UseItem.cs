@@ -21,8 +21,7 @@ namespace ExNihilo.Systems.Game.Items
         {
             if (Perform.Contains(UseItem.AOE.PLAYER) || Perform.Contains(UseItem.AOE.ALL))
             {
-                a.Offsets.Hp += _hp;
-                a.Offsets.Mp += _mp;
+                a.AdjustHPMP(_hp, _mp);
             }
 
             if (Perform.Contains(UseItem.AOE.ALL) || Perform.Contains(UseItem.AOE.MULTIENEMY))

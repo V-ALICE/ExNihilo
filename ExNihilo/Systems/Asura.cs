@@ -118,6 +118,42 @@ namespace ExNihilo.Systems
             }
             _paramSet.Add("gentype", SetGenType);
 
+            //Sets HP to given value
+            void SetHP(string args)
+            {
+                if (GameContainer.ActiveSectorID == GameContainer.SectorID.MainMenu)
+                {
+                    Log.ForceMessage("<error>", "Cannot change player values on title screen", Color.DarkRed, Color.White);
+                    return;
+                }
+
+                if (int.TryParse(args, out int num) && num >= 0)
+                {
+                    Log.ForceMessage("<Asura>", "Setting current player HP to " + args, Color.Purple, Color.White);
+                    _game.Player.Inventory.SetHPMP(num);
+                }
+                else Log.ForceMessage("<error>", "\"" + args + "\" is not a valid HP value", Color.DarkRed, Color.White);
+            }
+            _paramSet.Add("hp", SetHP);
+
+            //Sets MP to given value
+            void SetMP(string args)
+            {
+                if (GameContainer.ActiveSectorID == GameContainer.SectorID.MainMenu)
+                {
+                    Log.ForceMessage("<error>", "Cannot change player values on title screen", Color.DarkRed, Color.White);
+                    return;
+                }
+
+                if (int.TryParse(args, out int num) && num >= 0)
+                {
+                    Log.ForceMessage("<Asura>", "Setting current player MP to " + args, Color.Purple, Color.White);
+                    _game.Player.Inventory.SetHPMP(-1, num);
+                }
+                else Log.ForceMessage("<error>", "\"" + args + "\" is not a valid MP value", Color.DarkRed, Color.White);
+            }
+            _paramSet.Add("mp", SetMP);
+
             //Sets parallax level
             void SetParallax(string args)
             {
@@ -204,6 +240,12 @@ namespace ExNihilo.Systems
                 "\nreturn -> Exit the Void and return to the Outerworld" +
                 "\nAny unsaved progress will be lost");
 
+            _helpInfo.Add("exp", 
+                "\n/exp [value] -> Adds given value to current player's exp count");
+
+            _helpInfo.Add("save", 
+                "\n/save -> Forces the current game to save");
+
             //Set-related help section
 
             _helpInfo.Add("set",
@@ -222,6 +264,12 @@ namespace ExNihilo.Systems
             _helpInfo.Add("set gentype",
                 "\n/set gentype [value] -> Set active generation algorithm. Default is Standard2" +
                 "\nValue must be standard1, standard2, messy. This will trigger a loading sequence if used in the Void.");
+
+            _helpInfo.Add("set hp",
+                "\n/set hp [value] -> Sets current player's HP to given value");
+
+            _helpInfo.Add("set mp",
+                "\n/set mp [value] -> Sets current player's MP to given value");
 
             _helpInfo.Add("set parallax",
                 "\n/set parallax [value] -> Set parallax level" +
@@ -332,6 +380,40 @@ namespace ExNihilo.Systems
                 _game.RequestSectorChange(GameContainer.SectorID.Outerworld);
             }
             _elevatedCommands.Add("return", Return);
+
+            //Give exp to player
+            void GainExp(string args)
+            {
+                if (GameContainer.ActiveSectorID == GameContainer.SectorID.MainMenu)
+                {
+                    Log.ForceMessage("<error>", "Cannot change player values on title screen", Color.DarkRed, Color.White);
+                    return;
+                }
+
+                if (int.TryParse(args, out int num) && num >= 0)
+                {
+                    Log.ForceMessage("<Asura>", "Giving " + args + " Exp to current player", Color.Purple, Color.White);
+                    _game.Player.Inventory.GainExp(num);
+                }
+                else Log.ForceMessage("<error>", "\"" + args + "\" is not a valid exp value", Color.DarkRed, Color.White);
+            }
+            _elevatedCommands.Add("exp", GainExp);
+
+            //Force the game to save
+            void Save(string args)
+            {
+                if (GameContainer.ActiveSectorID == GameContainer.SectorID.MainMenu)
+                {
+                    Log.ForceMessage("<error>", "Cannot force save on title screen", Color.DarkRed, Color.White);
+                    return;
+                }
+
+                if (args.Length != 0) Log.ForceMessage("<warning>", "Ignoring unexpected argument(s) \"" + args + "\"", Color.DarkOrange, Color.White);
+                _game.Pack();
+            }
+            _elevatedCommands.Add("save", Save);
+
+            //****************************************************************************************
 
             //Temp debug function for toggling extra debug display
             void Debug(string args)

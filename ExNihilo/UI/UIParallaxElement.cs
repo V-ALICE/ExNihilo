@@ -31,7 +31,7 @@ namespace ExNihilo.UI
 
         public override void Draw(SpriteBatch spriteBatch)
         {
-            if (!Loaded) return;
+            if (!Loaded || DontDrawThis) return;
             Texture.Draw(spriteBatch, AdjustedOrigin, ColorScale?.Get() ?? Color.White, CurrentScale);
         }
 

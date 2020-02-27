@@ -57,7 +57,7 @@ namespace ExNihilo.UI
 
         public override void Draw(SpriteBatch spriteBatch)
         {
-            if (!Loaded) return;
+            if (!Loaded || DontDrawThis) return;
 
             if (Disabled)
             {
@@ -89,6 +89,7 @@ namespace ExNihilo.UI
 
         public void DrawFinal(SpriteBatch spriteBatch)
         {
+            if (!Loaded || DontDrawThis) return;
             if (Down && Ghosting)
             {
                 var ghost = ColorScale.Get();
