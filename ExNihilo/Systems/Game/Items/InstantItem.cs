@@ -16,6 +16,11 @@ namespace ExNihilo.Systems.Game.Items
         {
             public readonly InstantItem.InstantItemStats Stats;
 
+            public override string GetSmartDesc()
+            {
+                return base.GetSmartDesc() + '\n'; //TODO
+            }
+
             public InstantInstance(Item item, int level, int quality, InstantItem.InstantItemStats stats) : base(item, level, quality)
             {
                 Stats = stats;
@@ -112,10 +117,10 @@ namespace ExNihilo.Systems.Game.Items
 
                 var stats = new InstantItemStats
                 {
-                    hp = (int) (item._hp * (basic + count)),
-                    mp = (int) (item._mp * (basic + count)),
-                    exp = (int) (item._exp * (basic + count)),
-                    gold = (int) (item._gold * (basic + count))
+                    hp = (int) (item._hp * (rand.NextDouble() / 5 - 0.1) * (basic + count)),
+                    mp = (int) (item._mp * (rand.NextDouble() / 5 - 0.1) * (basic + count)),
+                    exp = (int) (item._exp * (rand.NextDouble() / 5 - 0.1) * (basic + count)),
+                    gold = (int) (item._gold * (rand.NextDouble() / 5 - 0.1) * (basic + count))
                 };
 
                 return new InstantInstance(item, level, quality, stats);

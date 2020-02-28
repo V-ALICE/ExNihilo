@@ -33,8 +33,7 @@ namespace ExNihilo.Menus
 
             for (int i = 0; i < _equips.Length; i++)
             {
-                var rect = new Rectangle(_equips[i].OriginPosition.X, _equips[i].OriginPosition.Y, 
-                    (int) (_equips[i].CurrentScale* _iconRefSize), (int) (_equips[i].CurrentScale * _iconRefSize));
+                var rect = new Rectangle(_equips[i].OriginPosition.X, _equips[i].OriginPosition.Y, _iconRefSize, _iconRefSize);
                 if (rect.Contains(package.ScreenPos))
                 {
                     endSlotNum = i;
@@ -46,8 +45,7 @@ namespace ExNihilo.Menus
             {
                 for (int i = 0; i < _items.Length; i++)
                 {
-                    var rect = new Rectangle(_items[i].OriginPosition.X, _items[i].OriginPosition.Y, 
-                        (int) (_items[i].CurrentScale * _iconRefSize), (int) (_items[i].CurrentScale * _iconRefSize));
+                    var rect = new Rectangle(_items[i].OriginPosition.X, _items[i].OriginPosition.Y, _iconRefSize, _iconRefSize);
                     if (rect.Contains(package.ScreenPos))
                     {
                         endSlotNum = i;
@@ -59,8 +57,7 @@ namespace ExNihilo.Menus
             if (endSlotNum == -1)
             {
                 var _trash = _panelUI.GetElement("Trash");
-                var rect = new Rectangle(_trash.OriginPosition.X, _trash.OriginPosition.Y,
-                    (int)(_trash.CurrentScale * _iconRefSize), (int)(_trash.CurrentScale * _iconRefSize));
+                var rect = new Rectangle(_trash.OriginPosition.X, _trash.OriginPosition.Y, _trash.CurrentPixelSize.X, _trash.CurrentPixelSize.Y);
                 if (rect.Contains(package.ScreenPos))
                 {
                     //Throw item away
@@ -69,8 +66,7 @@ namespace ExNihilo.Menus
                     UpdateDisplay();
                 }
 
-                rect = new Rectangle(_portrait.OriginPosition.X, _portrait.OriginPosition.Y,
-                    (int)(_portrait.CurrentScale * _iconRefSize), (int)(_portrait.CurrentScale * _iconRefSize));
+                rect = new Rectangle(_portrait.OriginPosition.X, _portrait.OriginPosition.Y, _portrait.CurrentPixelSize.X, _portrait.CurrentPixelSize.Y);
                 if (rect.Contains(package.ScreenPos) && _playerRef.Inventory.Items[startSlotNum] is UseInstance u)
                 {
                     //Apply potion item
@@ -93,14 +89,15 @@ namespace ExNihilo.Menus
         private readonly UIElement[] _equips = new UIElement[7];
         private readonly UIElement[] _items = new UIElement[Inventory.InventorySize];
         private readonly UIElement _portrait; //Kept here since it may need to be accessed constantly
+        private readonly UIElement _statBars; //Kept here since it may need to be accessed constantly
         private readonly UIText _descText; //Kept here since it may need to be accessed constantly
         private Point _lastMousePosition;
         private Coordinate _lastWindowSize;
-        private readonly int _iconRefSize = 128; //TODO: better way to do this
         private EntityTexture.State _lastState;
         private bool _mouseDown;
-        //private int _lastTextSlot=-1;
+        private int _lastTextSlot=-1, _iconRefSize;
 
+        private const int _descCharLen = 30;
         //Text box is 9 rows of 30 characters
 
         public InventoryMenu(GameContainer container) : base(container)
@@ -108,17 +105,17 @@ namespace ExNihilo.Menus
             _panelUI = new UIPanel("this.MenuKing", new Vector2(0.5f, 0.5f), Vector2.One, Position.Center);
 
             var backdrop = new UIElement("Backdrop", "UI/decor/Backdrop", new Vector2(0.5f, 0.5f), Color.White, _panelUI, Position.Center);
-            var inventoryBars = new UIElement("InventoryBars", "UI/field/InventoryBars", new Coordinate(14, 14), ColorScale.White, backdrop, Position.TopLeft, Position.TopLeft);
+            _statBars = new UIElement("InventoryBars", "UI/field/InventoryBars", new Coordinate(14, 14), ColorScale.White, backdrop, Position.TopLeft, Position.TopLeft);
             var textBox = new UIElement("TextBox", "UI/field/LargeEntryBox", new Coordinate(-14, 14), ColorScale.White, backdrop, Position.TopRight, Position.TopRight);
             var inventorySet = new UIElement("InventorySet", "UI/field/ThreeRowElementSet", new Coordinate(0, -14), ColorScale.White, backdrop, Position.CenterBottom, Position.CenterBottom);
             var equipmentSet = new UIElement("EquipmentSet", "UI/field/SevenElementSet", new Coordinate(0, -5), ColorScale.White, inventorySet, Position.CenterBottom, Position.CenterTop);
-            _descText = new UIText("DescriptionBox", new Coordinate(14, 14), "", new ColorScale[0], textBox, Position.TopLeft, Position.TopLeft);
+            _descText = new UIText("DescriptionBox", new Coordinate(14, 14), "", _descCharLen, new ColorScale[0], textBox, Position.TopLeft, Position.TopLeft);
 
-            _portrait = new UIElement("Portrait", "null", new Coordinate(63, 62), ColorScale.White, inventoryBars, Position.Center, Position.TopLeft);
+            _portrait = new UIElement("Portrait", "null", new Coordinate(63, 62), ColorScale.White, _statBars, Position.Center, Position.TopLeft);
 
-            var hpPipSet = new UIPanel("HPPipSet", new Coordinate(168, 12), new Coordinate(160, 24), inventoryBars, Position.TopLeft, Position.TopLeft);
-            var mpPipSet = new UIPanel("MPPipSet", new Coordinate(168, 52), new Coordinate(160, 24), inventoryBars, Position.TopLeft, Position.TopLeft);
-            var expPipSet = new UIPanel("EXPPipSet", new Coordinate(168, 92), new Coordinate(160, 24), inventoryBars, Position.TopLeft, Position.TopLeft);
+            var hpPipSet = new UIPanel("HPPipSet", new Coordinate(168, 12), new Coordinate(160, 24), _statBars, Position.TopLeft, Position.TopLeft);
+            var mpPipSet = new UIPanel("MPPipSet", new Coordinate(168, 52), new Coordinate(160, 24), _statBars, Position.TopLeft, Position.TopLeft);
+            var expPipSet = new UIPanel("EXPPipSet", new Coordinate(168, 92), new Coordinate(160, 24), _statBars, Position.TopLeft, Position.TopLeft);
             for (int i = 0; i < 10; i++)
             {
                 hpPipSet.AddElements(new UIElement("HPPip"+i, "UI/fill/PipBarRed", new Coordinate(i*16, 0), ColorScale.White, hpPipSet, Position.TopLeft, Position.TopLeft));
@@ -168,7 +165,7 @@ namespace ExNihilo.Menus
             RegisterAll(MoveItem, _items);
 
             _portrait.SetRules(TextureLibrary.DoubleScaleRuleSet);
-            _panelUI.AddElements(backdrop, inventoryBars, textBox, _descText, equipmentSet, inventorySet, _equipRef, _itemRef, hpPipSet, mpPipSet, expPipSet, _portrait);
+            _panelUI.AddElements(backdrop, _statBars, textBox, _descText, equipmentSet, inventorySet, _equipRef, _itemRef, hpPipSet, mpPipSet, expPipSet, _portrait);
         }
 
         public void SetReference(PlayerEntityContainer reference)
@@ -228,23 +225,29 @@ namespace ExNihilo.Menus
             else (_panelUI.GetElement("UndoButton") as UIClickable)?.Disable(ColorScale.Ghost);
 
             _playerRef.Inventory.Dirty = false;
+            _lastTextSlot = -1;
         }
         public override void Enter(Point point)
         {
             base.Enter(point);
             UpdateDisplay();
+            _lastMousePosition = new Point(-1 ,-1);
             OnMoveMouse(point);
+            _lastTextSlot = -1;
+            //_descText.SetText("", ColorScale.Black);
         }
 
         public override void LoadContent(GraphicsDevice graphics, ContentManager content)
         {
             _panelUI.LoadContent(graphics, content);
+            _iconRefSize = _panelUI.GetElement("Trash").CurrentPixelSize.X;
         }
 
         public override void OnResize(GraphicsDevice graphics, Coordinate gameWindow)
         {
             _lastWindowSize = gameWindow;
             _panelUI.OnResize(graphics, gameWindow);
+            _iconRefSize = _panelUI.GetElement("Trash").CurrentPixelSize.X;
         }
 
         public override void Draw(SpriteBatch spriteBatch)
@@ -289,20 +292,31 @@ namespace ExNihilo.Menus
         {
             if (_mouseDown) return;
 
-            if (point.Y < _items[0].OriginPosition.Y)
+            if (point.Y < _equips[0].OriginPosition.Y)
+            {
+                var rect = new Rectangle(_statBars.OriginPosition.X, _statBars.OriginPosition.Y, _statBars.CurrentPixelSize.X, _statBars.CurrentPixelSize.Y);
+                if (rect.Contains(point))
+                {
+                    if (_lastTextSlot == 99) return;
+
+                    _descText.SetText(_playerRef.ToString(), _descCharLen, ColorScale.Black);
+                    _lastTextSlot = 99;
+                    return;
+                }
+            }
+            else if (point.Y < _items[0].OriginPosition.Y)
             {
                 for (int i = 0; i < _equips.Length; i++)
                 {
-                    var rect = new Rectangle(_equips[i].OriginPosition.X, _equips[i].OriginPosition.Y,
-                        (int) (_equips[i].CurrentScale * _iconRefSize), (int) (_equips[i].CurrentScale * _iconRefSize));
+                    var rect = new Rectangle(_equips[i].OriginPosition.X, _equips[i].OriginPosition.Y, _equips[i].CurrentPixelSize.X, _equips[i].CurrentPixelSize.Y);
                     if (rect.Contains(point))
                     {
                         var item = _playerRef.Inventory.Equipment[i];
-                       // if (_lastTextSlot == i) return;
+                        if (_lastTextSlot == i) return;
                         if (item is null) break;
 
-                        _descText.SetText(item.GetSmartDesc(), item.GetSmartColors(ColorScale.Black));
-                        //_lastTextSlot = i;
+                        _descText.SetText(item.GetSmartDesc(), _descCharLen, item.GetSmartColors(ColorScale.Black));
+                        _lastTextSlot = i;
                         return;
                     }
                 }
@@ -311,31 +325,31 @@ namespace ExNihilo.Menus
             {
                 for (int i = 0; i < _items.Length; i++)
                 {
-                    var rect = new Rectangle(_items[i].OriginPosition.X, _items[i].OriginPosition.Y,
-                        (int)(_items[i].CurrentScale * _iconRefSize), (int)(_items[i].CurrentScale * _iconRefSize));
+                    var rect = new Rectangle(_items[i].OriginPosition.X, _items[i].OriginPosition.Y, _items[i].CurrentPixelSize.X, _items[i].CurrentPixelSize.Y);
                     if (rect.Contains(point))
                     {
                         var item = _playerRef.Inventory.Items[i];
-                        //if (_lastTextSlot == 7 + i) return;
+                        if (_lastTextSlot == 7 + i) return;
                         if (item is null) break;
 
                         if (item is EquipInstance e)
                         {
                             var other = _playerRef.Inventory.Equipment[(int) e.Type];
-                            _descText.SetText(e.GetSmartDesc(other), e.GetSmartColors(ColorScale.Black));
+                            _descText.SetText(e.GetSmartDesc(other), _descCharLen, e.GetSmartColors(ColorScale.Black));
                         }
                         else
                         {
-                            _descText.SetText(item.GetSmartDesc(), item.GetSmartColors(ColorScale.Black));
+                            _descText.SetText(item.GetSmartDesc(), _descCharLen, item.GetSmartColors(ColorScale.Black));
                         }
 
-                        //_lastTextSlot = 7 + i;
+                        _lastTextSlot = 7 + i;
                         return;
                     }
                 }
             }
 
-            _descText.SetText("", ColorScale.Black);
+            _descText.SetText("", _descCharLen, ColorScale.Black);
+            _lastTextSlot = -1;
         }
 
         public override bool OnMoveMouse(Point point)

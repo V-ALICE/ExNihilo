@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using ExNihilo.Sectors;
 using ExNihilo.Systems.Backend;
+using ExNihilo.Systems.Bases;
 using ExNihilo.Systems.Game;
 using ExNihilo.Systems.Game.Items;
 using ExNihilo.Util;
@@ -431,21 +432,18 @@ namespace ExNihilo.Systems
                             }
                             else throw new ArgumentOutOfRangeException();
                             break;
-                        case "potion":
-                            if (int.TryParse(set[1], out int level1) && int.TryParse(set[2], out int qual1) && level1 > 0 && qual1 >= 0 && qual1 <= 10)
-                            {
-                                var item = ItemLoader.GetUse(MathD.urand, level1, qual1);
-                                var done = _game.Player.Inventory.TryAddItem(item);
-                                if (done) Log.ForceMessage("<Asura>", "Giving " + item.Name + " to current character", Color.Purple, Color.White);
-                                else Log.ForceMessage("<Asura>", "Inventory full", Color.Purple, Color.White);
-                            }
-                            else throw new ArgumentOutOfRangeException();
-                            break;
                         default:
-                            if (int.TryParse(set[1], out int level2) && int.TryParse(set[2], out int qual2) && level2 > 0 && qual2 >= 0 && qual2 <= 10)
+                            if (int.TryParse(set[1], out int level) && level > 0)
                             {
-                                var slot = (EquipItem.SlotType)Enum.Parse(typeof(EquipItem.SlotType), set[0].ToUpper());
-                                var item = ItemLoader.GetEquipment(MathD.urand, level2, slot, qual2);
+                                var qual = -1;
+                                if (set.Length > 2 && int.TryParse(set[2], out int q) && q >= 0) qual = q;
+                                ItemInstance item;
+                                if (set[0] == "potion") item = ItemLoader.GetUse(MathD.urand, level, qual);
+                                else
+                                {
+                                    var slot = (EquipItem.SlotType)Enum.Parse(typeof(EquipItem.SlotType), set[0].ToUpper());
+                                    item = ItemLoader.GetEquipment(MathD.urand, level, slot, qual);
+                                }
                                 var done = _game.Player.Inventory.TryAddItem(item);
                                 if (done) Log.ForceMessage("<Asura>", "Giving " + item.Name + " to current character", Color.Purple, Color.White);
                                 else Log.ForceMessage("<Asura>", "Inventory full", Color.Purple, Color.White);

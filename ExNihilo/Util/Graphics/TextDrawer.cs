@@ -73,9 +73,9 @@ namespace ExNihilo.Util.Graphics
             }
         }       
 
-        public static Vector2 DrawDumbText(SpriteBatch spriteBatch, Vector2 pos, string dumbText, float multiplier, ColorScale c)
+        public static Coordinate DrawDumbText(SpriteBatch spriteBatch, Coordinate pos, string dumbText, float multiplier, ColorScale c)
         {
-            var aPos = Utilities.Copy(pos);
+            var aPos = pos.Copy();
             var oldX = aPos.X;
             foreach (var t in dumbText)
             {
@@ -90,14 +90,14 @@ namespace ExNihilo.Util.Graphics
                 }
                 else
                 {
-                    spriteBatch.Draw(GetLetter(t), aPos, null, c, 0, Vector2.Zero, multiplier, SpriteEffects.None, 0);
+                    spriteBatch.Draw(GetLetter(t), (Vector2) aPos, null, c, 0, Vector2.Zero, multiplier, SpriteEffects.None, 0);
                     aPos.X = (int) Math.Round(aPos.X + multiplier * (AlphaSpacer + AlphaWidth));
                 }
             }
             return aPos;
         }
 
-        public static Vector2 DrawSmartText(SpriteBatch spriteBatch, Vector2 pos, string smartText, float multiplier, TextParameters? parameters = null, params ColorScale[] colors)
+        public static Coordinate DrawSmartText(SpriteBatch spriteBatch, Coordinate pos, string smartText, float multiplier, TextParameters? parameters = null, params ColorScale[] colors)
         {
             int underlining = 0;
             int wavy = 0;
@@ -106,7 +106,7 @@ namespace ExNihilo.Util.Graphics
 
             //supports up to 10 different colors at a time
             //assumes line has already been split correctly, including buffers
-            var aPos = new Vector2((int)Math.Round(pos.X), (int)Math.Round(pos.Y));
+            var aPos = pos.Copy();
             var oldX = aPos.X;
             var c = colors.Length > 0 ? colors[0] : ColorScale.Black;
             var p = parameters ?? _defaultParameters;
@@ -201,7 +201,7 @@ namespace ExNihilo.Util.Graphics
                 }
                 else
                 {
-                    spriteBatch.Draw(GetLetter(t), aPos, null, c, 0, Vector2.Zero, multiplier, SpriteEffects.None, 0);
+                    spriteBatch.Draw(GetLetter(t), (Vector2) aPos, null, c, 0, Vector2.Zero, multiplier, SpriteEffects.None, 0);
                 }
                 if (underlining > 0)
                 {
@@ -276,6 +276,72 @@ namespace ExNihilo.Util.Graphics
             pixelSize.Y += (int)Math.Round(multiplier * AlphaHeight);
             pixelSize.X = Math.Max(pixelSize.X, (int)(currentX - multiplier * AlphaSpacer));
             return pixelSize;
+        }
+
+        public static string GetSmartSplit(string smartText, int boxWidthInChars)
+        {
+            string GetNextSplit(string input)
+            {
+                var a = "";
+                foreach (var c in input)
+                {
+                    a += c;
+                    if (c == ' ' || c == '-' || c == '\n') break;
+                }
+                return a;
+            }
+
+            int GetTrueLength(string input)
+            {
+                var t = 0;
+                input = input.TrimEnd(' ');
+                for (int i = 0; i < input.Length; i++)
+                {
+                    if (input[i] == '@')
+                    {
+                        i += 2;
+                        if (input[i - 1] == 'c') i++;
+                    }
+                    else if (input[i] != '\n') t++;
+                }
+                return t;
+            }
+
+            //Splits on spaces, new lines, and dashes
+            var newSplit = "";
+            var newLine = "";
+            if (GetTrueLength(smartText) <= boxWidthInChars) return smartText;
+            while (smartText.Length > 0)
+            {
+                var nextChunk = GetNextSplit(smartText);
+                var nextLength = GetTrueLength(nextChunk);
+                if (nextLength > boxWidthInChars)
+                {
+                    //next chunk is longer than a full line
+                    var charsToUse = boxWidthInChars - GetTrueLength(newLine);
+                    newLine += nextChunk.Substring(0, charsToUse);
+                    smartText = smartText.Substring(charsToUse);
+                }
+                else if (GetTrueLength(newLine) + nextLength < boxWidthInChars)
+                {
+                    //Next chunk can fit on current line
+                    newLine += nextChunk;
+                    smartText = smartText.Substring(nextChunk.Length);
+                    if (newLine.EndsWith("\n"))
+                    {
+                        //Time to split
+                        newSplit += newLine;
+                        newLine = "";
+                    }
+                }
+                else
+                {
+                    //Time to split
+                    newSplit += newLine.TrimEnd(' ') + '\n';
+                    newLine = "";
+                }
+            }
+            return newSplit + newLine;
         }
 
     }

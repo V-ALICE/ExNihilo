@@ -13,7 +13,8 @@ namespace ExNihilo.Sectors
         private int _timer;
         private float _loadingScale;
         private readonly ScaleRuleSet _rules = TextureLibrary.HalfScaleRuleSet;
-        private Vector2 _loadingDrawPos, _loadingCyclePos, _debugPosition;
+        private Vector2 _loadingDrawPos, _loadingCyclePos;
+        private Coordinate _debugPosition;
         private AnimatableTexture _loadingTexture, _loadingCycle;
 
         public LoadingSector(GameContainer container) : base(container)
@@ -28,7 +29,7 @@ namespace ExNihilo.Sectors
             _loadingScale = 1;
             _loadingDrawPos = new Vector2();
             _timer = UniversalTime.NewTimer(true);
-            _debugPosition = new Vector2(1, 1 + TextDrawer.AlphaHeight + TextDrawer.LineSpacer);
+            _debugPosition = new Coordinate(1, 1 + TextDrawer.AlphaHeight + TextDrawer.LineSpacer);
         }
 
         public override void LoadContent(GraphicsDevice graphicsDevice, ContentManager content)

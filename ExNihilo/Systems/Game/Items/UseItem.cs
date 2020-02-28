@@ -14,34 +14,47 @@ namespace ExNihilo.Systems.Game.Items
     [Serializable]
     public class UseInstance : ItemInstance
     {
-        private List<UseItem.AOE> Perform;
-        private int _mp, _hp;
+        private readonly List<UseItem.AOE> _perform;
+        private readonly int _mp, _hp;
 
-        public void Activate(Inventory a, List<EntityContainer> b)
+        public void Activate(Inventory inv, List<EntityContainer> entities)
         {
-            if (Perform.Contains(UseItem.AOE.PLAYER) || Perform.Contains(UseItem.AOE.ALL))
+            if (_perform.Contains(UseItem.AOE.PLAYER) || _perform.Contains(UseItem.AOE.ALL))
             {
-                a.AdjustHPMP(_hp, _mp);
+                inv.AdjustHPMP(_hp, _mp);
             }
 
-            if (Perform.Contains(UseItem.AOE.ALL) || Perform.Contains(UseItem.AOE.MULTIENEMY))
+            if (_perform.Contains(UseItem.AOE.ALL) || _perform.Contains(UseItem.AOE.MULTIENEMY))
             {
-                foreach (var e in b)
+                foreach (var e in entities)
                 {
                     //e.Offsets.Hp += (int)(item._hp * (basic + count));
                     //e.Offsets.Mp += (int)(item._mp * (basic + count));
                 }
             }
-            else if (Perform.Contains(UseItem.AOE.ENEMY))
+            else if (_perform.Contains(UseItem.AOE.ENEMY))
             {
                 //b[0].Offsets.Hp += (int)(item._hp * (basic + count));
                 //b[0].Offsets.Mp += (int)(item._mp * (basic + count));
             }
         }
 
+        public override string GetSmartDesc()
+        {
+            var mp = "";
+            var hp = "";
+            if (_hp > 0) hp = "Restores " + _hp + " health";
+            else if (_hp < 0) hp = "Drains " + _hp + " health";
+            if (_mp > 0) mp = (hp.Length > 0 ? ". " : "") + "Restores " + _mp + " mana";
+            else if (_mp < 0) mp = (hp.Length > 0 ? ". " : "") + "Drains " + _mp + " mana";
+            var text =  base.GetSmartDesc() + "\n";
+            foreach (var t in _perform) text += "Affects " + UseItem.ToString(t) + ". ";
+            return text + hp + mp;
+        }
+
         public UseInstance(Item item, int level, int quality, int mp, int hp, List<UseItem.AOE> action) : base(item, level, quality)
         {
-            Perform = action;
+            _perform = action;
             _mp = mp;
             _hp = hp;
         }
@@ -54,6 +67,24 @@ namespace ExNihilo.Systems.Game.Items
         {
             PLAYER, ENEMY, MULTIENEMY, ALL
         }
+
+        public static string ToString(AOE type)
+        {
+            switch (type)
+            {
+                case AOE.PLAYER:
+                    return "you";
+                case AOE.ENEMY:
+                    return "one enemy";
+                case AOE.MULTIENEMY:
+                    return "all enemies";
+                case AOE.ALL:
+                    return "everyone";
+                default:
+                    throw new ArgumentOutOfRangeException(nameof(type), type, null);
+            }
+        }
+
         private readonly List<AOE> _flags = new List<AOE>();
 
         private readonly float _hp, _mp;
@@ -122,6 +153,7 @@ namespace ExNihilo.Systems.Game.Items
 
         public static UseInstance GetInstance(UseItem item, Random rand, int level, int qual = -1)
         {
+            //Range of ~133% at level 100
             var basic = 2 + 2 * level / 5;
             var min = level / 2 + 2;
             var max = level + 10;
@@ -139,8 +171,8 @@ namespace ExNihilo.Systems.Game.Items
                 count = (int) ((quality / 10.0 * (max - min) + min) / 4);
             }
 
-            var mp = (int) ((basic + count) * item._mp);
-            var hp = (int) ((basic + count) * item._hp);
+            var mp = (int) ((basic + count) * (rand.NextDouble() / 5 - 0.1) * item._mp);
+            var hp = (int) ((basic + count) * (rand.NextDouble() / 5 - 0.1) * item._hp);
 
             return new UseInstance(item, level, quality, mp, hp, item._flags);
         }

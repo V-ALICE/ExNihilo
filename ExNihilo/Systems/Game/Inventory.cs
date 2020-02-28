@@ -23,7 +23,6 @@ namespace ExNihilo.Systems.Game
         private readonly List<Tuple<int, StatOffset>> _offsetTriggers;
         private StatSet _stats;
 
-        //TODO: putting on armor makes current health ratio go down
         public readonly EquipInstance[] Equipment = new EquipInstance[7];
         public readonly ItemInstance[] Items = new ItemInstance[InventorySize];
 

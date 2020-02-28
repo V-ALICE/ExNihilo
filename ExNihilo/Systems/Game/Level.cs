@@ -164,7 +164,7 @@ namespace ExNihilo.Systems.Game
             }
         }
 
-        public void DrawDebugInfo(SpriteBatch spriteBatch, Vector2 pos)
+        public void DrawDebugInfo(SpriteBatch spriteBatch, Coordinate pos)
         {
             var text = "\n\nSeed:" + _seed + " Floor:" + _curLevel;
             TextDrawer.DrawDumbText(spriteBatch, pos, text, 1, ColorScale.White);

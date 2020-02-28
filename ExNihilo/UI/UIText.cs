@@ -16,7 +16,23 @@ namespace ExNihilo.UI
         public string Text { get; protected set; }
         public ColorScale[] Colors { get; private set; }
 
-        public UIText(string name, Vector2 relPos, string smartText, ColorScale[] colors, UIPanel superior, TextureUtilities.PositionType anchorPoint, 
+        public UIText(string name, Vector2 relPos, string smartText, int lineLength, ColorScale[] colors, UIPanel superior, TextureUtilities.PositionType anchorPoint, 
+            bool reducedSpaces = false) : base(name, "null", relPos, Color.White, superior, anchorPoint)
+        {
+            param = new TextDrawer.TextParameters(reducedSpaces);
+            Text = TextDrawer.GetSmartSplit(smartText, lineLength);
+            Colors = colors;
+        }
+
+        public UIText(string name, Coordinate pixelOffset, string smartText, int lineLength, ColorScale[] colors, UIElement superior, TextureUtilities.PositionType anchorPoint,
+            TextureUtilities.PositionType superAnchorType, bool reducedSpaces = false) : base(name, "null", pixelOffset, Color.White, superior, anchorPoint, superAnchorType)
+        {
+            param = new TextDrawer.TextParameters(reducedSpaces);
+            Text = TextDrawer.GetSmartSplit(smartText, lineLength);
+            Colors = colors;
+        }
+
+        public UIText(string name, Vector2 relPos, string smartText, ColorScale[] colors, UIPanel superior, TextureUtilities.PositionType anchorPoint,
             bool reducedSpaces = false) : base(name, "null", relPos, Color.White, superior, anchorPoint)
         {
             param = new TextDrawer.TextParameters(reducedSpaces);
@@ -34,7 +50,12 @@ namespace ExNihilo.UI
 
         public void SetText(string smartText, params ColorScale[] colors)
         {
-            Text = smartText;
+            SetText(smartText, -1, colors);
+        }
+
+        public void SetText(string smartText, int lineLength, params ColorScale[] colors)
+        {
+            Text = lineLength == -1 ? smartText : TextDrawer.GetSmartSplit(smartText, lineLength);
             if (colors.Length > 0) Colors = colors;
             UnscaledSize = TextDrawer.GetSmartTextSize(Text);
             CurrentPixelSize = new Coordinate((int)(CurrentScale * UnscaledSize.X), (int)(CurrentScale * UnscaledSize.Y));
@@ -77,13 +98,13 @@ namespace ExNihilo.UI
         public override void Draw(SpriteBatch spriteBatch, Coordinate rightDownOffset)
         {
             if (!Loaded || DontDrawThis) return;
-            TextDrawer.DrawSmartText(spriteBatch, (Vector2) (OriginPosition + rightDownOffset), Text, CurrentScale, param, Colors);
+            TextDrawer.DrawSmartText(spriteBatch, OriginPosition + rightDownOffset, Text, CurrentScale, param, Colors);
         }
 
         public override void Draw(SpriteBatch spriteBatch)
         {
             if (!Loaded || DontDrawThis) return;
-            TextDrawer.DrawSmartText(spriteBatch, (Vector2)OriginPosition, Text, CurrentScale, param, Colors);
+            TextDrawer.DrawSmartText(spriteBatch, OriginPosition, Text, CurrentScale, param, Colors);
         }
     }
 }

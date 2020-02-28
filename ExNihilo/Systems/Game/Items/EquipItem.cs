@@ -35,7 +35,7 @@ namespace ExNihilo.Systems.Game.Items
 
         public override string GetSmartDesc()
         {
-            var desc = base.GetSmartDesc() + "\n\n";
+            var desc = base.GetSmartDesc() + "\n";
 
             desc += "HP   " + Stats.MaxHp + "\n";
             desc += "MP   " + Stats.MaxMp + "\n";
@@ -53,9 +53,9 @@ namespace ExNihilo.Systems.Game.Items
         public string GetSmartDesc(EquipInstance other)
         {
             if (other is null) return GetSmartDesc();
-            var desc = base.GetSmartDesc() + "\n\n";
+            var desc = base.GetSmartDesc() + "\n";
 
-            var diff = other.Stats - Stats; //Other is going to be currently equipped item
+            var diff = Stats - other.Stats; //Other is going to be currently equipped item
             var max = MathD.MaxAll(Stats.MaxHp, Stats.MaxMp, Stats.Atk, Stats.Def, Stats.Luck).ToString().Length;
             string GetDiff(int value, int m)
             {
@@ -205,7 +205,6 @@ namespace ExNihilo.Systems.Game.Items
 
         public static EquipInstance GetInstance(EquipItem item, Random rand, int level, int qual = -1)
         {
-            //Set stats
             //   10 +    3-  12 total points at level    1 with standard mults
             //   30 +   12-  30 total points at level   10 with standard mults
             //  210 +  102- 210 total points at level  100 with standard mults
@@ -226,15 +225,14 @@ namespace ExNihilo.Systems.Game.Items
                 //inverse calculation from quality->rough count
                 count = (int)((quality / 10.0 * (max - min) + min) / 5);
             }
-
-            //TODO: add some random straying to this
+            
             var stats = new StatOffset
             {
-                MaxHp = (int)(item._hp * (basic + count)),
-                MaxMp = (int)(item._mp * (basic + count)),
-                Atk = (int)(item._atk * (basic + count)),
-                Def = (int)(item._def * (basic + count)),
-                Luck = (int)(item._luck * (basic + count))
+                MaxHp = (int)(item._hp * (rand.NextDouble() / 5 - 0.1) * (basic + count)),
+                MaxMp = (int)(item._mp * (rand.NextDouble() / 5 - 0.1) * (basic + count)),
+                Atk = (int)(item._atk * (rand.NextDouble() / 5 - 0.1) * (basic + count)),
+                Def = (int)(item._def * (rand.NextDouble() / 5 - 0.1) * (basic + count)),
+                Luck = (int)(item._luck * (rand.NextDouble() / 5 - 0.1) * (basic + count))
             };
 
             //Figure out item's name

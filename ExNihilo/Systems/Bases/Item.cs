@@ -33,9 +33,9 @@ namespace ExNihilo.Systems.Bases
         {
            if (Quality < 3) QualityColor = Color.DarkRed;
            else if (Quality == 6) QualityColor = Color.DarkGreen;
-           else if (Quality == 7) QualityColor = Color.DeepSkyBlue;
+           else if (Quality == 7) QualityColor = Color.Blue;
            else if (Quality == 8) QualityColor = Color.DarkOrange;
-           else if (Quality == 9) QualityColor = Color.MediumPurple;
+           else if (Quality == 9) QualityColor = Color.BlueViolet;
            else if (Quality == 10) QualityColor = ColorScale.GetFromGlobal("Rainbow");
            else QualityColor = Color.Black;
 
@@ -68,7 +68,7 @@ namespace ExNihilo.Systems.Bases
         }
         public virtual string GetSmartDesc()
         {
-            return ModifierSet[Quality] + "@c1" + Name + "\n";
+            return ModifierSet[Quality] + "@c1" + Name + " (rank " + Level + ")\n";
         }
         public virtual ColorScale[] GetSmartColors(ColorScale basic)
         {
@@ -92,9 +92,9 @@ namespace ExNihilo.Systems.Bases
 
             if (Quality < 3) QualityColor = Color.DarkRed;
             else if (Quality == 6) QualityColor = Color.DarkGreen;
-            else if (Quality == 7) QualityColor = Color.DeepSkyBlue;
+            else if (Quality == 7) QualityColor = Color.Blue;
             else if (Quality == 8) QualityColor = Color.DarkOrange;
-            else if (Quality == 9) QualityColor = Color.MediumPurple;
+            else if (Quality == 9) QualityColor = Color.BlueViolet;
             else if (Quality == 10) QualityColor = ColorScale.GetFromGlobal("Rainbow");
             else QualityColor = Color.Black;
         }

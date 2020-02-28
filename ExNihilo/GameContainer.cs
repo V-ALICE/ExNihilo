@@ -286,7 +286,7 @@ namespace ExNihilo
         protected void DrawDebugInfo(SpriteBatch spriteBatch)
         {
             var text = _currentFrameRate + " FPS (" + GraphicsDevice.Adapter.Description + ")";
-            TextDrawer.DrawDumbText(spriteBatch, Vector2.One, text, 1, Color.White);
+            TextDrawer.DrawDumbText(spriteBatch, new Coordinate(1, 1), text, 1, Color.White);
         }
 
         protected override void Draw(GameTime gameTime)

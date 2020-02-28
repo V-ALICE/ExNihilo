@@ -14,7 +14,7 @@ namespace ExNihilo.Sectors
     public abstract class PlayerBasedSector : Sector, ISuperPlayer, IPlayer
     {
         protected CommandHandler _playerHandler, _superPlayerHandler;
-        protected Vector2 _debugPosition;
+        protected Coordinate _debugPosition;
         protected Point _lastMousePosition;
         protected World _world;
         protected bool _disableCollisions;
@@ -35,7 +35,7 @@ namespace ExNihilo.Sectors
         public override void OnResize(GraphicsDevice graphicsDevice, Coordinate gameWindow)
         {
             _world?.OnResize(graphicsDevice, gameWindow);
-            _debugPosition = new Vector2(1, 1 + TextDrawer.AlphaHeight + TextDrawer.LineSpacer);
+            _debugPosition = new Coordinate(1, 1 + TextDrawer.AlphaHeight + TextDrawer.LineSpacer);
             _menuPoint?.OnResize(graphicsDevice, gameWindow);
             if (!(_menuPoint is InventoryMenu)) _invRef.OnResize(graphicsDevice, gameWindow);
         }
@@ -52,7 +52,7 @@ namespace ExNihilo.Sectors
             _playerHandler.InitializePlayer(this);
             _superPlayerHandler = new CommandHandler();
             _superPlayerHandler.InitializeSuperPlayer(this);
-            _debugPosition = new Vector2(1, 1 + TextDrawer.AlphaHeight + TextDrawer.LineSpacer);
+            _debugPosition = new Coordinate(1, 1 + TextDrawer.AlphaHeight + TextDrawer.LineSpacer);
             _lastMousePosition = new Point();
         }
 

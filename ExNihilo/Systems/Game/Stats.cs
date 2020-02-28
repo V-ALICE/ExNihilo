@@ -58,7 +58,7 @@ namespace ExNihilo.Systems.Game
             return new StatOffset
             {
                 Hp = MathHelper.Clamp(a.MaxHp + b.MaxHp + b.Hp, 0, a.MaxHp + b.MaxHp),
-                Mp = MathHelper.Clamp(a.MaxHp + b.MaxHp + b.Mp, 0, a.MaxMp + b.MaxMp),
+                Mp = MathHelper.Clamp(a.MaxMp + b.MaxMp + b.Mp, 0, a.MaxMp + b.MaxMp),
                 MaxHp = a.MaxHp + b.MaxHp,
                 MaxMp = a.MaxMp + b.MaxMp,
                 Atk = a.Atk + b.Atk,

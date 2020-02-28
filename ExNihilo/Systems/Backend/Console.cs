@@ -154,7 +154,8 @@ namespace ExNihilo.Systems.Backend
         private readonly CommandHandler _handler;
         private Texture2D _backdrop;
         private string _activeText;
-        private Vector2 _backdropPos, _activeMessagePosition, _oldMessagePosition;
+        private Vector2 _backdropPos;
+        private Coordinate _activeMessagePosition, _oldMessagePosition;
         private int _maxCharacterCount, _maxLineCount;
         private float _currentScale;
         private ScaleRuleSet _rules;
@@ -192,8 +193,8 @@ namespace ExNihilo.Systems.Backend
 
             //UI positions
             _backdropPos = new Vector2(0, gameWindow.Y - _backdrop.Height);
-            _activeMessagePosition = new Vector2(TextDrawer.AlphaSpacer, gameWindow.Y - TextDrawer.LineSpacer - TextDrawer.AlphaHeight);
-            _oldMessagePosition = new Vector2(TextDrawer.AlphaSpacer, gameWindow.Y - _backdrop.Height + TextDrawer.LineSpacer);
+            _activeMessagePosition = new Coordinate(TextDrawer.AlphaSpacer, gameWindow.Y - TextDrawer.LineSpacer - TextDrawer.AlphaHeight);
+            _oldMessagePosition = new Coordinate(TextDrawer.AlphaSpacer, gameWindow.Y - _backdrop.Height + TextDrawer.LineSpacer);
             _currentScale = _rules.GetScale(gameWindow);
 
             Ready = true;
@@ -224,7 +225,7 @@ namespace ExNihilo.Systems.Backend
             }
 
             List<Message> pile = _console.GetAllMessages(); //oldest to newest
-            var pos = Utilities.Copy(_oldMessagePosition);
+            var pos = _oldMessagePosition.Copy();
             foreach (var message in pile)
             {
                 if (!Active && message.Dead)
