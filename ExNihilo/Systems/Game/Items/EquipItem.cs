@@ -228,11 +228,11 @@ namespace ExNihilo.Systems.Game.Items
             
             var stats = new StatOffset
             {
-                MaxHp = (int)(item._hp * (rand.NextDouble() / 5 - 0.1) * (basic + count)),
-                MaxMp = (int)(item._mp * (rand.NextDouble() / 5 - 0.1) * (basic + count)),
-                Atk = (int)(item._atk * (rand.NextDouble() / 5 - 0.1) * (basic + count)),
-                Def = (int)(item._def * (rand.NextDouble() / 5 - 0.1) * (basic + count)),
-                Luck = (int)(item._luck * (rand.NextDouble() / 5 - 0.1) * (basic + count))
+                MaxHp = (int)(item._hp * (rand.NextDouble() / 5 + 0.9) * (basic + count)),
+                MaxMp = (int)(item._mp * (rand.NextDouble() / 5 + 0.9) * (basic + count)),
+                Atk = (int)(item._atk * (rand.NextDouble() / 5 + 0.9) * (basic + count)),
+                Def = (int)(item._def * (rand.NextDouble() / 5 + 0.9) * (basic + count)),
+                Luck = (int)(item._luck * (rand.NextDouble() / 5 + 0.9) * (basic + count))
             };
 
             //Figure out item's name

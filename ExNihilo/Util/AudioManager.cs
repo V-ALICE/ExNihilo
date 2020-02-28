@@ -7,7 +7,6 @@ namespace ExNihilo.Util
 {
     public static class AudioManager
     {
-        //TODO: this is all just temp
         private static readonly Dictionary<string, SoundEffect> Effects = new Dictionary<string, SoundEffect>();
         private static readonly Dictionary<string, Song> Songs = new Dictionary<string, Song>();
 

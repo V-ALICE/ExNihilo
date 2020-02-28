@@ -147,9 +147,8 @@ namespace ExNihilo.Systems.Game
 
         private void SetPlayerAnyTile(Random rand)
         {
-            //TODO: why is this broken sometimes
             CurrentWorldPosition = PlayerOverlay.PlayerCenterScreen - CurrentWorldScale * TileSize * Map.GetAnyFloor(rand);
-            CurrentWorldPosition.Y += 0.5f * CurrentWorldScale * TileSize; //TODO: less magic way to do this
+            CurrentWorldPosition.Y += 0.5f * CurrentWorldScale * TileSize; //Keeps players out of the wall (for some reason)
         }
         public override void OnResize(GraphicsDevice graphics, Coordinate gameWindow)
         {

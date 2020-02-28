@@ -62,7 +62,6 @@ namespace ExNihilo.Menus
                 {
                     //Throw item away
                     _playerRef.Inventory.RemoveItem(startSlotNum, startSlotEquip, true);
-                    //TODO: this can be made to only update the one affected object instead
                     UpdateDisplay();
                 }
 
@@ -72,14 +71,12 @@ namespace ExNihilo.Menus
                     //Apply potion item
                     u.Activate(_playerRef.Inventory, null);
                     _playerRef.Inventory.RemoveItem(startSlotNum, startSlotEquip);
-                    //TODO: this can be made to only update the one affected object instead
                     UpdateDisplay();
                 }
             }
             else if (_playerRef.Inventory.TrySwapItem(startSlotNum, endSlotNum, startSlotEquip, endSlotEquip))
             {
                 //Swapping items
-                //TODO: this can be made to only update the two affected objects instead
                 UpdateDisplay();
             }
         }
@@ -111,7 +108,7 @@ namespace ExNihilo.Menus
             var equipmentSet = new UIElement("EquipmentSet", "UI/field/SevenElementSet", new Coordinate(0, -5), ColorScale.White, inventorySet, Position.CenterBottom, Position.CenterTop);
             _descText = new UIText("DescriptionBox", new Coordinate(14, 14), "", _descCharLen, new ColorScale[0], textBox, Position.TopLeft, Position.TopLeft);
 
-            _portrait = new UIElement("Portrait", "null", new Coordinate(63, 62), ColorScale.White, _statBars, Position.Center, Position.TopLeft);
+            _portrait = new UIElement("Portrait", "null", new Coordinate(63, 66), ColorScale.White, _statBars, Position.Center, Position.TopLeft);
 
             var hpPipSet = new UIPanel("HPPipSet", new Coordinate(168, 12), new Coordinate(160, 24), _statBars, Position.TopLeft, Position.TopLeft);
             var mpPipSet = new UIPanel("MPPipSet", new Coordinate(168, 52), new Coordinate(160, 24), _statBars, Position.TopLeft, Position.TopLeft);

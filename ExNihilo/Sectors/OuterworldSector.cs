@@ -101,7 +101,7 @@ namespace ExNihilo.Sectors
             if (_menuActive)
             {
                 _menuPoint.OnLeftRelease(point);
-                if (ReferenceEquals(_menuPoint, _voidMenu) && _voidMenu.Confirmed) //TODO: this is not a great way/place to detect this
+                if (ReferenceEquals(_menuPoint, _voidMenu) && _voidMenu.Confirmed) //TODO: this is a dumb way to detect this
                 {
                     _voidMenu.BackOut();
                     Container.StartNewGame();

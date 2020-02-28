@@ -66,7 +66,6 @@ namespace ExNihilo.Systems.Game
 
         public virtual void LoadContent(GraphicsDevice graphics, ContentManager content)
         {
-            //TODO: make this universal (what does universal mean?)
             WorldTexture = content.Load<Texture2D>("World/world");
             Map = new InteractionMap("WORLD.info");
         }

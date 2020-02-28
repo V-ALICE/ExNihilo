@@ -25,7 +25,7 @@ namespace ExNihilo.Systems.Bases
         public static readonly string[] ModifierSet =
         {
             //Colors: Fine = green, Grand = blue, Legendary = yellow/orange, Mythical = purple, Absolute = rainbow
-            "Broken ", "Damaged ", "Shabby ", "Basic ", "", "", "Fine ", "Grand ", "Legendary ", "Mythical ", "Absolute "
+            "Broken ", "Damaged ", "Shabby ", "", "", "", "Fine ", "Grand ", "Legendary ", "Mythical ", "Absolute "
         };
 
         [OnDeserialized]

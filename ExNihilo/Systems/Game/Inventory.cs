@@ -53,6 +53,10 @@ namespace ExNihilo.Systems.Game
             };
             NextExp = BaseNeededExp;
             _offsetTriggers = new List<Tuple<int, StatOffset>>();
+            for (int i = 0; i < Equipment.Length; i++)
+            {
+                Equipment[i] = ItemLoader.GetEquipment(MathD.urand, 1, (EquipItem.SlotType) i, 2);
+            }
         }
 
         [OnDeserialized]
@@ -162,6 +166,12 @@ namespace ExNihilo.Systems.Game
             if (hp != -1) _offsets.Hp = hp - total.MaxHp;
             if (mp != -1) _offsets.Mp = mp - total.MaxMp;
         }
+        public void AdjustInstant(InstantItem.InstantItemStats stats)
+        {
+            TapGold(stats.gold);
+            GainExp(stats.exp);
+            AdjustHPMP(stats.hp, stats.mp);
+        }
 
         public int GetFirstOpenInventorySlot()
         {
@@ -176,10 +186,7 @@ namespace ExNihilo.Systems.Game
         {
             if (item is InstantInstance inst)
             {
-                TapGold(inst.Stats.gold);
-                GainExp(inst.Stats.exp);
-                _offsets.Hp += inst.Stats.hp;
-                _offsets.Mp += inst.Stats.mp;
+                inst.Trigger(this);
                 return true;
             }
 

@@ -14,16 +14,30 @@ namespace ExNihilo.Systems.Game.Items
     {
         public class InstantInstance : ItemInstance
         {
-            public readonly InstantItem.InstantItemStats Stats;
+            private readonly InstantItem.InstantItemStats _stats;
 
             public override string GetSmartDesc()
             {
-                return base.GetSmartDesc() + '\n'; //TODO
+                var text = base.GetSmartDesc() + '\n';
+                if (_stats.hp > 0) text += "Gain " + _stats.hp + " health\n";
+                else if (_stats.hp < 0) text += "Lose " + Math.Abs(_stats.hp) + " health\n";
+                if (_stats.mp > 0) text += "Gain " + _stats.mp + " mana\n";
+                else if (_stats.mp < 0) text += "Lose " + Math.Abs(_stats.mp) + " mana\n";
+                if (_stats.exp > 0) text += "Gain " + _stats.exp + " exp\n";
+                else if (_stats.exp < 0) text += "Lose " + Math.Abs(_stats.exp) + " exp\n";
+                if (_stats.gold > 0) text += "Gain " + _stats.gold + " gold\n";
+                else if (_stats.gold < 0) text += "Lose " + Math.Abs(_stats.gold) + " gold\n";
+                return text;
+            }
+
+            public void Trigger(Inventory i)
+            {
+                i.AdjustInstant(_stats);
             }
 
             public InstantInstance(Item item, int level, int quality, InstantItem.InstantItemStats stats) : base(item, level, quality)
             {
-                Stats = stats;
+                _stats = stats;
             }
 
         }
@@ -117,10 +131,10 @@ namespace ExNihilo.Systems.Game.Items
 
                 var stats = new InstantItemStats
                 {
-                    hp = (int) (item._hp * (rand.NextDouble() / 5 - 0.1) * (basic + count)),
-                    mp = (int) (item._mp * (rand.NextDouble() / 5 - 0.1) * (basic + count)),
-                    exp = (int) (item._exp * (rand.NextDouble() / 5 - 0.1) * (basic + count)),
-                    gold = (int) (item._gold * (rand.NextDouble() / 5 - 0.1) * (basic + count))
+                    hp = (int) (item._hp * (rand.NextDouble() / 5 + 0.9) * (basic + count)),
+                    mp = (int) (item._mp * (rand.NextDouble() / 5 + 0.9) * (basic + count)),
+                    exp = (int) (item._exp * (rand.NextDouble() / 5 + 0.9) * (basic + count)),
+                    gold = (int) (item._gold * (rand.NextDouble() / 5 + 0.9) * (basic + count))
                 };
 
                 return new InstantInstance(item, level, quality, stats);

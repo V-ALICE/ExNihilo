@@ -14,7 +14,7 @@ namespace ExNihilo.Systems.Game.Items
     [Serializable]
     public class UseInstance : ItemInstance
     {
-        private readonly List<UseItem.AOE> _perform;
+        private readonly UseItem.AOE[] _perform;
         private readonly int _mp, _hp;
 
         public void Activate(Inventory inv, List<EntityContainer> entities)
@@ -44,17 +44,17 @@ namespace ExNihilo.Systems.Game.Items
             var mp = "";
             var hp = "";
             if (_hp > 0) hp = "Restores " + _hp + " health";
-            else if (_hp < 0) hp = "Drains " + _hp + " health";
+            else if (_hp < 0) hp = "Drains " + Math.Abs(_hp) + " health";
             if (_mp > 0) mp = (hp.Length > 0 ? ". " : "") + "Restores " + _mp + " mana";
-            else if (_mp < 0) mp = (hp.Length > 0 ? ". " : "") + "Drains " + _mp + " mana";
+            else if (_mp < 0) mp = (hp.Length > 0 ? ". " : "") + "Drains " + Math.Abs(_mp) + " mana";
             var text =  base.GetSmartDesc() + "\n";
             foreach (var t in _perform) text += "Affects " + UseItem.ToString(t) + ". ";
             return text + hp + mp;
         }
 
-        public UseInstance(Item item, int level, int quality, int mp, int hp, List<UseItem.AOE> action) : base(item, level, quality)
+        public UseInstance(Item item, int level, int quality, int mp, int hp, UseItem.AOE[] action) : base(item, level, quality)
         {
-            _perform = action;
+            _perform = action ?? new UseItem.AOE[0];
             _mp = mp;
             _hp = hp;
         }
@@ -171,10 +171,10 @@ namespace ExNihilo.Systems.Game.Items
                 count = (int) ((quality / 10.0 * (max - min) + min) / 4);
             }
 
-            var mp = (int) ((basic + count) * (rand.NextDouble() / 5 - 0.1) * item._mp);
-            var hp = (int) ((basic + count) * (rand.NextDouble() / 5 - 0.1) * item._hp);
+            var mp = (int) ((basic + count) * (rand.NextDouble() / 5 + 0.9) * item._mp);
+            var hp = (int) ((basic + count) * (rand.NextDouble() / 5 + 0.9) * item._hp);
 
-            return new UseInstance(item, level, quality, mp, hp, item._flags);
+            return new UseInstance(item, level, quality, mp, hp, item._flags.ToArray());
         }
     }
 }
