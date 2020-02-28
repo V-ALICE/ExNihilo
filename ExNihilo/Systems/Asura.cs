@@ -5,6 +5,7 @@ using System.Linq;
 using ExNihilo.Sectors;
 using ExNihilo.Systems.Backend;
 using ExNihilo.Systems.Game;
+using ExNihilo.Systems.Game.Items;
 using ExNihilo.Util;
 using Microsoft.Xna.Framework;
 
@@ -240,11 +241,16 @@ namespace ExNihilo.Systems
                 "\nreturn -> Exit the Void and return to the Outerworld" +
                 "\nAny unsaved progress will be lost");
 
-            _helpInfo.Add("exp", 
-                "\n/exp [value] -> Adds given value to current player's exp count");
-
             _helpInfo.Add("save", 
                 "\n/save -> Forces the current game to save");
+
+            _helpInfo.Add("give", 
+                "\n/give [type] [level] [quality] -> Give the current player an item of the given type, level, and quality" +
+                "\n/give [type] [level] -> Give the current player an item of the given type and level" +
+                "\n/give gold [amount] -> Give current player the given amount of gold" +
+                "\n/give exp [amount] -> Give current player the given amount of exp" +
+                "\nTypes are: weap, head, chest, hands, legs, feet, acc, potion" + 
+                "\nQuality is 0 - 10");
 
             //Set-related help section
 
@@ -295,9 +301,9 @@ namespace ExNihilo.Systems
             void Help(string args)
             {
                 if (args.Length == 0)
-                    Log.ForceMessage("<help>", _elevatedMode ? _elevatedHelpString : _basicHelpString, Color.ForestGreen, Color.White);
+                    Log.ForceMessage("<help>", _elevatedMode ? _elevatedHelpString : _basicHelpString, Color.DarkGreen, Color.White);
                 else if (_helpInfo.TryGetValue(args, out string line))
-                    Log.ForceMessage("<help>", line, Color.ForestGreen, Color.White);
+                    Log.ForceMessage("<help>", line, Color.DarkGreen, Color.White);
             }
             _basicCommands.Add("help", Help);
 
@@ -381,24 +387,6 @@ namespace ExNihilo.Systems
             }
             _elevatedCommands.Add("return", Return);
 
-            //Give exp to player
-            void GainExp(string args)
-            {
-                if (GameContainer.ActiveSectorID == GameContainer.SectorID.MainMenu)
-                {
-                    Log.ForceMessage("<error>", "Cannot change player values on title screen", Color.DarkRed, Color.White);
-                    return;
-                }
-
-                if (int.TryParse(args, out int num) && num >= 0)
-                {
-                    Log.ForceMessage("<Asura>", "Giving " + args + " Exp to current player", Color.Purple, Color.White);
-                    _game.Player.Inventory.GainExp(num);
-                }
-                else Log.ForceMessage("<error>", "\"" + args + "\" is not a valid exp value", Color.DarkRed, Color.White);
-            }
-            _elevatedCommands.Add("exp", GainExp);
-
             //Force the game to save
             void Save(string args)
             {
@@ -412,6 +400,66 @@ namespace ExNihilo.Systems
                 _game.Pack();
             }
             _elevatedCommands.Add("save", Save);
+
+            void GiveItem(string args)
+            {
+                if (GameContainer.ActiveSectorID == GameContainer.SectorID.MainMenu)
+                {
+                    Log.ForceMessage("<error>", "Cannot change character values on title screen", Color.DarkRed, Color.White);
+                    return;
+                }
+
+                var set = args.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
+
+                try
+                {
+                    switch (set[0])
+                    {
+                        case "gold":
+                            if (long.TryParse(set[1], out long gold) && gold >= 0)
+                            {
+                                Log.ForceMessage("<Asura>", "Giving " + args + " gold to current character", Color.Purple, Color.White);
+                                _game.Player.Inventory.TapGold(gold);
+                            }
+                            else throw new ArgumentOutOfRangeException();
+                            break;
+                        case "exp":
+                            if (int.TryParse(set[1], out int exp) && exp >= 0)
+                            {
+                                Log.ForceMessage("<Asura>", "Giving " + args + " Exp to current character", Color.Purple, Color.White);
+                                _game.Player.Inventory.GainExp(exp);
+                            }
+                            else throw new ArgumentOutOfRangeException();
+                            break;
+                        case "potion":
+                            if (int.TryParse(set[1], out int level1) && int.TryParse(set[2], out int qual1) && level1 > 0 && qual1 >= 0 && qual1 <= 10)
+                            {
+                                var item = ItemLoader.GetUse(MathD.urand, level1, qual1);
+                                var done = _game.Player.Inventory.TryAddItem(item);
+                                if (done) Log.ForceMessage("<Asura>", "Giving " + item.Name + " to current character", Color.Purple, Color.White);
+                                else Log.ForceMessage("<Asura>", "Inventory full", Color.Purple, Color.White);
+                            }
+                            else throw new ArgumentOutOfRangeException();
+                            break;
+                        default:
+                            if (int.TryParse(set[1], out int level2) && int.TryParse(set[2], out int qual2) && level2 > 0 && qual2 >= 0 && qual2 <= 10)
+                            {
+                                var slot = (EquipItem.SlotType)Enum.Parse(typeof(EquipItem.SlotType), set[0].ToUpper());
+                                var item = ItemLoader.GetEquipment(MathD.urand, level2, slot, qual2);
+                                var done = _game.Player.Inventory.TryAddItem(item);
+                                if (done) Log.ForceMessage("<Asura>", "Giving " + item.Name + " to current character", Color.Purple, Color.White);
+                                else Log.ForceMessage("<Asura>", "Inventory full", Color.Purple, Color.White);
+                            }
+                            break;
+                    }
+                }
+                catch (Exception)
+                {
+                    Log.ForceMessage("<error>", "\"" + args + "\" is not valid input for give command", Color.DarkRed, Color.White);
+                }
+                
+            }
+            _elevatedCommands.Add("give", GiveItem);
 
             //****************************************************************************************
 

@@ -381,12 +381,7 @@ namespace ExNihilo
 
         public void GLOBAL_DEBUG_COMMAND(string input)
         {
-            for (int i = 0; i < 10; i++)
-            {
-                var item = ItemLoader.GetItem(MathD.urand, 100);
-                Console.ForceMessage("<Asura>", item.GetFullName(), Color.Purple, Color.White);
-                Player.Inventory.TryAddItem(item);
-            }
+            
         }
     }
 }

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using Microsoft.Xna.Framework;
 
 namespace ExNihilo.Util
@@ -20,6 +21,12 @@ namespace ExNihilo.Util
         public static bool IsClose(Vector2 a, Vector2 b, float tolerance = 1e-6f)
         {
             return IsClose(a.X, b.X) && IsClose(a.Y, b.Y);
+        }
+
+        public static int MaxAll(int first, int second, params int[] rest)
+        {
+            var max = Math.Max(first, second);
+            return rest.Concat(new[] {max}).Max();
         }
 
         //rounds x to an integer towards negative infinity

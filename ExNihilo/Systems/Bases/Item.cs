@@ -32,7 +32,7 @@ namespace ExNihilo.Systems.Bases
         internal void OnDeserialized(StreamingContext context)
         {
            if (Quality < 3) QualityColor = Color.DarkRed;
-           else if (Quality == 6) QualityColor = Color.ForestGreen;
+           else if (Quality == 6) QualityColor = Color.DarkGreen;
            else if (Quality == 7) QualityColor = Color.DeepSkyBlue;
            else if (Quality == 8) QualityColor = Color.DarkOrange;
            else if (Quality == 9) QualityColor = Color.MediumPurple;
@@ -70,9 +70,9 @@ namespace ExNihilo.Systems.Bases
         {
             return ModifierSet[Quality] + "@c1" + Name + "\n";
         }
-        public virtual Color[] GetSmartColors(Color basic)
+        public virtual ColorScale[] GetSmartColors(ColorScale basic)
         {
-            return new Color[] {QualityColor, basic};
+            return new[] {QualityColor, basic};
         }
         //public abstract int GetPrice();
 
@@ -91,7 +91,7 @@ namespace ExNihilo.Systems.Bases
             Quality = quality;
 
             if (Quality < 3) QualityColor = Color.DarkRed;
-            else if (Quality == 6) QualityColor = Color.ForestGreen;
+            else if (Quality == 6) QualityColor = Color.DarkGreen;
             else if (Quality == 7) QualityColor = Color.DeepSkyBlue;
             else if (Quality == 8) QualityColor = Color.DarkOrange;
             else if (Quality == 9) QualityColor = Color.MediumPurple;

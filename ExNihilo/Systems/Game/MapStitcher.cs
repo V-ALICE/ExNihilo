@@ -95,7 +95,7 @@ namespace ExNihilo.Systems.Game
         {
             var map = new TileTextureMap();
             var wall = TextureUtilities.CreateSingleColorTexture(g, 16, 16, Color.DarkRed);
-            var floor = TextureUtilities.CreateSingleColorTexture(g, 16, 16, Color.ForestGreen);
+            var floor = TextureUtilities.CreateSingleColorTexture(g, 16, 16, Color.DarkGreen);
             var stair = TextureUtilities.CreateSingleColorTexture(g, 16, 16, Color.DeepSkyBlue);
             map.TileSize = 16;
             map._mapping.Add("0", new List<Texture2D> { stair });

@@ -35,7 +35,7 @@ namespace ExNihilo.Systems.Game.Items
 
         public override string GetSmartDesc()
         {
-            var desc = base.GetSmartDesc();
+            var desc = base.GetSmartDesc() + "\n\n";
 
             desc += "HP   " + Stats.MaxHp + "\n";
             desc += "MP   " + Stats.MaxMp + "\n";
@@ -45,28 +45,31 @@ namespace ExNihilo.Systems.Game.Items
 
             return desc;
         }
-        public override Color[] GetSmartColors(Color basic)
+        public override ColorScale[] GetSmartColors(ColorScale basic)
         {
-            return new Color[] { GetQualityColor(), basic, Color.ForestGreen, Color.DarkRed };
+            return new ColorScale[] { GetQualityColor(), basic, Color.DarkGreen, Color.DarkRed };
         }
 
         public string GetSmartDesc(EquipInstance other)
         {
-            var desc = base.GetSmartDesc();
-
-            string GetDiff(int value)
-            {
-                if (value == 0) return "(@c1+0)";
-                if (value > 0) return "(@c2+" + value + ")";
-                return "(@c3" + value + ")";
-            }
+            if (other is null) return GetSmartDesc();
+            var desc = base.GetSmartDesc() + "\n\n";
 
             var diff = other.Stats - Stats; //Other is going to be currently equipped item
-            desc += "HP   " + Stats.MaxHp + GetDiff(Stats.MaxHp) + "\n";
-            desc += "MP   " + Stats.MaxMp + GetDiff(Stats.MaxMp) + "\n";
-            desc += "ATK  " + Stats.Atk + GetDiff(Stats.Atk) + "\n";
-            desc += "DEF  " + Stats.Def + GetDiff(Stats.Def) + "\n";
-            desc += "LUCK " + Stats.Luck + GetDiff(Stats.Luck) + "\n";
+            var max = MathD.MaxAll(Stats.MaxHp, Stats.MaxMp, Stats.Atk, Stats.Def, Stats.Luck).ToString().Length;
+            string GetDiff(int value, int m)
+            {
+                var len = m.ToString().Length;
+                if (value == 0) return "".PadRight(max - len + 1) + "(+0)";
+                if (value > 0) return "".PadRight(max - len + 1) + "(@c2+" + value + "@c1)";
+                return "".PadRight(max - len + 1) + "(@c3" + value + "@c1)";
+            }
+
+            desc += "HP   " + Stats.MaxHp + GetDiff(diff.MaxHp, Stats.MaxHp) + "\n";
+            desc += "MP   " + Stats.MaxMp + GetDiff(diff.MaxMp, Stats.MaxMp) + "\n";
+            desc += "ATK  " + Stats.Atk + GetDiff(diff.Atk, Stats.Atk) + "\n";
+            desc += "DEF  " + Stats.Def + GetDiff(diff.Def, Stats.Def) + "\n";
+            desc += "LUCK " + Stats.Luck + GetDiff(diff.Luck, Stats.Luck) + "\n";
 
             return desc;
         }
@@ -224,6 +227,7 @@ namespace ExNihilo.Systems.Game.Items
                 count = (int)((quality / 10.0 * (max - min) + min) / 5);
             }
 
+            //TODO: add some random straying to this
             var stats = new StatOffset
             {
                 MaxHp = (int)(item._hp * (basic + count)),

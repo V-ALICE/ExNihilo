@@ -3,6 +3,7 @@ using System.Linq;
 using ExNihilo.Entity;
 using ExNihilo.Systems.Backend;
 using ExNihilo.Systems.Game;
+using ExNihilo.Systems.Game.Items;
 using ExNihilo.UI;
 using ExNihilo.Util;
 using ExNihilo.Util.Graphics;
@@ -67,6 +68,17 @@ namespace ExNihilo.Menus
                     //TODO: this can be made to only update the one affected object instead
                     UpdateDisplay();
                 }
+
+                rect = new Rectangle(_portrait.OriginPosition.X, _portrait.OriginPosition.Y,
+                    (int)(_portrait.CurrentScale * _iconRefSize), (int)(_portrait.CurrentScale * _iconRefSize));
+                if (rect.Contains(package.ScreenPos) && _playerRef.Inventory.Items[startSlotNum] is UseInstance u)
+                {
+                    //Apply potion item
+                    u.Activate(_playerRef.Inventory, null);
+                    _playerRef.Inventory.RemoveItem(startSlotNum, startSlotEquip);
+                    //TODO: this can be made to only update the one affected object instead
+                    UpdateDisplay();
+                }
             }
             else if (_playerRef.Inventory.TrySwapItem(startSlotNum, endSlotNum, startSlotEquip, endSlotEquip))
             {
@@ -81,11 +93,13 @@ namespace ExNihilo.Menus
         private readonly UIElement[] _equips = new UIElement[7];
         private readonly UIElement[] _items = new UIElement[Inventory.InventorySize];
         private readonly UIElement _portrait; //Kept here since it may need to be accessed constantly
-        //private readonly UIText descText;
+        private readonly UIText _descText; //Kept here since it may need to be accessed constantly
         private Point _lastMousePosition;
         private Coordinate _lastWindowSize;
         private readonly int _iconRefSize = 128; //TODO: better way to do this
         private EntityTexture.State _lastState;
+        private bool _mouseDown;
+        //private int _lastTextSlot=-1;
 
         //Text box is 9 rows of 30 characters
 
@@ -98,7 +112,7 @@ namespace ExNihilo.Menus
             var textBox = new UIElement("TextBox", "UI/field/LargeEntryBox", new Coordinate(-14, 14), ColorScale.White, backdrop, Position.TopRight, Position.TopRight);
             var inventorySet = new UIElement("InventorySet", "UI/field/ThreeRowElementSet", new Coordinate(0, -14), ColorScale.White, backdrop, Position.CenterBottom, Position.CenterBottom);
             var equipmentSet = new UIElement("EquipmentSet", "UI/field/SevenElementSet", new Coordinate(0, -5), ColorScale.White, inventorySet, Position.CenterBottom, Position.CenterTop);
-            var descText = new UIText("DescriptionBox", new Coordinate(14, 14), "0123456789012345678901234567890\n1\n2\n3\n4\n5\n6\n7\n8", new ColorScale[0], textBox, Position.TopLeft, Position.TopLeft);
+            _descText = new UIText("DescriptionBox", new Coordinate(14, 14), "", new ColorScale[0], textBox, Position.TopLeft, Position.TopLeft);
 
             _portrait = new UIElement("Portrait", "null", new Coordinate(63, 62), ColorScale.White, inventoryBars, Position.Center, Position.TopLeft);
 
@@ -154,7 +168,7 @@ namespace ExNihilo.Menus
             RegisterAll(MoveItem, _items);
 
             _portrait.SetRules(TextureLibrary.DoubleScaleRuleSet);
-            _panelUI.AddElements(backdrop, inventoryBars, textBox, descText, equipmentSet, inventorySet, _equipRef, _itemRef, hpPipSet, mpPipSet, expPipSet, _portrait);
+            _panelUI.AddElements(backdrop, inventoryBars, textBox, _descText, equipmentSet, inventorySet, _equipRef, _itemRef, hpPipSet, mpPipSet, expPipSet, _portrait);
         }
 
         public void SetReference(PlayerEntityContainer reference)
@@ -271,22 +285,78 @@ namespace ExNihilo.Menus
                 }
             }
         }
+        private void CheckForHighlight(Point point)
+        {
+            if (_mouseDown) return;
+
+            if (point.Y < _items[0].OriginPosition.Y)
+            {
+                for (int i = 0; i < _equips.Length; i++)
+                {
+                    var rect = new Rectangle(_equips[i].OriginPosition.X, _equips[i].OriginPosition.Y,
+                        (int) (_equips[i].CurrentScale * _iconRefSize), (int) (_equips[i].CurrentScale * _iconRefSize));
+                    if (rect.Contains(point))
+                    {
+                        var item = _playerRef.Inventory.Equipment[i];
+                       // if (_lastTextSlot == i) return;
+                        if (item is null) break;
+
+                        _descText.SetText(item.GetSmartDesc(), item.GetSmartColors(ColorScale.Black));
+                        //_lastTextSlot = i;
+                        return;
+                    }
+                }
+            }
+            else
+            {
+                for (int i = 0; i < _items.Length; i++)
+                {
+                    var rect = new Rectangle(_items[i].OriginPosition.X, _items[i].OriginPosition.Y,
+                        (int)(_items[i].CurrentScale * _iconRefSize), (int)(_items[i].CurrentScale * _iconRefSize));
+                    if (rect.Contains(point))
+                    {
+                        var item = _playerRef.Inventory.Items[i];
+                        //if (_lastTextSlot == 7 + i) return;
+                        if (item is null) break;
+
+                        if (item is EquipInstance e)
+                        {
+                            var other = _playerRef.Inventory.Equipment[(int) e.Type];
+                            _descText.SetText(e.GetSmartDesc(other), e.GetSmartColors(ColorScale.Black));
+                        }
+                        else
+                        {
+                            _descText.SetText(item.GetSmartDesc(), item.GetSmartColors(ColorScale.Black));
+                        }
+
+                        //_lastTextSlot = 7 + i;
+                        return;
+                    }
+                }
+            }
+
+            _descText.SetText("", ColorScale.Black);
+        }
 
         public override bool OnMoveMouse(Point point)
         {
+            if (point == _lastMousePosition) return false;
             _lastMousePosition = point;
             _panelUI.OnMoveMouse(point);
             MovePortrait(point);
+            CheckForHighlight(point);
             return false;
         }
 
         public override bool OnLeftClick(Point point)
         {
+            _mouseDown = true;
             return _panelUI.OnLeftClick(point);
         }
 
         public override void OnLeftRelease(Point point)
         {
+            _mouseDown = false;
             _panelUI.OnLeftRelease(point);
         }
 

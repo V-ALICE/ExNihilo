@@ -71,6 +71,8 @@ namespace ExNihilo.Systems.Game
                 if (i is null) continue;
                 ItemLoader.RestoreItemInstance(i);
             }
+
+            ItemLoader.RestoreItemInstance(_lastTrashedItem);
         }
 
         public void SoftReset()
@@ -156,6 +158,7 @@ namespace ExNihilo.Systems.Game
         }
         public void SetHPMP(int hp = -1, int mp = -1)
         {
+            Dirty = true;
             var total = GetTrueStats();
             if (hp != -1) _offsets.Hp = hp - total.MaxHp;
             if (mp != -1) _offsets.Mp = mp - total.MaxMp;
