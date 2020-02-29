@@ -53,6 +53,7 @@ namespace ExNihilo.Systems.Game
         public int TileSize;
         public bool CheckVoid;
         private readonly Dictionary<string, List<Texture2D>> _mapping;
+        private readonly List<Texture2D> _boxes, _oboxes;
 
         private void Entry(GraphicsDevice g, Texture2D texture, string line, Coordinate offset)
         {
@@ -106,6 +107,8 @@ namespace ExNihilo.Systems.Game
 
         private TileTextureMap()
         {
+            _boxes = new List<Texture2D>();
+            _oboxes = new List<Texture2D>();
             _mapping = new Dictionary<string, List<Texture2D>>();
             TileSize = -1;
         }
@@ -183,6 +186,24 @@ namespace ExNihilo.Systems.Game
                             GameContainer.Console.ForceMessage("<warning>", "Ignoring unexpected line \"" + line + "\" in tile map description", Color.DarkOrange, Color.White);
                         }
                     }
+                    else if (line.StartsWith("BOX "))
+                    {
+                        //Add box
+                        var split = line.Split(' ');
+                        var rect = new Rectangle(int.Parse(split[1]), int.Parse(split[2]), int.Parse(split[3]), int.Parse(split[4]));
+                        tmfSet[0]._boxes.Add(TextureUtilities.GetSubTexture(g, curTex, rect));
+                    }
+                    else if (line.StartsWith("OBOX "))
+                    {
+                        //Add open box
+                        var split = line.Split(' ');
+                        if (split[1] == "NULL") tmfSet[0]._oboxes.Add(null);
+                        else
+                        {
+                            var rect = new Rectangle(int.Parse(split[1]), int.Parse(split[2]), int.Parse(split[3]), int.Parse(split[4]));
+                            tmfSet[0]._oboxes.Add(TextureUtilities.GetSubTexture(g, curTex, rect));
+                        }
+                    }
                     else if (curTex != null)
                     {
                         //Tile description (or possibly a junk line)
@@ -248,6 +269,12 @@ namespace ExNihilo.Systems.Game
             }
             GameContainer.Console.ForceMessage("<warning>", "Texture map contains no definitions for ID " + type, Color.DarkRed, Color.White);
             return null;
+        }
+
+        public (Texture2D, Texture2D) GetBox(Random rand)
+        {
+            var num = rand.Next(_boxes.Count);
+            return (_boxes[num], _oboxes[num] ?? _boxes[num]);
         }
 
         //Convenience function since stair ID is static

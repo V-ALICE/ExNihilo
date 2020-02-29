@@ -94,7 +94,7 @@ namespace ExNihilo.Systems.Game
 
         public virtual void Draw(SpriteBatch spriteBatch)
         {
-            spriteBatch.Draw(WorldTexture, (Vector2)CurrentWorldPosition, null, Color.White, 0, Vector2.Zero, CurrentWorldScale, SpriteEffects.None, 0);
+            spriteBatch.Draw(WorldTexture, CurrentWorldPosition, null, Color.White, 0, Vector2.Zero, CurrentWorldScale, SpriteEffects.None, 0);
         }
 
         public virtual void DrawOverlays(SpriteBatch spriteBatch)
@@ -102,7 +102,7 @@ namespace ExNihilo.Systems.Game
             PlayerOverlay?.Draw(spriteBatch);
             foreach (var item in Overlays)
             {
-                var pos = (Coordinate)(CurrentWorldPosition + CurrentWorldScale * item.Item2);
+                var pos = CurrentWorldPosition + CurrentWorldScale * item.Item2;
                 item.Item1.Draw(spriteBatch, pos, ColorScale.White, CurrentWorldScale);
             }
 
