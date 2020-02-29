@@ -35,7 +35,7 @@ namespace ExNihilo.Systems.Bases
 
     public class BoxInteractive : MenuInteractive
     {
-        public const int ContainerSize = 7;
+        public const int ContainerSize = 6;
         private const int _slotFillChance = 40;
         private readonly Texture2D _closed, _open;
         public readonly ItemInstance[] Contents = new ItemInstance[ContainerSize];

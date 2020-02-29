@@ -12,7 +12,7 @@ namespace ExNihilo.Systems.Backend
 {
     public static class TextureLibrary
     {
-        public static ScaleRuleSet DefaultScaleRuleSet, ReducedScaleRuleSet, HalfScaleRuleSet, DoubleScaleRuleSet, GiantScaleRuleSet;
+        public static ScaleRuleSet DefaultScaleRuleSet, ReducedScaleRuleSet, HalfScaleRuleSet, MediumScaleRuleSet, DoubleScaleRuleSet, GiantScaleRuleSet;
         private static Dictionary<string, Dictionary<string, Texture2D>> _UILookUp;
         private static Dictionary<string, Dictionary<string, Texture2D>> _textureLookUp;
         private static Dictionary<string, Dictionary<string, Texture2D>> _iconLookUp;
@@ -58,6 +58,14 @@ namespace ExNihilo.Systems.Backend
                 new ScaleRule(2, 2100, 1500),
                 new ScaleRule(3, 2800, 2000),
                 new ScaleRule(4, ScaleRule.MAX_X, ScaleRule.MAX_Y)
+            );
+
+            MediumScaleRuleSet = new ScaleRuleSet
+            (
+                new ScaleRule(1.25f, 1400, 1000),
+                new ScaleRule(2.5f, 2100, 1500),
+                new ScaleRule(3.75f, 2800, 2000),
+                new ScaleRule(5f, ScaleRule.MAX_X, ScaleRule.MAX_Y)
             );
 
             ReducedScaleRuleSet = new ScaleRuleSet

@@ -1,4 +1,5 @@
-﻿using ExNihilo.UI;
+﻿using ExNihilo.Systems.Backend;
+using ExNihilo.UI;
 using ExNihilo.Util;
 using ExNihilo.Util.Graphics;
 using Microsoft.Xna.Framework;
@@ -27,13 +28,13 @@ namespace ExNihilo.Menus
             _panelUI = new UIPanel("this.MenuKing", new Vector2(0.5f, 0.5f), Vector2.One, TextureUtilities.PositionType.Center);
 
             var backdrop = new UIElement("Backdrop", "UI/decor/Backdrop", new Vector2(0.5f, 0.5f), Color.White, _panelUI, TextureUtilities.PositionType.Center);
-            var backButton = new UIClickable("BackButton", "UI/button/SmallButton", new Coordinate(14, -14), ColorScale.White, backdrop, TextureUtilities.PositionType.BottomLeft, TextureUtilities.PositionType.BottomLeft);
-            var backButtonText = new UIText("BackButtonText", new Coordinate(), "Back", ColorScale.Black, backButton, TextureUtilities.PositionType.Center, TextureUtilities.PositionType.Center);
+            var exitButton = new UIClickable("ExitButton", "UI/button/RedBulb", new Coordinate(-8, 8), ColorScale.White, backdrop, TextureUtilities.PositionType.Center, TextureUtilities.PositionType.TopRight);
+            var exitButtonX = new UIElement("ExitButtonX", "UI/icon/No", new Coordinate(), ColorScale.White, exitButton, TextureUtilities.PositionType.Center, TextureUtilities.PositionType.Center);
+            exitButton.RegisterCallback(CloseMenu);
+            SetRulesAll(TextureLibrary.MediumScaleRuleSet, exitButton, exitButtonX);
+            exitButton.SetExtraStates("UI/button/RedBulbDown", "UI/button/RedBulbOver");
 
-            backButton.RegisterCallback(CloseMenu);
-            backButton.SetExtraStates("UI/button/SmallButtonDown", "UI/button/SmallButtonOver");
-
-            _panelUI.AddElements(backdrop, backButton, backButtonText);
+            _panelUI.AddElements(backdrop, exitButton, exitButtonX);
         }
 
         public override void Enter(Point point)

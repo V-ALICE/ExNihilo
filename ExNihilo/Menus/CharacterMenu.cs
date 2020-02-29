@@ -285,8 +285,12 @@ namespace ExNihilo.Menus
 
             //Main Panel
             var backdrop = new UIElement("Backdrop", "UI/decor/Backdrop", new Vector2(0.5f, 0.5f), Color.White, _panelUI, Position.Center);
-            var backButton = new UIClickable("BackButton", "UI/button/SmallButton", new Coordinate(14, -14), ColorScale.White, backdrop, Position.BottomLeft, Position.BottomLeft);
-            var backButtonText = new UIText("BackButtonText", new Coordinate(), "Back", ColorScale.Black, backButton, Position.Center, Position.Center);
+            var exitButton = new UIClickable("ExitButton", "UI/button/RedBulb", new Coordinate(-8, 8), ColorScale.White, backdrop, Position.Center, Position.TopRight);
+            var exitButtonX = new UIElement("ExitButtonX", "UI/icon/No", new Coordinate(), ColorScale.White, exitButton, Position.Center, Position.Center);
+            exitButton.RegisterCallback(CloseMenu);
+            SetRulesAll(TextureLibrary.MediumScaleRuleSet, exitButton, exitButtonX);
+            exitButton.SetExtraStates("UI/button/RedBulbDown", "UI/button/RedBulbOver");
+
             var currentCharacterSet = new UIElement("CharacterSet", "UI/field/SevenElementSet", new Coordinate(18, -100), ColorScale.White, backdrop, Position.BottomLeft, Position.BottomLeft);
             var newCharButton = new UIClickable("NewCharButton", "UI/button/SmallButton", new Coordinate(-50, 50), ColorScale.White, backdrop, Position.TopRight, Position.TopRight);
             var newCharButtonText = new UIText("NewCharButtonText", new Coordinate(), "New", ColorScale.Black, newCharButton, Position.Center, Position.Center);
@@ -351,12 +355,11 @@ namespace ExNihilo.Menus
             charPanel6.AddTooltip(new Coordinate(60, 60), new Vector2(0, -17), charInfo6, charInfoText6);
             charPanel7.AddTooltip(new Coordinate(60, 60), new Vector2(0, -17), charInfo7, charInfoText7);
 
-            backButton.RegisterCallback(CloseMenu);
             newCharButton.RegisterCallback(MakeNewChar);
             changeCharButton.RegisterCallback(ChangeChar);
             RegisterAll(WarnOnDelete, deleteButton1, deleteButton2, deleteButton3, deleteButton4, deleteButton5, deleteButton6, deleteButton7);
             RegisterAll(SelectChar, charPanel1, charPanel2, charPanel3, charPanel4, charPanel5, charPanel6, charPanel7);
-            SetExtrasAll("UI/button/SmallButtonDown", "UI/button/SmallButtonOver", null, null, backButton, newCharButton, changeCharButton);
+            SetExtrasAll("UI/button/SmallButtonDown", "UI/button/SmallButtonOver", null, null, newCharButton, changeCharButton);
             SetExtrasAll("UI/button/RedBulbDown", "UI/button/RedBulbOver", null, null, deleteButton1, deleteButton2, deleteButton3, deleteButton4, deleteButton5, deleteButton6, deleteButton7);
             charDisplay.SetRules(TextureLibrary.GiantScaleRuleSet);
             SetRulesAll(rules, portrait1, portrait2, portrait3, portrait4, portrait5, portrait6, portrait7);
@@ -370,7 +373,7 @@ namespace ExNihilo.Menus
             charPanel6.AddElements(portrait6, deleteButton6, deleteButton6Icon);
             charPanel7.AddElements(portrait7, deleteButton7, deleteButton7Icon);
             charArray.AddElements(charPanel1, charPanel2, charPanel3, charPanel4, charPanel5, charPanel6, charPanel7);
-            _panelUI.AddElements(backdrop, currentCharacterSet, backButton, backButtonText, newCharButton, newCharButtonText, changeCharButton, changeCharButtonText, charArray, charDisplay);
+            _panelUI.AddElements(backdrop, currentCharacterSet, exitButton, exitButtonX, newCharButton, newCharButtonText, changeCharButton, changeCharButtonText, charArray, charDisplay);
 
             //New Character Panel
             var backdrop2 = new UIElement("Backdrop2", "UI/decor/Backdrop", new Vector2(0.5f, 0.5f), Color.White, _newCharUI, Position.Center);

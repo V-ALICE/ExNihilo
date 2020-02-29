@@ -80,7 +80,12 @@ namespace ExNihilo.Menus
                 UpdateDisplay();
             }
         }
-        
+
+        private void CloseMenu(UICallbackPackage package)
+        {
+            Dead = true;
+        }
+
         private PlayerEntityContainer _playerRef;
         private readonly UIPanel _panelUI;
         private readonly UIElement[] _equips = new UIElement[7];
@@ -102,9 +107,15 @@ namespace ExNihilo.Menus
             _panelUI = new UIPanel("this.MenuKing", new Vector2(0.5f, 0.5f), Vector2.One, Position.Center);
 
             var backdrop = new UIElement("Backdrop", "UI/decor/Backdrop", new Vector2(0.5f, 0.5f), Color.White, _panelUI, Position.Center);
+            var exitButton = new UIClickable("ExitButton", "UI/button/RedBulb", new Coordinate(-8, 8), ColorScale.White, backdrop, Position.Center, Position.TopRight);
+            var exitButtonX = new UIElement("ExitButtonX", "UI/icon/No", new Coordinate(), ColorScale.White, exitButton, Position.Center, Position.Center);
+            exitButton.RegisterCallback(CloseMenu);
+            SetRulesAll(TextureLibrary.MediumScaleRuleSet, exitButton, exitButtonX);
+            exitButton.SetExtraStates("UI/button/RedBulbDown", "UI/button/RedBulbOver");
+
             _statBars = new UIElement("InventoryBars", "UI/field/InventoryBars", new Coordinate(14, 14), ColorScale.White, backdrop, Position.TopLeft, Position.TopLeft);
-            var textBox = new UIElement("TextBox", "UI/field/LargeEntryBox", new Coordinate(-14, 14), ColorScale.White, backdrop, Position.TopRight, Position.TopRight);
-            var inventorySet = new UIElement("InventorySet", "UI/field/ThreeRowElementSet", new Coordinate(0, -14), ColorScale.White, backdrop, Position.CenterBottom, Position.CenterBottom);
+            var textBox = new UIElement("TextBox", "UI/field/LargeEntryBox", new Coordinate(-17, 17), ColorScale.White, backdrop, Position.TopRight, Position.TopRight);
+            var inventorySet = new UIElement("InventorySet", "UI/field/ThreeRowElementSet", new Coordinate(0, -17), ColorScale.White, backdrop, Position.CenterBottom, Position.CenterBottom);
             var equipmentSet = new UIElement("EquipmentSet", "UI/field/SevenElementSet", new Coordinate(0, -5), ColorScale.White, inventorySet, Position.CenterBottom, Position.CenterTop);
             _descText = new UIText("DescriptionBox", new Coordinate(14, 14), "", _descCharLen, new ColorScale[0], textBox, Position.TopLeft, Position.TopLeft);
 
@@ -162,7 +173,7 @@ namespace ExNihilo.Menus
             RegisterAll(MoveItem, _items);
 
             _portrait.SetRules(TextureLibrary.DoubleScaleRuleSet);
-            _panelUI.AddElements(backdrop, _statBars, textBox, _descText, equipmentSet, inventorySet, _equipRef, _itemRef, hpPipSet, mpPipSet, expPipSet, _portrait);
+            _panelUI.AddElements(backdrop, _statBars, textBox, _descText, equipmentSet, inventorySet, _equipRef, _itemRef, hpPipSet, mpPipSet, expPipSet, _portrait, exitButton, exitButtonX);
         }
 
         public void SetReference(PlayerEntityContainer reference)

@@ -97,6 +97,10 @@ namespace ExNihilo.Menus
                 UpdateDisplay();
             }
         }
+        private void CloseMenu(UICallbackPackage package)
+        {
+            Dead = true;
+        }
 
         private BoxInteractive _boxRef;
         private PlayerEntityContainer _playerRef;
@@ -118,9 +122,15 @@ namespace ExNihilo.Menus
             _panelUI = new UIPanel("this.MenuKing", new Vector2(0.5f, 0.5f), Vector2.One, Position.Center);
 
             var backdrop = new UIElement("Backdrop", "UI/decor/Backdrop", new Vector2(0.5f, 0.5f), Color.White, _panelUI, Position.Center);
-            var textBox = new UIElement("TextBox", "UI/field/LargeEntryBox", new Coordinate(-14, 14), ColorScale.White, backdrop, Position.TopRight, Position.TopRight);
-            var inventorySet = new UIElement("InventorySet", "UI/field/ThreeRowElementSet", new Coordinate(0, -14), ColorScale.White, backdrop, Position.CenterBottom, Position.CenterBottom);
-            var containerSet = new UIElement("ContainerSet", "UI/field/SevenElementSet", new Coordinate(0, -5), ColorScale.White, inventorySet, Position.CenterBottom, Position.CenterTop);
+            var exitButton = new UIClickable("ExitButton", "UI/button/RedBulb", new Coordinate(-8, 8), ColorScale.White, backdrop, Position.Center, Position.TopRight);
+            var exitButtonX = new UIElement("ExitButtonX", "UI/icon/No", new Coordinate(), ColorScale.White, exitButton, Position.Center, Position.Center);
+            exitButton.RegisterCallback(CloseMenu);
+            SetRulesAll(TextureLibrary.MediumScaleRuleSet, exitButton, exitButtonX);
+            exitButton.SetExtraStates("UI/button/RedBulbDown", "UI/button/RedBulbOver");
+
+            var inventorySet = new UIElement("InventorySet", "UI/field/ThreeRowElementSet", new Coordinate(0, -39), ColorScale.White, backdrop, Position.CenterBottom, Position.CenterBottom);
+            var textBox = new UIElement("TextBox", "UI/field/LargeEntryBox", new Coordinate(-20, -46), ColorScale.White, inventorySet, Position.BottomRight, Position.TopRight);
+            var containerSet = new UIElement("ContainerSet", "UI/field/SixElementSet", new Coordinate(20, -46), ColorScale.White, inventorySet, Position.BottomLeft, Position.TopLeft);
             _descText = new UIText("DescriptionBox", new Coordinate(14, 14), "", _descCharLen, new ColorScale[0], textBox, Position.TopLeft, Position.TopLeft);
 
             var containerRef = new UIPanel("ContainerZone", new Coordinate(), new Coordinate(664, 80), containerSet, Position.TopLeft, Position.TopLeft);
@@ -132,7 +142,9 @@ namespace ExNihilo.Menus
 
             for (int i = 0; i < _container.Length; i++)
             {
-                _container[i] = new UIMovable("Box" + i, "null", new Coordinate(36 + i * 88, 8), ColorScale.White, containerRef, Vector2.Zero, Vector2.One, Position.TopLeft, Position.TopLeft, true, false);
+                var row = i / 3;
+                var col = i % 3;
+                _container[i] = new UIMovable("Box" + i, "null", new Coordinate(8 + col * 72, 8 + row * 72), ColorScale.White, containerRef, Vector2.Zero, Vector2.One, Position.TopLeft, Position.TopLeft, true, false);
             }
             for (int i = 0; i < _inventory.Length; i++)
             {
@@ -150,7 +162,7 @@ namespace ExNihilo.Menus
             SetRulesAll(TextureLibrary.HalfScaleRuleSet, _inventory);
             RegisterAll(MoveItem, _inventory);
 
-            _panelUI.AddElements(backdrop, textBox, _descText, containerSet, inventorySet, containerRef, inventoryRef);
+            _panelUI.AddElements(backdrop, textBox, _descText, containerSet, inventorySet, containerRef, inventoryRef, exitButton, exitButtonX);
         }
 
         public void SetReference(PlayerEntityContainer reference)

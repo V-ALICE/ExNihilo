@@ -3,11 +3,12 @@ decor/Backdrop  0 0 700 500
 
 UI/UI
 field/SmallEntryBox        0 168 274  60
-field/LargeEntryBox      408   0 274 150
+field/LargeEntryBox      408   0 274 152
 field/SmallFillBar 	       0 228 276  40
 field/SevenElementSet      0 296 664  80
 field/InventoryBars      406 168 392 128
 field/ThreeRowElementSet   0 376 584 224
+field/SixElementSet      682   0 224 152
 
 fill/PipBarBlue    388 168 16 24
 fill/PipBarRed 	   388 196 16 24
