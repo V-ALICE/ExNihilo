@@ -4,6 +4,7 @@ using System.IO;
 using System.IO.Compression;
 using System.Linq;
 using ExNihilo.Systems.Backend;
+using ExNihilo.Systems.Bases;
 using ExNihilo.Util;
 using ExNihilo.Util.Graphics;
 using Microsoft.Xna.Framework;
@@ -191,17 +192,22 @@ namespace ExNihilo.Systems.Game
                         //Add box
                         var split = line.Split(' ');
                         var rect = new Rectangle(int.Parse(split[1]), int.Parse(split[2]), int.Parse(split[3]), int.Parse(split[4]));
-                        tmfSet[0]._boxes.Add(TextureUtilities.GetSubTexture(g, curTex, rect));
+                        var tex = TextureUtilities.GetSubTexture(g, curTex, rect); //TODO: find a better way to do this
+                        foreach (var set in tmfSet) set._boxes.Add(tex);
                     }
                     else if (line.StartsWith("OBOX "))
                     {
                         //Add open box
                         var split = line.Split(' ');
-                        if (split[1] == "NULL") tmfSet[0]._oboxes.Add(null);
+                        if (split[1] == "NULL")
+                        {
+                            foreach (var set in tmfSet) set._boxes.Add(null);
+                        }
                         else
                         {
                             var rect = new Rectangle(int.Parse(split[1]), int.Parse(split[2]), int.Parse(split[3]), int.Parse(split[4]));
-                            tmfSet[0]._oboxes.Add(TextureUtilities.GetSubTexture(g, curTex, rect));
+                            var tex = TextureUtilities.GetSubTexture(g, curTex, rect);
+                            foreach (var set in tmfSet) set._oboxes.Add(tex);
                         }
                     }
                     else if (curTex != null)
@@ -271,7 +277,7 @@ namespace ExNihilo.Systems.Game
             return null;
         }
 
-        public (Texture2D, Texture2D) GetBox(Random rand)
+        public (Texture2D, Texture2D) GetAnyBox(Random rand)
         {
             var num = rand.Next(_boxes.Count);
             return (_boxes[num], _oboxes[num] ?? _boxes[num]);
@@ -303,6 +309,7 @@ namespace ExNihilo.Systems.Game
                             break;
                         case Tile.Ground:
                         case Tile.Stairs:
+                        case Tile.Box:
                             map.Add(TileRef.Type.Floor);
                             break;
                     }
@@ -311,33 +318,40 @@ namespace ExNihilo.Systems.Game
             return map.ToArray();
         }
 
-        public static Texture2D StitchMap(GraphicsDevice graphics, TypeMatrix set, Random rand, TileTextureMap wall, TileTextureMap floor, TileTextureMap other=null)
+        public static Texture2D StitchMap(GraphicsDevice graphics, InteractionMap set, int level, Random rand, TileTextureMap wall, TileTextureMap floor, TileTextureMap other)
         {
-            var texture = new Texture2D(graphics, wall.TileSize * set.X, wall.TileSize * (set.Y+5));
+            var texture = new Texture2D(graphics, wall.TileSize * set.Map.X, wall.TileSize * (set.Map.Y + 5));
 
-            for (int i = 0; i < set.Y; i++)
+            for (int i = 0; i < set.Map.Y; i++)
             {
-                for (int j = 0; j < set.X; j++)
+                for (int j = 0; j < set.Map.X; j++)
                 {
-                    switch (set.Get(j, i))
+                    switch (set.Map.Get(j, i))
                     {
                         case Tile.None:
-                            if (other != null)
+                            if (other.CheckVoid)
                             {
-                                var idn = TileRef.ToString(GetSurroundings(set, j, i));
+                                var idn = TileRef.ToString(GetSurroundings(set.Map, j, i));
                                 TextureUtilities.SetSubTexture(texture, other.GetAnyOfType(idn, rand), j * other.TileSize, i * other.TileSize);
                             }
                             break;
                         case Tile.Wall:
-                            var idw = TileRef.ToString(GetSurroundings(set, j, i));
+                            var idw = TileRef.ToString(GetSurroundings(set.Map, j, i));
                             TextureUtilities.SetSubTexture(texture, wall.GetAnyOfType(idw, rand), j * wall.TileSize, i * wall.TileSize);
                             break;
                         case Tile.Ground:
-                            var idg = TileRef.ToString(GetSurroundings(set, j, i));
+                            var idg = TileRef.ToString(GetSurroundings(set.Map, j, i));
                             TextureUtilities.SetSubTexture(texture, floor.GetAnyOfType(idg, rand), j * floor.TileSize, i * floor.TileSize);
                             break;
                         case Tile.Stairs:
                             TextureUtilities.SetSubTexture(texture, floor.GetAnyStairs(rand), j * floor.TileSize, i * floor.TileSize);
+                            break;
+                        case Tile.Box:
+                            var idb = TileRef.ToString(GetSurroundings(set.Map, j, i));
+                            TextureUtilities.SetSubTexture(texture, floor.GetAnyOfType(idb, rand), j * floor.TileSize, i * floor.TileSize);
+                            var (closed, open) = other.GetAnyBox(rand);
+                            var box = new BoxInteractive("Box", open, closed, MathD.urand, level);
+                            set.AddBox(box, j, i);
                             break;
                     }
                 }

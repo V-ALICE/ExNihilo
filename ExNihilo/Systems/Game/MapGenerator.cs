@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using ExNihilo.Systems.Backend;
 using ExNihilo.Util;
 using Microsoft.Xna.Framework;
 using Tile = ExNihilo.Systems.Backend.TypeMatrix.Type;
@@ -195,7 +196,7 @@ namespace ExNihilo.Systems.Game
         }
 
         private static volatile int _gTotal;
-        public static Tile[][] Get(int key, int subKey, Type type, out Random rand)
+        public static InteractionMap Get(int key, int subKey, Type type, out Random rand)
         {
             TileNodeSet map;
             rand = new Random(key);
@@ -246,7 +247,14 @@ namespace ExNihilo.Systems.Game
                 CleanWallBits(set);
             }
 
-            return set;
+            //Add containers
+            var imap = new InteractionMap(new TypeMatrix(set));
+            for (int i = 0; i < 12; i++)
+            {
+                var pos = imap.GetAnyFreeFloor(rand);
+                imap.OverwriteTile(pos.X, pos.Y, Tile.Box);
+            }
+            return imap;
         }
     }
 }

@@ -46,28 +46,28 @@ namespace ExNihilo.Systems.Game
 
         private async void GenerateLevel(GameContainer g, int slot, int level)
         {
-            Tuple<InteractionMap, Texture2D> DoAll()
+            (InteractionMap, Texture2D) DoAll()
             {
-                var m = new InteractionMap(new TypeMatrix(MapGenerator.Get(_seed, level, _genType, out var rand)));
+                var m = MapGenerator.Get(_seed, level, _genType, out var rand);
                 var wall = _wallTextureMapSet[rand.Next(_wallTextureMapSet.Length)];
                 var floor = _floorTextureMapSet is null ? wall : _floorTextureMapSet[rand.Next(_floorTextureMapSet.Length)];
-                var other = _otherTextureMapSet?[rand.Next(_otherTextureMapSet.Length)];
-                var t = MapStitcher.StitchMap(_graphics, m.Map, rand, wall, floor, other);
-                return Tuple.Create(m, t);
+                var other = _otherTextureMapSet is null ? wall : _otherTextureMapSet[rand.Next(_otherTextureMapSet.Length)];
+                var t = MapStitcher.StitchMap(_graphics, m, level, rand, wall, floor, other);
+                return (m, t);
             }
-            var levelSet = await Task.Run(() => DoAll());
+            var (map, tex) = await Task.Run(() => DoAll());
 
             if (slot == -1)
             {
                 //Main floor
-                Map = levelSet.Item1;
-                WorldTexture = levelSet.Item2;
+                Map = map;
+                WorldTexture = tex;
             }
             else
             {
                 //Sub floors
-                _subLevelMaps[slot] = levelSet.Item1;
-                _subLevelTextures[slot] = levelSet.Item2;
+                _subLevelMaps[slot] = map;
+                _subLevelTextures[slot] = tex;
             }
 
             lock (_fLock)
@@ -175,25 +175,16 @@ namespace ExNihilo.Systems.Game
             {
                 //Parallax -> offset from center of main map applied to sub maps with reduction
                 var thing = CurrentWorldPosition - PlayerOverlay.PlayerCenterScreen;
-                var pos = PlayerOverlay.PlayerCenterScreen + new Coordinate(thing.X / (i + 2), thing.Y / (i + 2));
-                var value = 1.0f/(i+2);
+                var value = 2.0f / (i + 3); //Reduction multiplier
+                var pos = PlayerOverlay.PlayerCenterScreen + new Coordinate(value*thing.X, value*thing.Y);
                 var color = new Color(value, value, value);
-                var scale = CurrentWorldScale/(i+2);
+                var scale = value*CurrentWorldScale;
                 spriteBatch.Draw(_subLevelTextures[i], (Vector2)pos, null, color, 0, Vector2.Zero, scale, SpriteEffects.None, 0);
                 if (D.Bug) LineDrawer.DrawSquare(spriteBatch, (Vector2)pos, scale*_subLevelTextures[i].Width, scale*_subLevelTextures[i].Height, ColorScale.White);
             }
             base.Draw(spriteBatch);
             if (D.Bug) LineDrawer.DrawSquare(spriteBatch, CurrentWorldPosition, CurrentWorldScale * WorldTexture.Width, CurrentWorldScale * WorldTexture.Height, ColorScale.White);
-        }
-
-        public override void DrawOverlays(SpriteBatch spriteBatch)
-        {
-            base.DrawOverlays(spriteBatch);
-        }
-
-        public override void ApplyPush(Coordinate push, float mult, bool ignoreWalls=false)
-        {
-            base.ApplyPush(push, mult, ignoreWalls);
+            Map.DrawBoxes(spriteBatch, CurrentWorldPosition, TileSize, CurrentWorldScale);
         }
 
         // **********Params and Commands*************

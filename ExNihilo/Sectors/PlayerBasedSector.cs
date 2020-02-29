@@ -144,7 +144,7 @@ namespace ExNihilo.Sectors
                 switch (obj)
                 {
                     case MenuInteractive menu:
-                        _menuPoint = menu.InteractionMenu;
+                        _menuPoint = menu.Access();
                         _menuPoint?.Enter(_lastMousePosition);
                         if (_menuActive) _world.Halt();
                         break;

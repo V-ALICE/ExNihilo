@@ -1,8 +1,10 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using ExNihilo.Systems.Bases;
 using ExNihilo.Util;
 using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Graphics;
 
 namespace ExNihilo.Systems.Backend
 {
@@ -10,7 +12,7 @@ namespace ExNihilo.Systems.Backend
     {
         public enum Type: byte
         {
-            None, Wall, Ground, Stairs
+            None, Wall, Ground, Stairs, Box
         }
 
         public readonly int X, Y;
@@ -56,23 +58,46 @@ namespace ExNihilo.Systems.Backend
             if (x < 0 || y < 0 || x >= X || y >= Y) return Type.None;
             return Map[y][x];
         }
+
+        public void Force(int x, int y, Type type)
+        {
+            //This should be used sparingly
+            if (x < 0 || y < 0 || x >= X || y >= Y) return;
+            Map[y][x] = type;
+        }
+
+        public bool IsFreeFloor(int x, int y)
+        {
+            //A free floor is a floor that is surrounded by 8 other floor tiles
+            //AKA a tile that can be replaced with a wall with no issue guaranteed 
+            for (int i = -1; i <= 1; i++)
+            {
+                for (int j = -1; j <= 1; j++)
+                {
+                    if (Get(x + i, y + j) != Type.Ground) return false;
+                }
+            }
+
+            return true;
+        }
     }
 
     public class InteractionMap
     {
         public readonly TypeMatrix Map;
         private readonly Interactive[][] _interactive;
-        private int _x => Map.X;
-        private int _y => Map.Y;
+        private readonly List<Coordinate> _boxes = new List<Coordinate>();
+        private int X => Map.X;
+        private int Y => Map.Y;
 
         public InteractionMap(TypeMatrix mapIndex)
         {
             Map = mapIndex;
-            _interactive = new Interactive[_y][];
-            for (int i = 0; i < _y; i++)
+            _interactive = new Interactive[Y][];
+            for (int i = 0; i < Y; i++)
             {
-                _interactive[i] = new Interactive[_x];
-                for (int j = 0; j < _x; j++)
+                _interactive[i] = new Interactive[X];
+                for (int j = 0; j < X; j++)
                 {
                     _interactive[i][j] = null;
                 }
@@ -82,38 +107,79 @@ namespace ExNihilo.Systems.Backend
         public InteractionMap(string fileName)
         {
             Map = new TypeMatrix(fileName);
-            _interactive = new Interactive[_y][];
-            for (int i = 0; i < _y; i++)
+            _interactive = new Interactive[Y][];
+            for (int i = 0; i < Y; i++)
             {
-                _interactive[i] = new Interactive[_x];
-                for (int j = 0; j < _x; j++)
+                _interactive[i] = new Interactive[X];
+                for (int j = 0; j < X; j++)
                 {
                     _interactive[i][j] = null;
                 }
             }
         }
 
-        public Coordinate GetAnyFloor(Random rand)
+        public void OverwriteTile(int x, int y, TypeMatrix.Type type)
         {
-            //TODO: this can get unlucky and spin for a long time potentially, find a better way to do it
+            Map.Force(x, y, type);
+        }
+
+        public Coordinate GetAnyFreeFloor(Random rand)
+        {
+            var list = new List<int>();
             while (true)
             {
-                var x = rand.Next(_x);
-                var y = rand.Next(_y);
-                var t = Map.Get(x, y);
-                if (t == TypeMatrix.Type.Ground) return new Coordinate(x, y);
+                list.Clear();
+                var row = rand.Next(Y);
+                for (int i = 0; i < X; i++)
+                {
+                    if (Map.IsFreeFloor(row, i) && GetInteractive(row, i) is null) list.Add(i);
+                }
+
+                if (list.Count > 0) return new Coordinate(row, list[rand.Next(list.Count)]);
+            }
+        }
+        public Coordinate GetAnyFloor(Random rand)
+        {
+            var list = new List<int>();
+            while (true)
+            {
+                list.Clear();
+                var row = rand.Next(Y);
+                for (int i = 0; i < X; i++)
+                {
+                    if (Map.Get(row, i) == TypeMatrix.Type.Ground) list.Add(i);
+                }
+
+                if (list.Count > 0) return new Coordinate(row, list[rand.Next(list.Count)]);
             }
         }
 
         public void AddInteractive(Interactive obj, int x, int y, int width, int height)
         {
             //starts from top left
-            for (int i = y; i < y+height && i < _y && i >= 0; i++)
+            for (int i = y; i < y+height && i < Y && i >= 0; i++)
             {
-                for (int j = x; j < x+width && j < _x && j >= 0; j++)
+                for (int j = x; j < x+width && j < X && j >= 0; j++)
                 {
                     _interactive[i][j] = obj;
                 }
+            }
+        }
+
+        public void AddBox(BoxInteractive box, int x, int y)
+        {
+            AddInteractive(box, x, y, 1, 1);
+
+            _boxes.Add(new Coordinate(x, y));
+        }
+
+        public void DrawBoxes(SpriteBatch spriteBatch, Vector2 offset, int tileSize, float scale)
+        {
+            foreach (var b in _boxes)
+            {
+                var box = _interactive[b.Y][b.X] as BoxInteractive;
+                if (box is null) continue;
+                spriteBatch.Draw(box.GetTexture(), scale*tileSize * b + offset, null, Color.White, 0, Vector2.Zero, scale, SpriteEffects.None, 0);
             }
         }
 
@@ -124,9 +190,9 @@ namespace ExNihilo.Systems.Backend
             var maxX = MathD.RoundDown((scaledHitBoxOffsetFromWorld.X + scaledHitBox.X) / scaledTileSize);
             var maxY = MathD.RoundDown((scaledHitBoxOffsetFromWorld.Y + scaledHitBox.Y) / scaledTileSize);
 
-            for (int i = minY; i <= maxY && i < _y && i >= 0; i++)
+            for (int i = minY; i <= maxY && i < Y && i >= 0; i++)
             {
-                for (int j = minX; j <= maxX && j < _x && j >= 0; j++)
+                for (int j = minX; j <= maxX && j < X && j >= 0; j++)
                 {
                     var tile = Map.Get(j, i);
                     if (tile != TypeMatrix.Type.Ground && tile != TypeMatrix.Type.Stairs) return true;
@@ -140,13 +206,13 @@ namespace ExNihilo.Systems.Backend
         {
             var x = MathD.RoundDown(offsetFromWorld.X / scaledTileSize);
             var y = MathD.RoundDown(offsetFromWorld.Y / scaledTileSize);
-
+            //TODO: this might not work correctly
             for (int i = y - radius; i <= y + radius; i++)
             {
-                if (i >= _y || i < 0) continue;
-                for (int j = x - radius; j <= x + radius && j < _x && j >= 0; j++)
+                if (i >= Y || i < 0) continue;
+                for (int j = x - radius; j <= x + radius && j < X && j >= 0; j++)
                 {
-                    if (j >= _x || j < 0) continue;
+                    if (j >= X || j < 0) continue;
                     if (_interactive[i][j] != null) return _interactive[i][j];
                 }
             }
@@ -154,5 +220,9 @@ namespace ExNihilo.Systems.Backend
             return null;
         }
 
+        public Interactive GetInteractive(int x, int y)
+        {
+            return _interactive[y][x];
+        }
     }
 }
