@@ -1,4 +1,5 @@
 ﻿using ExNihilo.Entity;
+using ExNihilo.Menus;
 using ExNihilo.Systems.Backend;
 using ExNihilo.Systems.Game;
 using ExNihilo.Util;
@@ -26,9 +27,16 @@ namespace ExNihilo.Sectors
             _world = new Level();
         }
 
+        public override void OnResize(GraphicsDevice graphicsDevice, Coordinate gameWindow)
+        {
+            base.OnResize(graphicsDevice, gameWindow);
+            if (!(_menuPoint is BoxMenu)) BoxMenu.Menu.OnResize(graphicsDevice, gameWindow);
+        }
+
         public override void Enter(Point point, Coordinate gameWindow)
         {
             _invRef.SetReference(Player);
+            BoxMenu.Menu.SetReference(Player);
             base.Enter(point, gameWindow);
         }
 

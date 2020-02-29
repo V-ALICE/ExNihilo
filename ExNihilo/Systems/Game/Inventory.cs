@@ -197,6 +197,20 @@ namespace ExNihilo.Systems.Game
             Dirty = true;
             return true;
         }
+        public ItemInstance TryAddItem(ItemInstance item, int slot)
+        {
+            var oldItem = Items[slot];
+            if (item is InstantInstance inst)
+            {
+                inst.Trigger(this);
+                return oldItem;
+            }
+
+            Items[slot] = item;
+
+            Dirty = true;
+            return oldItem;
+        }
 
         public bool CanRestoreTrashedItem()
         {
@@ -232,6 +246,11 @@ namespace ExNihilo.Systems.Game
             }
 
             Dirty = true;
+        }
+        public void RemoveItem(ItemInstance item)
+        {
+            if (item is InstantInstance) return;
+            _lastTrashedItem = item;
         }
 
         public bool CanGrabItem(int heldSlot, bool heldEquipSlot)

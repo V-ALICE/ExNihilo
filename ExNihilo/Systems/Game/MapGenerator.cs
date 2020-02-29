@@ -249,7 +249,8 @@ namespace ExNihilo.Systems.Game
 
             //Add containers
             var imap = new InteractionMap(new TypeMatrix(set));
-            for (int i = 0; i < 12; i++)
+            var boxCount = rand.Next(10, 16);
+            for (int i = 0; i < boxCount; i++)
             {
                 var pos = imap.GetAnyFreeFloor(rand);
                 imap.OverwriteTile(pos.X, pos.Y, Tile.Box);

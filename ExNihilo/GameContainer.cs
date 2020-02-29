@@ -7,6 +7,7 @@ using System.Windows.Forms;
 using ExNihilo.Entity;
 using ExNihilo.Input.Commands;
 using ExNihilo.Input.Controllers;
+using ExNihilo.Menus;
 using ExNihilo.Sectors;
 using ExNihilo.Systems;
 using ExNihilo.Systems.Backend;
@@ -167,7 +168,7 @@ namespace ExNihilo
             _frameTimeID = UniversalTime.NewTimer(true, 1.5);
             TextureLibrary.LoadRuleSets();
             UniversalTime.TurnOnTimer(SystemClockID, _frameTimeID);
-
+            
             ColorScale.AddToGlobal("Random", new ColorScale(2f, 32, 222));
             ColorScale.LoadColors("COLOR.info");
 
@@ -191,6 +192,7 @@ namespace ExNihilo
                 {SectorID.Loading, new LoadingSector(this) }
             };
             foreach (var sector in _sectorDirectory.Values) sector?.Initialize();
+            BoxMenu.CreateMenu(this);
             Asura.Ascend(this, _sectorDirectory[SectorID.Void] as VoidSector, _sectorDirectory[SectorID.Outerworld] as OuterworldSector);
 
             base.Initialize();
@@ -231,6 +233,7 @@ namespace ExNihilo
             Console.LoadContent(GraphicsDevice, Content);
 
             _mouseTexture = Content.Load<Texture2D>("UI/CURSOR");
+            BoxMenu.Menu.LoadContent(GraphicsDevice, Content);
 
             AudioManager.Initialize(Content);
 

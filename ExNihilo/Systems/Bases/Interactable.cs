@@ -35,24 +35,26 @@ namespace ExNihilo.Systems.Bases
 
     public class BoxInteractive : MenuInteractive
     {
-        private const int _containerSize = 7, _slotFillChance = 30;
+        public const int ContainerSize = 7;
+        private const int _slotFillChance = 40;
         private readonly Texture2D _closed, _open;
-        private readonly ItemInstance[] _contents = new ItemInstance[_containerSize];
+        public readonly ItemInstance[] Contents = new ItemInstance[ContainerSize];
         private bool _opened;
 
         public BoxInteractive(string name, Texture2D open, Texture2D closed, Random rand, int floor) : base(name, BoxMenu.Menu)
         {
             _closed = closed;
             _open = open;
-            for (int i = 0; i < _contents.Length; i++)
+            var guaranteed = rand.Next(Contents.Length);
+            for (int i = 0; i < Contents.Length; i++)
             {
-                if (MathD.Chance(rand, _slotFillChance))
+                if (i==guaranteed || MathD.Chance(rand, _slotFillChance))
                 {
-                    _contents[i] = ItemLoader.GetItem(rand, floor);
+                    Contents[i] = ItemLoader.GetItem(rand, floor);
                 }
                 else
                 {
-                    _contents[i] = null;
+                    Contents[i] = null;
                 }
             }
         }
