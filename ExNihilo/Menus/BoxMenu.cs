@@ -114,9 +114,6 @@ namespace ExNihilo.Menus
         private int _lastTextSlot = -1, _iconRefSize;
         private const int _descCharLen = 30;
 
-        //TODO: make new 2x3 item box for UI element for these
-        //TODO: make another button besides escape to close menus
-
         private BoxMenu(GameContainer container) : base(container)
         {
             _panelUI = new UIPanel("this.MenuKing", new Vector2(0.5f, 0.5f), Vector2.One, Position.Center);
