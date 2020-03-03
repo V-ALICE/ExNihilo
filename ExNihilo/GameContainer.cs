@@ -49,6 +49,7 @@ namespace ExNihilo
         private Point _lastMousePosition;
 
         public PlayerEntityContainer Player => ((OuterworldSector)_sectorDirectory[SectorID.Outerworld]).Player;
+        //public 
        
         public static ConsoleHandler Console { get; private set; }
         public SectorID PreviousSectorID;
@@ -168,7 +169,8 @@ namespace ExNihilo
             _frameTimeID = UniversalTime.NewTimer(true, 1.5);
             TextureLibrary.LoadRuleSets();
             UniversalTime.TurnOnTimer(SystemClockID, _frameTimeID);
-            NetworkManager.Initialize(3, 10, 15, 1, 0.01f);
+            NetworkManager.Initialize(3, 10, 10, 1, 0.01, UpdateNetwork, NetworkLinker.OnDisconnect);
+            NetworkLinker.Initialize(this);
             
             ColorScale.AddToGlobal("Random", new ColorScale(2f, 32, 222));
             ColorScale.LoadColors("COLOR.info");
@@ -269,23 +271,30 @@ namespace ExNihilo
             else if (tmp.LeftUp) ActiveSector?.OnLeftRelease(tmp.MousePosition);
         }
 
+        private void UpdateNetwork()
+        {
+            //TODO: send info about player states, entity states, etc. to all connections
+        }
+
         protected override void Update(GameTime gameTime)
         {
-            UniversalTime.Update(gameTime);
-            ColorScale.UpdateGlobalScales();
-            ParticleBackdrop.Update();
-            Console.Update();
+            UniversalTime.Update(gameTime);  //Update game timers
+            ColorScale.UpdateGlobalScales(); //Update dynamic colors
+            ParticleBackdrop.Update();       //Update dynamic particles
+            Console.Update();                //Update console window (for message timeouts etc.)
+            NetworkManager.Update(gameTime.ElapsedGameTime.TotalSeconds, NetworkLinker.InterpretIncomingMessage);
+
             if (IsActive)
             {
-                //Don't listen to the keyboard/mouse if the game isn't focused
-                UpdateMouse();
-                _superHandler.UpdateInput();
-                TypingKeyboard.GetText();
-                if (!TypingKeyboard.Active) _handler.UpdateInput();
+                //Only listen to the keyboard/mouse if the game is focused
+                UpdateMouse();               //Update mouse position/state
+                _superHandler.UpdateInput(); //Check for baseline game keypress (like F1)
+                TypingKeyboard.GetText();    //Check what keys are being pressed
+                if (!TypingKeyboard.Active) _handler.UpdateInput(); //Check for main game keypress if user isn't typing something
             }
-            ActiveSector?.Update();
 
-            base.Update(gameTime);
+            ActiveSector?.Update(); //Call update on whatever sector is currently running
+            base.Update(gameTime);  //Call baseline update last
         }
 
         protected void DrawDebugInfo(SpriteBatch spriteBatch)
@@ -387,75 +396,21 @@ namespace ExNihilo
 
         public async void GLOBAL_DEBUG_COMMAND(string input)
         {
-            void DoClient()
+            if (input == "host")
             {
-                Console.ForceMessage("<Asura>", "Connecting to host", Color.Purple, Color.White);
-                if (!NetworkManager.ConnectToHost("test", "127.0.0.1", 14444))
-                {
-                    Console.ForceMessage("<error>", NetworkManager.GetErrorAndClear(), Color.DarkRed, Color.White);
-                    return;
-                }
-
-                Console.ForceMessage("<Asura>", NetworkManager.LastNotice + " Waiting for host message", Color.Purple, Color.White);
-                int code;
-                do
-                {
-                    Thread.Sleep(100);
-                    code = NetworkManager.Update(0.1, NetworkLinker.InterpretIncomingMessage);
-                } while (code == 0);
-
-                if (code < 0)
-                {
-                    Console.ForceMessage("<error>", "Error " + code + ": " + NetworkManager.GetErrorAndClear(), Color.DarkRed, Color.White);
-                    return;
-                }
-
-                Console.ForceMessage("<Asura>", "Sending reply", Color.Purple, Color.White);
-                NetworkManager.SendMessage((short)NetworkLinker.NetworkMessageType.SayHello, "Hello again!");
-            }
-
-            void DoHost()
-            {
+                Console.ForceMessage("<Asura>", "Starting host", Color.Purple, Color.White);
                 if (!NetworkManager.StartNewHost("test", 14444))
                 {
                     Console.ForceMessage("<error>", NetworkManager.GetErrorAndClear(), Color.DarkRed, Color.White);
-                    return;
                 }
-
-                Console.ForceMessage("<Asura>", "Waiting for client connection", Color.Purple, Color.White);
-                while (!NetworkManager.Connected)
-                {
-                    NetworkManager.Update(0.1, NetworkLinker.InterpretIncomingMessage);
-                    Thread.Sleep(100);
-                }
-
-                Console.ForceMessage("<Asura>", NetworkManager.LastNotice + " Sending message", Color.Purple, Color.White);
-                NetworkManager.SendMessage(NetworkLinker.SayHelloMessage);
-
-                Console.ForceMessage("<Asura>", "Waiting for client reply", Color.Purple, Color.White);
-                int code;
-                do
-                {
-                    Thread.Sleep(100);
-                    code = NetworkManager.Update(0.1, NetworkLinker.InterpretIncomingMessage);
-                } while (code == 0);
-
-                if (code < 0)
-                {
-                    Console.ForceMessage("<error>", "Error " + code + ": " + NetworkManager.GetErrorAndClear(), Color.DarkRed, Color.White);
-                    return;
-                }
-
-                Console.ForceMessage("<Asura>", "Received reply", Color.Purple, Color.White);
             }
-
-            if (input == "host")
+            else if (input == "client")
             {
-                await Task.Run(() => DoHost());
-            }
-            else
-            {
-                await Task.Run(() => DoClient());
+                Console.ForceMessage("<Asura>", "Starting client", Color.Purple, Color.White);
+                if (!NetworkManager.ConnectToHost("test", "127.0.0.1", 14444))
+                {
+                    Console.ForceMessage("<error>", NetworkManager.GetErrorAndClear(), Color.DarkRed, Color.White);
+                }
             }
         }
     }

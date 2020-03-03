@@ -252,14 +252,18 @@ namespace ExNihilo.Systems.Backend
             TypingKeyboard.Unlock(this);
         }
 
-        public void PushConsole(bool loading, string name="Player")
+        public void PushConsole(bool loading, string name="Console")
         {
             if (_activeText.StartsWith("/"))
             {
                 if (loading) ForceMessage("<error>", "Cannot execute commands during loading sequence", Color.DarkRed, Color.White);
                 else Asura.Handle(_activeText);
             }
-            else if (_activeText.Length != 0) _console.AddMessage("<"+name+">", _activeText, Color.DeepSkyBlue, Color.White);
+            else if (_activeText.Length != 0)
+            {
+                _console.AddMessage("<"+name+">", _activeText, Color.DeepSkyBlue, Color.White);
+                NetworkManager.SendMessage(_activeText, NetworkLinker.ConsoleMessage);
+            }
 
             CloseConsole();
             _lastMessage = _activeText;

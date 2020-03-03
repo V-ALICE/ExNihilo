@@ -16,7 +16,6 @@ namespace ExNihilo.Systems.Game
     {
         protected readonly List<Tuple<AnimatableTexture, Vector2>> Overlays;
         protected readonly ScaleRuleSet WorldRules = TextureLibrary.DefaultScaleRuleSet;
-        protected PlayerOverlay PlayerOverlay;
         protected readonly int TimerID;
         protected int TileSize;
         protected float CurrentWorldScale;
@@ -25,6 +24,9 @@ namespace ExNihilo.Systems.Game
         protected Texture2D WorldTexture;
         protected Vector2 CurrentWorldPosition;
         protected bool ResetWorldPos;
+
+        protected PlayerOverlay PlayerOverlay;
+        protected readonly List<PlayerOverlay> OtherPlayerOverlays;
 
         public World(int tileSize)
         {
@@ -35,6 +37,7 @@ namespace ExNihilo.Systems.Game
             Overlays = new List<Tuple<AnimatableTexture, Vector2>>();
             PlayerCustomHitBox = new Coordinate();
             PlayerOverlay = null;
+            OtherPlayerOverlays = new List<PlayerOverlay>();
             TimerID = UniversalTime.NewTimer(false);
             UniversalTime.TurnOnTimer(TimerID);
         }
@@ -50,8 +53,8 @@ namespace ExNihilo.Systems.Game
         public void SwapEntity(EntityContainer entity)
         {
             if (entity is null) return;
-            if (PlayerOverlay is null) PlayerOverlay = new PlayerOverlay(entity);
-            else PlayerOverlay.ForceTexture(entity);
+            if (PlayerOverlay is null) PlayerOverlay = new PlayerOverlay(entity, true);
+            else PlayerOverlay.ForceEntityRef(entity);
         }
         public virtual void Reset(EntityContainer entity, Coordinate hitBox, Coordinate hitBoxOffset)
         {
