@@ -13,7 +13,7 @@ namespace ExNihilo.Systems.Backend
         {
             public long UserID;
             public double TimeSinceLastHeartbeat;
-            public double LastPingTime;
+            public float LastPingTime;
 
             public static double operator +(ClientInfoPackage me, double add)
             {
@@ -39,9 +39,9 @@ namespace ExNihilo.Systems.Backend
         private static NetPeer Connection => _hosting ? (NetPeer) _host : (NetPeer) _client;
 
         private static long _myUniqueID;
-        private static bool _hosting;
-        private static double _heartbeatTimer, _sendHeartbeatTimer, _updateTimer;
-        private static double _lastPingTime;
+        private static bool _hosting, _connecting;
+        private static double _heartbeatTimer, _sendHeartbeatTimer, _updateTimer, _connectionTimer;
+        private static float _lastPingTime;
         private static NetServer _host;
         private static NetClient _client;
         private static List<ClientInfoPackage> _link;
@@ -82,9 +82,9 @@ namespace ExNihilo.Systems.Backend
             Connection?.Shutdown("bye");
             _host = null;
             _client = null;
-            _hosting = false;
+            _hosting = _connecting = false;
             _myUniqueID = 0;
-            _heartbeatTimer = _sendHeartbeatTimer = _updateTimer = 0;
+            _heartbeatTimer = _sendHeartbeatTimer = _updateTimer = _connectionTimer = 0;
             _lastPingTime = 0;
             _link = new List<ClientInfoPackage>(_maxConnections);
         }
@@ -119,7 +119,7 @@ namespace ExNihilo.Systems.Backend
         {
             if (Active) CloseConnections();
 
-            var config = new NetPeerConfiguration(name) {ConnectionTimeout = _connectionTimeout};
+            var config = new NetPeerConfiguration(name);
             //config.AutoFlushSendQueue = false;
             _hosting = false;
 
@@ -130,6 +130,8 @@ namespace ExNihilo.Systems.Backend
 
                 var hail = _client.CreateMessage("HAIL");
                 _client.Connect(hostIP, port, hail);
+
+                _connecting = true;
             }
             catch (NetException e)
             {
@@ -164,15 +166,15 @@ namespace ExNihilo.Systems.Backend
             return error;
         }
 
-        private static short HandleBasicMessage(NetIncomingMessage message, short id, double time)
+        private static short HandleBasicMessage(NetIncomingMessage message)
         {
+            var id = message.PeekInt16();
             if (id == (short) BasicMessageTypes.UniqueID)
             {
                 if (_hosting)
                 {
                     //Client is asking for uniqueID
                     var msg = _host.CreateMessage();
-                    msg.WriteTime(false);
                     msg.Write((short)BasicMessageTypes.UniqueID);
                     msg.Write(message.SenderConnection.RemoteUniqueIdentifier);
                     _host.SendMessage(msg, message.SenderConnection, NetDeliveryMethod.ReliableOrdered);
@@ -201,14 +203,14 @@ namespace ExNihilo.Systems.Backend
                     else
                     {
                         client.TimeSinceLastHeartbeat = 0;
-                        client.LastPingTime = time;
+                        client.LastPingTime = message.SenderConnection.AverageRoundtripTime;
                     }
                 }
                 else
                 {
                     //Heartbeat from host
                     _heartbeatTimer = 0;
-                    _lastPingTime = time;
+                    _lastPingTime = message.SenderConnection.AverageRoundtripTime;
                 }
 
                 return id;
@@ -220,6 +222,19 @@ namespace ExNihilo.Systems.Backend
         private static int HandleTimerChecks(double elapsedTimeSec)
         {
             if (!Active) return -1;
+
+            if (_connecting)
+            {
+                _connectionTimer += elapsedTimeSec;
+                if (_connectionTimer > _connectionTimeout)
+                {
+                    //Failed to connect to host in time
+                    LastError = "Timed out attempting to connect to host";
+                    CloseConnections();
+                    return -1;
+                }
+            }
+
             if (!Connected) return 0;
 
             //Check for heartbeat timeout for connections
@@ -241,9 +256,9 @@ namespace ExNihilo.Systems.Backend
                 if (_heartbeatTimer > _heartbeatTimeout)
                 {
                     //Lost Connection to Host
-                    CloseConnections();
                     LastError = "Lost connection to host";
-                    return -4;
+                    CloseConnections();                  
+                    return -1;
                 }
             }
 
@@ -253,7 +268,6 @@ namespace ExNihilo.Systems.Backend
             {
                 //Send heartbeat
                 var msg = Connection.CreateMessage();
-                msg.WriteTime(false);
                 msg.Write((short)BasicMessageTypes.Heartbeat);
                 if (_hosting) _host.SendToAll(msg, NetDeliveryMethod.ReliableOrdered);
                 else _client.SendMessage(msg, NetDeliveryMethod.ReliableOrdered);
@@ -262,7 +276,6 @@ namespace ExNihilo.Systems.Backend
                 {
                     //Still waiting for UniqueID. Request again
                     var msg2 = _client.CreateMessage();
-                    msg2.WriteTime(false);
                     msg2.Write((short)BasicMessageTypes.UniqueID);
                     _client.SendMessage(msg2, NetDeliveryMethod.ReliableOrdered);
                 }
@@ -305,9 +318,8 @@ namespace ExNihilo.Systems.Backend
                         LastError = message.ReadString();
                         break;
                     case NetIncomingMessageType.Data:
-                        var time = message.ReadTime(false) - message.ReceiveTime;
                         var messageID = message.PeekInt16();
-                        if (HandleBasicMessage(message, messageID, time) != 0) break;
+                        if (HandleBasicMessage(message) != 0) break;
                         if (output.Invoke(message)) anyDataReceived++;
                         else LastError = "Failed to read unknown message with ID " + messageID;
                         break;
@@ -324,7 +336,6 @@ namespace ExNihilo.Systems.Backend
 
                                     //Send connection their UniqueID
                                     var msg = _host.CreateMessage();
-                                    msg.WriteTime(false);
                                     msg.Write((short)BasicMessageTypes.UniqueID);
                                     msg.Write(message.SenderConnection.RemoteUniqueIdentifier);
                                     _host.SendMessage(msg, message.SenderConnection, NetDeliveryMethod.ReliableOrdered);
@@ -333,20 +344,32 @@ namespace ExNihilo.Systems.Backend
                                 {
                                     //Record host link
                                     LastNotice = "Connected to host";
+                                    _connecting = false;
                                 }
 
                                 break;
                             case NetConnectionStatus.Disconnecting:
                             case NetConnectionStatus.Disconnected:
-                                if (!_hosting) break;
-
-                                //Remove disconnected client from links
-                                LastNotice = "Client with ID " + connectionID + " has disconnected";
-                                for (int i = _link.Count - 1; i >= 0; i--)
+                                if (_hosting)
                                 {
-                                    if (_link[i].UserID == connectionID) _link.RemoveAt(i);
-                                }
+                                    //Remove disconnected client from links
+                                    LastNotice = "Client with ID " + connectionID + " has disconnected";
+                                    for (int i = _link.Count - 1; i >= 0; i--)
+                                    {
+                                        if (_link[i].UserID == connectionID) _link.RemoveAt(i);
+                                    }
 
+                                    if (_link.Count == 0)
+                                    {
+                                        LastNotice = "All clients have disconnected. Shutting down host";
+                                        CloseConnections();
+                                    }
+                                }
+                                else
+                                {
+                                    LastNotice = "Disconnected from the host";
+                                    CloseConnections();
+                                }
                                 break;
                         }
 
@@ -363,7 +386,6 @@ namespace ExNihilo.Systems.Backend
         {
             //if (!Connected) return;
             var message = Connection.CreateMessage();
-            message.WriteTime(false);
             filler.Invoke(message);
             if (_hosting) _host.SendToAll(message, NetDeliveryMethod.ReliableOrdered);
             else _client.SendMessage(message, NetDeliveryMethod.ReliableOrdered);
@@ -374,7 +396,6 @@ namespace ExNihilo.Systems.Backend
         {
             //if (!Connected) return;
             var message = Connection.CreateMessage();
-            message.WriteTime(false);
             message.Write(id);
             message.Write(data);
             if (_hosting) _host.SendToAll(message, NetDeliveryMethod.ReliableOrdered);
