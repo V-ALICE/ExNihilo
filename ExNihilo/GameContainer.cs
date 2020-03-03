@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Drawing;
+using System.Threading;
+using System.Threading.Tasks;
 using System.Windows.Forms;
 using ExNihilo.Entity;
 using ExNihilo.Input.Commands;
@@ -35,7 +37,7 @@ namespace ExNihilo
         private FormWindowState _currentForm;
         private float _mouseScale;
         private int _frameTimeID;
-        private int _currentFrameCount, _currentFrameRate;
+        private int _currentFrameCount, _currentFrameRate, _currentPing=-1;
         private readonly GraphicsDeviceManager _graphics;
         private Coordinate _windowSize;
         private Vector2 _mouseDrawPos;
@@ -166,6 +168,7 @@ namespace ExNihilo
             _frameTimeID = UniversalTime.NewTimer(true, 1.5);
             TextureLibrary.LoadRuleSets();
             UniversalTime.TurnOnTimer(SystemClockID, _frameTimeID);
+            NetworkManager.Initialize(3, 10, 15, 1, 0.01f);
             
             ColorScale.AddToGlobal("Random", new ColorScale(2f, 32, 222));
             ColorScale.LoadColors("COLOR.info");
@@ -238,13 +241,14 @@ namespace ExNihilo
             base.LoadContent();
         }
 
-        private void UpdateFPS()
+        private void UpdateFrameRateAndPing()
         {
             _currentFrameCount++;
             if (UniversalTime.GetNumberOfFires(_frameTimeID, false) > 0) //update display every 1.5 seconds
             {
                 _currentFrameRate = (int)(Math.Round(_currentFrameCount / UniversalTime.GetCurrentTime(_frameTimeID)) + double.Epsilon);
                 _currentFrameCount = 0;
+                _currentPing = (int) (1000 * NetworkManager.GetLatestPing());
                 UniversalTime.ResetTimer(_frameTimeID);
             }
         }
@@ -287,6 +291,7 @@ namespace ExNihilo
         protected void DrawDebugInfo(SpriteBatch spriteBatch)
         {
             var text = _currentFrameRate + " FPS (" + GraphicsDevice.Adapter.Description + ")";
+            if (_currentPing > 0) text += "  " + _currentPing + "ms Ping";
             TextDrawer.DrawDumbText(spriteBatch, new Coordinate(1, 1), text, 1, Color.White);
         }
 
@@ -298,7 +303,7 @@ namespace ExNihilo
             ParticleBackdrop.Draw(SpriteBatch);
             ActiveSector?.Draw(SpriteBatch, ShowDebugInfo);
 
-            UpdateFPS(); //FPS numbers are calculated based on drawn frames
+            UpdateFrameRateAndPing(); //FPS numbers are calculated based on drawn frames
             Console.Draw(SpriteBatch); //Console will handle when it should draw
             if (!IsMouseVisible) _mouseTexture.Draw(SpriteBatch, _mouseDrawPos, ColorScale.White, _mouseScale);
             if (ShowDebugInfo) DrawDebugInfo(SpriteBatch);
@@ -380,9 +385,78 @@ namespace ExNihilo
             a?.StartNewGame(floor);
         }
 
-        public void GLOBAL_DEBUG_COMMAND(string input)
+        public async void GLOBAL_DEBUG_COMMAND(string input)
         {
-            
+            void DoClient()
+            {
+                Console.ForceMessage("<Asura>", "Connecting to host", Color.Purple, Color.White);
+                if (!NetworkManager.ConnectToHost("test", "127.0.0.1", 14444))
+                {
+                    Console.ForceMessage("<error>", NetworkManager.GetErrorAndClear(), Color.DarkRed, Color.White);
+                    return;
+                }
+
+                Console.ForceMessage("<Asura>", NetworkManager.LastNotice + " Waiting for host message", Color.Purple, Color.White);
+                int code;
+                do
+                {
+                    Thread.Sleep(100);
+                    code = NetworkManager.Update(0.1, NetworkLinker.InterpretIncomingMessage);
+                } while (code == 0);
+
+                if (code < 0)
+                {
+                    Console.ForceMessage("<error>", "Error " + code + ": " + NetworkManager.GetErrorAndClear(), Color.DarkRed, Color.White);
+                    return;
+                }
+
+                Console.ForceMessage("<Asura>", "Sending reply", Color.Purple, Color.White);
+                NetworkManager.SendMessage((short)NetworkLinker.NetworkMessageType.SayHello, "Hello again!");
+            }
+
+            void DoHost()
+            {
+                if (!NetworkManager.StartNewHost("test", 14444))
+                {
+                    Console.ForceMessage("<error>", NetworkManager.GetErrorAndClear(), Color.DarkRed, Color.White);
+                    return;
+                }
+
+                Console.ForceMessage("<Asura>", "Waiting for client connection", Color.Purple, Color.White);
+                while (!NetworkManager.Connected)
+                {
+                    NetworkManager.Update(0.1, NetworkLinker.InterpretIncomingMessage);
+                    Thread.Sleep(100);
+                }
+
+                Console.ForceMessage("<Asura>", NetworkManager.LastNotice + " Sending message", Color.Purple, Color.White);
+                NetworkManager.SendMessage(NetworkLinker.SayHelloMessage);
+
+                Console.ForceMessage("<Asura>", "Waiting for client reply", Color.Purple, Color.White);
+                int code;
+                do
+                {
+                    Thread.Sleep(100);
+                    code = NetworkManager.Update(0.1, NetworkLinker.InterpretIncomingMessage);
+                } while (code == 0);
+
+                if (code < 0)
+                {
+                    Console.ForceMessage("<error>", "Error " + code + ": " + NetworkManager.GetErrorAndClear(), Color.DarkRed, Color.White);
+                    return;
+                }
+
+                Console.ForceMessage("<Asura>", "Received reply", Color.Purple, Color.White);
+            }
+
+            if (input == "host")
+            {
+                await Task.Run(() => DoHost());
+            }
+            else
+            {
+                await Task.Run(() => DoClient());
+            }
         }
     }
 }

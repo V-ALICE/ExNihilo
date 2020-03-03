@@ -97,6 +97,7 @@
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Systems\Asura.cs" />
+    <Compile Include="Systems\Backend\NetworkLinker.cs" />
     <Compile Include="Systems\Backend\NetworkManager.cs" />
     <Compile Include="Systems\Bases\Interactable.cs" />
     <Compile Include="Systems\Bases\IPlayer.cs" />
