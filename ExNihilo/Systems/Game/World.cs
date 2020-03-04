@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using ExNihilo.Entity;
 using ExNihilo.Systems.Backend;
 using ExNihilo.Systems.Bases;
@@ -93,6 +94,11 @@ namespace ExNihilo.Systems.Game
                     CurrentWorldPosition = PlayerOverlay.PlayerCenterScreen - adjustedOffset;
                 }
             }
+
+            foreach (var player in OtherPlayerOverlays)
+            {
+                player.OnResize(graphics, gameWindow);
+            }
         }
 
         public virtual void Draw(SpriteBatch spriteBatch)
@@ -103,10 +109,13 @@ namespace ExNihilo.Systems.Game
         public virtual void DrawOverlays(SpriteBatch spriteBatch)
         {
             PlayerOverlay?.Draw(spriteBatch);
-            foreach (var item in Overlays)
+            foreach (var player in OtherPlayerOverlays)
             {
-                var pos = CurrentWorldPosition + CurrentWorldScale * item.Item2;
-                item.Item1.Draw(spriteBatch, pos, ColorScale.White, CurrentWorldScale);
+                player.Draw(spriteBatch, CurrentWorldPosition, CurrentWorldScale);
+            }
+            foreach (var (tex, pos) in Overlays)
+            {
+                tex.Draw(spriteBatch, CurrentWorldPosition + CurrentWorldScale * pos, ColorScale.White, CurrentWorldScale);
             }
 
             if (D.Bug && PlayerOverlay != null)
@@ -160,6 +169,43 @@ namespace ExNihilo.Systems.Game
         {
             var offset = PlayerOverlay.PlayerCenterScreen + TextureUtilities.GetOffset(TextureUtilities.PositionType.Center, PlayerCustomHitBox) - CurrentWorldPosition;
             return Map.GetInteractive((int) (CurrentWorldScale * TileSize), offset, 1);
+        }
+
+        public void ClearPlayers()
+        {
+            OtherPlayerOverlays.Clear();
+        }
+        public List<PlayerOverlay> GetPlayers()
+        {
+            return OtherPlayerOverlays;
+        }
+
+        public void AddPlayerRef(PlayerOverlay player)
+        {
+            OtherPlayerOverlays.Add(player);
+        }
+        public void AddPlayer(string name, int[] charSet)
+        {
+            var tex = TextureUtilities.GetPlayerTexture(GameContainer.Graphics, charSet);
+            var instance = OtherPlayerOverlays.FirstOrDefault(p => p.Name == name);
+            if (instance is null)
+            {
+                OtherPlayerOverlays.Add(new PlayerOverlay(new EntityContainer(GameContainer.Graphics, name, tex), false));
+            }
+            else
+            {
+                instance.ForceEntityRef(new EntityContainer(GameContainer.Graphics, name, tex));
+            }
+        }
+        public void RemovePlayer(string name)
+        {
+            var player = OtherPlayerOverlays.FirstOrDefault(p => p.Name == name);
+            if (player != null) OtherPlayerOverlays.Remove(player);
+        }
+
+        public object[] GetStandardUpdateArray()
+        {
+            return new object[] { NetworkManager.MyUniqueID, CurrentWorldPosition.X, CurrentWorldPosition.Y, CurrentWorldScale, PlayerOverlay.GetCurrentState()};
         }
 
         public void AddOverlay(AnimatableTexture texture, int x, int y)

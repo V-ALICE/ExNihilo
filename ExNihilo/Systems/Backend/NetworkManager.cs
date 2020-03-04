@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Runtime.Remoting.Messaging;
 using System.Threading;
@@ -35,12 +36,13 @@ namespace ExNihilo.Systems.Backend
         private static double _heartbeatRate;     //How long between sending heartbeats
         private static double _hostUpdateRate;    //How long between state updates from host to clients
 
-        private static bool Active => _host != null || _client != null;
-        private static bool Connected => _client?.ConnectionStatus == NetConnectionStatus.Connected || _host?.ConnectionsCount > 0;
+        public static bool Active => _host != null || _client != null;
+        public static bool Connected => _client?.ConnectionStatus == NetConnectionStatus.Connected || _host?.ConnectionsCount > 0;
         private static NetPeer Connection => Hosting ? (NetPeer) _host : (NetPeer) _client;
 
-        public static bool Hosting;
-        private static long MyUniqueID;
+        public static bool Hosting { get; private set; }
+        public static long MyUniqueID { get; private set; }
+
         private static bool _connecting;
         private static double _heartbeatTimer, _sendHeartbeatTimer, _updateTimer, _connectionTimer;
         private static float _lastPingTime;
@@ -55,19 +57,19 @@ namespace ExNihilo.Systems.Backend
         public static string LastError
         {
             get => _lastError;
-            set
+            private set
             {
                 _lastError = value;
-                Console.WriteLine("NETWORK ERROR: " + _lastError);
+                Debug.WriteLine("NETWORK ERROR: " + _lastError);
             }
         }
         public static string LastNotice
         {
             get => _lastNotice;
-            set
+            private set
             {
                 _lastNotice = value;
-                Console.WriteLine("NETWORK NOTICE: " + _lastNotice);
+                Debug.WriteLine("NETWORK NOTICE: " + _lastNotice);
             }
         }
 
@@ -128,17 +130,14 @@ namespace ExNihilo.Systems.Backend
             if (Active) CloseConnections();
 
             var config = new NetPeerConfiguration(name);
-            //config.AutoFlushSendQueue = false;
             Hosting = false;
 
             try
             {
+                _connecting = true;
                 _client = new NetClient(config);
                 _client.Start();
-
                 _client.Connect(hostIP, port);
-
-                _connecting = true;
             }
             catch (NetException e)
             {
@@ -243,6 +242,16 @@ namespace ExNihilo.Systems.Backend
             return 0;
         }
 
+        public static void DisconnectClient(long id)
+        {
+            if (!Hosting) return;
+            var connection = _host.Connections.FirstOrDefault(c => c.RemoteUniqueIdentifier == id);
+            connection?.Disconnect("bye");
+            _onDisconnect?.Invoke(id);
+            var link = _link.FirstOrDefault(c => c.UserID == id);
+            if (link != null) _link.Remove(link);
+        }
+
         private static int HandleTimerChecks(double elapsedTimeSec)
         {
             if (!Active) return -1;
@@ -264,13 +273,19 @@ namespace ExNihilo.Systems.Backend
             //Check for heartbeat timeout for connections
             if (Hosting)
             {
-                for (int i = 0; i < _link.Count; i++)
+                for (int i = _link.Count-1; i>=0; i--)
                 {
                     if (_link[i].TimeSinceLastHeartbeat + elapsedTimeSec > _heartbeatTimeout)
                     {
                         //Lost Connection to Client
                         LastError = "Lost connection to client with ID " + _link[i].UserID;
-                        _link[i] = new ClientInfoPackage();
+                        DisconnectClient(_link[i].UserID);
+                        if (_link.Count == 0)
+                        {
+                            LastNotice = "All clients have disconnected. Shutting down host";
+                            CloseConnections();
+                            return -1;
+                        }
                     }
                 }
             }
@@ -326,6 +341,12 @@ namespace ExNihilo.Systems.Backend
 
         public static int Update(double elapsedTimeSec, Func<NetIncomingMessage, bool> output)
         {
+            if (Active && !Connected && !_connecting && !Hosting)
+            {
+                CloseConnections();
+                LastError = "Lost connection to host";
+            }
+
             var anyDataReceived = HandleTimerChecks(elapsedTimeSec);
             if (anyDataReceived != 0) return anyDataReceived;
 
@@ -415,27 +436,14 @@ namespace ExNihilo.Systems.Backend
             return anyDataReceived;
         }
         
-        public static void SendMessage(object data, Action<object, NetOutgoingMessage> filler)
+        public static void SendMessage(object[] data, Action<object[], NetOutgoingMessage> filler)
         {
-            //if (!Connected) return;
+            if (!Connected) return;
             var message = Connection.CreateMessage();
             filler.Invoke(data, message);
             if (Hosting) _host.SendToAll(message, NetDeliveryMethod.ReliableOrdered);
             else _client.SendMessage(message, NetDeliveryMethod.ReliableOrdered);
         }
 
-        public static void ForwardMessageToClients(long idToSkip, params string[] data)
-        {
-            if (!Hosting) return;
-
-            var list = _host.Connections;
-            var skip = list.FirstOrDefault(c => c.RemoteUniqueIdentifier == idToSkip);
-            if (skip != null) list.Remove(skip);
-            if (list.Count == 0) return;
-
-            var message = _host.CreateMessage();
-            foreach (var d in data) message.Write(d);
-            _host.SendMessage(message, list, NetDeliveryMethod.ReliableOrdered, 0);
-        }
     }
 }

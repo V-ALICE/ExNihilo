@@ -5,13 +5,17 @@ namespace ExNihilo.Input.Commands.Types
 {
     public class PushConsole : ConsoleCommand
     {
-        public PushConsole(ConsoleHandler game) : base(game)
+        private GameContainer _g;
+        public PushConsole(GameContainer g, ConsoleHandler game) : base(game)
         {
+            _g = g;
         }
 
         public override void Activate()
         {
-            Receiver.PushConsole(GameContainer.ActiveSectorID == GameContainer.SectorID.Loading);
+            var name = "Console";
+            if (_g.Player != null) name = _g.Player.Name + (NetworkLinker._myMiniID > 0 ? "-" + NetworkLinker._myMiniID : "");
+            Receiver.PushConsole(name, GameContainer.ActiveSectorID == GameContainer.SectorID.Loading);
         }
     }
 

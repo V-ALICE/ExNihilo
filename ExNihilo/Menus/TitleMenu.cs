@@ -161,7 +161,7 @@ namespace ExNihilo.Menus
             }
             else if (save.InVoid)
             {
-                Container.StartNewGame(save.Floor);
+                Container.StartNewGame(save.Floor, null); //How is this going to work for multiplayer
                 AudioManager.PlaySong("Void", true);
             }
             else

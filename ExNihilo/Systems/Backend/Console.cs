@@ -162,10 +162,10 @@ namespace ExNihilo.Systems.Backend
         private string _lastMessage;
         public bool Active, Ready;
 
-        public ConsoleHandler()
+        public ConsoleHandler(GameContainer g)
         {
             _handler = new CommandHandler();
-            _handler.InitializeConsole(this);
+            _handler.InitializeConsole(g, this);
             _console = new ConsoleBox(_maxLineCount, _maxCharacterCount);
             _lastMessage = "";
             _activeText = "";
@@ -252,17 +252,21 @@ namespace ExNihilo.Systems.Backend
             TypingKeyboard.Unlock(this);
         }
 
-        public void PushConsole(bool loading, string name="Console")
+        public void PushConsole(string name, bool loading)
         {
             if (_activeText.StartsWith("/"))
             {
-                if (loading) ForceMessage("<error>", "Cannot execute commands during loading sequence", Color.DarkRed, Color.White);
+                if (loading)
+                {
+                    ForceMessage("<error>", "Cannot execute commands during loading sequence", Color.DarkRed, Color.White);
+                }
                 else Asura.Handle(_activeText);
             }
             else if (_activeText.Length != 0)
             {
+                //var name = g.Player?.Name ?? "Console";
                 _console.AddMessage("<"+name+">", _activeText, Color.DeepSkyBlue, Color.White);
-                NetworkManager.SendMessage(_activeText, NetworkLinker.ConsoleMessage);
+                NetworkManager.SendMessage(new object[] { NetworkManager.MyUniqueID, _activeText}, NetworkLinker.ConsoleMessage);
             }
 
             CloseConsole();

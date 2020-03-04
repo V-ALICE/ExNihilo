@@ -14,7 +14,8 @@ namespace ExNihilo.Entity
         private readonly ScaleRuleSet _rules = TextureLibrary.HalfScaleRuleSet;
         private EntityContainer _entity;
         private float _currentScale, _baseScale;
-        private bool _useCustomPos;
+        private readonly bool _useCustomPos;
+        public string Name => _entity.Name;
 
         public Coordinate PlayerCenterScreen { get; private set; }
         public Vector2 PlayerCustomWorldPos;
@@ -70,6 +71,18 @@ namespace ExNihilo.Entity
         public void ForceEntityRef(EntityContainer entity)
         {
             _entity = entity;
+        }
+
+        public object[] GetStandardUpdateArray()
+        {
+            return new object[] { NetworkManager.MyUniqueID, PlayerCustomWorldPos.X, PlayerCustomWorldPos.Y, _baseScale, GetCurrentState() };
+        }
+        public void ForceValues(float x, float y, float scale, sbyte type)
+        {
+            PlayerCustomWorldPos.X = x;
+            PlayerCustomWorldPos.Y = y;
+            _baseScale = scale;
+            _entity.Entity.SetState((EntityTexture.State) type);
         }
     }
 }

@@ -1,4 +1,6 @@
-﻿using ExNihilo.Input.Commands;
+﻿using System.Collections.Generic;
+using ExNihilo.Entity;
+using ExNihilo.Input.Commands;
 using ExNihilo.Menus;
 using ExNihilo.Systems;
 using ExNihilo.Systems.Bases;
@@ -16,7 +18,7 @@ namespace ExNihilo.Sectors
         protected CommandHandler _playerHandler, _superPlayerHandler;
         protected Coordinate _debugPosition;
         protected Point _lastMousePosition;
-        protected World _world;
+        protected readonly World _world;
         protected bool _disableCollisions;
         protected float _systemPushSpeed = 1.0f;
 
@@ -25,8 +27,11 @@ namespace ExNihilo.Sectors
 
         protected InventoryMenu _invRef;
 
-        protected PlayerBasedSector(GameContainer container) : base(container)
+        public List<PlayerOverlay> OtherPlayers => _world.GetPlayers();
+
+        protected PlayerBasedSector(GameContainer container, World world) : base(container)
         {
+            _world = world;
         }
 
 /********************************************************************
@@ -158,6 +163,18 @@ namespace ExNihilo.Sectors
                         break;
                 }
             }
+        }
+
+        public void ClearPlayers() { _world.ClearPlayers(); }
+        public void ClearPlayers(string name) { _world.RemovePlayer(name); }
+        public void UpdatePlayers(string name, int[] charSet)
+        {
+            _world.AddPlayer(name, charSet);
+        }
+
+        public object[] GetStandardUpdateArray()
+        {
+            return _world.GetStandardUpdateArray();
         }
 
         public void ToggleCollisions(bool collisionOn)

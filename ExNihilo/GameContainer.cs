@@ -49,12 +49,14 @@ namespace ExNihilo
         private Point _lastMousePosition;
 
         public PlayerEntityContainer Player => ((OuterworldSector)_sectorDirectory[SectorID.Outerworld]).Player;
-        //public 
-       
+        public List<PlayerOverlay> OtherPlayers => ((OuterworldSector)_sectorDirectory[SectorID.Outerworld]).OtherPlayers;
+        public bool VoidIsActive => ((VoidSector) _sectorDirectory[SectorID.Void]).VoidIsActive;
+
         public static ConsoleHandler Console { get; private set; }
-        public SectorID PreviousSectorID;
+        public static GraphicsDevice Graphics { get; private set; }
         public static SectorID ActiveSectorID;
 
+        public SectorID PreviousSectorID;
         protected bool ShowDebugInfo;
         public static bool FormTouched;
         protected bool ConsoleActive => Console.Active;
@@ -155,12 +157,13 @@ namespace ExNihilo
 ********************************************************************/
         protected override void Initialize()
         {
+            Graphics = GraphicsDevice;
             ActiveSectorID = SectorID.MainMenu;
             PreviousSectorID = SectorID.MainMenu;
             _mouseScale = 1;
             _lastMousePosition = new Point();
             _mouse = new MouseController();
-            Console = new ConsoleHandler();
+            Console = new ConsoleHandler(this);
             _handler = new CommandHandler();
             _superHandler = new CommandHandler();
             _handler.InitializeBase(this);
@@ -169,8 +172,7 @@ namespace ExNihilo
             _frameTimeID = UniversalTime.NewTimer(true, 1.5);
             TextureLibrary.LoadRuleSets();
             UniversalTime.TurnOnTimer(SystemClockID, _frameTimeID);
-            NetworkManager.Initialize(3, 10, 10, 1, 0.01, UpdateNetwork, NetworkLinker.OnDisconnect);
-            NetworkLinker.Initialize(this);
+            NetworkManager.Initialize(3, 10, 5, 1, 0.01, UpdateNetwork, NetworkLinker.OnDisconnect);
             
             ColorScale.AddToGlobal("Random", new ColorScale(2f, 32, 222));
             ColorScale.LoadColors("COLOR.info");
@@ -197,6 +199,7 @@ namespace ExNihilo
             foreach (var sector in _sectorDirectory.Values) sector?.Initialize();
             BoxMenu.CreateMenu(this);
             Asura.Ascend(this, _sectorDirectory[SectorID.Void] as VoidSector, _sectorDirectory[SectorID.Outerworld] as OuterworldSector);
+            NetworkLinker.Initialize(this, _sectorDirectory[SectorID.Void] as VoidSector, _sectorDirectory[SectorID.Outerworld] as OuterworldSector);
 
             base.Initialize();
             //ForceWindowUpdate(1920, 1080);
@@ -273,7 +276,21 @@ namespace ExNihilo
 
         private void UpdateNetwork()
         {
-            //TODO: send info about player states, entity states, etc. to all connections
+            if (NetworkManager.Hosting)
+            {
+                var myData = ((OuterworldSector)_sectorDirectory[SectorID.Outerworld]).GetStandardUpdateArray();
+                NetworkManager.SendMessage(myData, NetworkLinker.StandardPlayerUpdate);
+                foreach (var player in OtherPlayers)
+                {
+                    var data = player.GetStandardUpdateArray();
+                    NetworkManager.SendMessage(data, NetworkLinker.StandardPlayerUpdate);
+                }
+            }
+            else
+            {
+                var data = ((OuterworldSector)_sectorDirectory[SectorID.Outerworld]).GetStandardUpdateArray();
+                NetworkManager.SendMessage(data, NetworkLinker.StandardPlayerUpdate);
+            }
         }
 
         protected override void Update(GameTime gameTime)
@@ -367,7 +384,7 @@ namespace ExNihilo
 
         public void Pack()
         {
-            PackedGame game = new PackedGame(this, SaveHandler.GetLastID());
+            var game = new PackedGame(this, SaveHandler.GetLastID());
             foreach (var sector in _sectorDirectory.Values) sector?.Pack(game);
             SaveHandler.Save(SaveHandler.LastLoadedFile, game);
             Console.ForceMessage("<Asura>", "Game has been saved", Color.Purple, Color.White);
@@ -387,31 +404,38 @@ namespace ExNihilo
             AudioManager.EffectVolume = param.EffectVolume;
         }
 
-        public void StartNewGame(int floor=1)
+        public void StartNewGame(int floor, List<PlayerOverlay> refList)
         {
             //This exists solely so that other sectors can tell the void to start a new game
-            var a = _sectorDirectory[SectorID.Void] as VoidSector;
-            a?.StartNewGame(floor);
+            (_sectorDirectory[SectorID.Void] as VoidSector)?.StartNewGame(floor, refList);
         }
 
         public async void GLOBAL_DEBUG_COMMAND(string input)
         {
-            if (input == "host")
+            void DoHost()
             {
                 Console.ForceMessage("<Asura>", "Starting host", Color.Purple, Color.White);
                 if (!NetworkManager.StartNewHost("test", 14444))
                 {
                     Console.ForceMessage("<error>", NetworkManager.GetErrorAndClear(), Color.DarkRed, Color.White);
                 }
+                while (!NetworkManager.Connected) { Thread.Sleep(100); }
             }
-            else if (input == "client")
+
+            void DoClient()
             {
                 Console.ForceMessage("<Asura>", "Starting client", Color.Purple, Color.White);
                 if (!NetworkManager.ConnectToHost("test", "127.0.0.1", 14444))
                 {
                     Console.ForceMessage("<error>", NetworkManager.GetErrorAndClear(), Color.DarkRed, Color.White);
                 }
+                while (!NetworkManager.Connected) { Thread.Sleep(100); }
+                NetworkManager.SendMessage(new object[]{NetworkManager.MyUniqueID, Player.Name, Player.TextureSet, NetworkLinker._myMiniID}, NetworkLinker.InitialPlayerUpdate);
             }
+
+            if (ActiveSectorID != SectorID.Outerworld) return;
+            if (input == "host") await Task.Run(() => DoHost());
+            else if (input == "client") await Task.Run(() => DoClient());
         }
     }
 }

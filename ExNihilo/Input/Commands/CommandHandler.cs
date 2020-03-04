@@ -23,10 +23,10 @@ namespace ExNihilo.Input.Commands
             _bucket = new List<KeyBlock>();
         }
 
-        public void InitializeConsole(ConsoleHandler game)
+        public void InitializeConsole(GameContainer g, ConsoleHandler game)
         {
             if (_bucket.Count > 0) return;
-            _bucket.Add(new KeyBlock(new PushConsole(game), false, Keys.Enter));
+            _bucket.Add(new KeyBlock(new PushConsole(g, game), false, Keys.Enter));
             _bucket.Add(new KeyBlock(new RememberLastMessage(game), false, Keys.Up));
             _bucket.Add(new KeyBlock(new ForgetCurrentMessage(game), false, Keys.Down));
         }

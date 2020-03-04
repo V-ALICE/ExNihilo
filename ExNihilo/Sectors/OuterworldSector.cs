@@ -21,7 +21,7 @@ namespace ExNihilo.Sectors
 
         public PlayerEntityContainer Player => _characterMenu.GetCurrentChar();
 
-        public OuterworldSector(GameContainer container) : base(container)
+        public OuterworldSector(GameContainer container) : base(container, new World(16))
         {
         }
 
@@ -57,7 +57,6 @@ namespace ExNihilo.Sectors
         public override void Initialize()
         {
             base.Initialize();
-            _world = new World(16);
             _characterMenu = new CharacterMenu(Container, _world);
             _divineMenu = new DivineMenu(Container);
             _multiplayerMenu = new MultiplayerMenu(Container);
@@ -104,7 +103,7 @@ namespace ExNihilo.Sectors
                 if (ReferenceEquals(_menuPoint, _voidMenu) && _voidMenu.Confirmed) //TODO: this is a dumb way to detect this
                 {
                     _voidMenu.BackOut();
-                    Container.StartNewGame();
+                    Container.StartNewGame(1, OtherPlayers);
                 }
 
                 if (_menuPoint.Dead)

@@ -104,6 +104,9 @@ namespace ExNihilo.Menus
             _world.SwapEntity(_chars[_currentChar]);
             (_panelUI.GetElement("ChangeCharButton") as UIClickable)?.Disable(ColorScale.Grey);
             Container.Pack(); //Save game
+
+            var c = GetCurrentChar();
+            NetworkManager.SendMessage(new object[] { NetworkManager.MyUniqueID, c.Name, c.TextureSet, NetworkLinker._myMiniID }, NetworkLinker.InitialPlayerUpdate);
         }
 
         private void SelectChar(UICallbackPackage package)

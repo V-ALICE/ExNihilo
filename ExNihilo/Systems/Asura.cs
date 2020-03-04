@@ -302,9 +302,9 @@ namespace ExNihilo.Systems
             void Help(string args)
             {
                 if (args.Length == 0)
-                    Log.ForceMessage("<help>", _elevatedMode ? _elevatedHelpString : _basicHelpString, Color.DarkGreen, Color.White);
+                    Log.ForceMessage("<Asura>", _elevatedMode ? _elevatedHelpString : _basicHelpString, Color.Purple, Color.White);
                 else if (_helpInfo.TryGetValue(args, out string line))
-                    Log.ForceMessage("<help>", line, Color.DarkGreen, Color.White);
+                    Log.ForceMessage("<Asura>", line, Color.Purple, Color.White);
             }
             _basicCommands.Add("help", Help);
 

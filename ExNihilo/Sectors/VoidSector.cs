@@ -1,4 +1,5 @@
-﻿using ExNihilo.Entity;
+﻿using System.Collections.Generic;
+using ExNihilo.Entity;
 using ExNihilo.Menus;
 using ExNihilo.Systems.Backend;
 using ExNihilo.Systems.Game;
@@ -14,18 +15,15 @@ namespace ExNihilo.Sectors
         private Level ActiveLevel => _world as Level;
         private PlayerEntityContainer Player => Container.Player;
 
-        public VoidSector(GameContainer container) : base(container)
+        public bool VoidIsActive;
+
+        public VoidSector(GameContainer container) : base(container, new Level())
         {
         }
 
 /********************************************************************
 ------->Game loop
 ********************************************************************/
-        public override void Initialize()
-        {
-            base.Initialize();
-            _world = new Level();
-        }
 
         public override void OnResize(GraphicsDevice graphicsDevice, Coordinate gameWindow)
         {
@@ -35,6 +33,7 @@ namespace ExNihilo.Sectors
 
         public override void Enter(Point point, Coordinate gameWindow)
         {
+            VoidIsActive = true;
             _invRef.SetReference(Player);
             BoxMenu.Menu.SetReference(Player);
             base.Enter(point, gameWindow);
@@ -44,6 +43,7 @@ namespace ExNihilo.Sectors
         {
             if (newSector == GameContainer.SectorID.Outerworld)
             {
+                VoidIsActive = false;
                 ActiveLevel.Purge();
                 Container.Pack();
                 Player.Inventory.Dirty = true;
@@ -70,6 +70,7 @@ namespace ExNihilo.Sectors
 ********************************************************************/
         public override void Pack(PackedGame game)
         {
+            game.InVoid = VoidIsActive;
             ActiveLevel.Pack(game);
         }
 
@@ -78,9 +79,14 @@ namespace ExNihilo.Sectors
             ActiveLevel.Unpack(game);
         }
 
-        public void StartNewGame(int floor)
+        public void StartNewGame(int floor, List<PlayerOverlay> refList)
         {
             ActiveLevel.Reset(Player, new Coordinate(10, 10), new Coordinate(3, 10));
+            ActiveLevel.ClearPlayers();
+            if (refList != null)
+            {
+                foreach (var player in refList) ActiveLevel.AddPlayerRef(player);
+            }
             SetFloor(floor);
         }
 

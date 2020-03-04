@@ -244,7 +244,6 @@ namespace ExNihilo.Systems.Game
 
         public void Pack(PackedGame game)
         {
-            if (_subLevelTextures.Count > 0) game.InVoid = true;
             game.Floor = _curLevel;
             game.Seed = _seed;
             game.GenType = _genType;
