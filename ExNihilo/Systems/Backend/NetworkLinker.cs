@@ -38,6 +38,15 @@ namespace ExNihilo.Systems.Backend
         }
         private static readonly Dictionary<long, GameAssociation> _lookup = new Dictionary<long, GameAssociation>();
 
+        public static long GetUniqueIDByName(string name)
+        {
+            if (_lookup.Any(p => p.Value.AssignedName == name))
+            {
+                return _lookup.First(p => p.Value.AssignedName == name).Value.UniqueID;
+            }
+            return -1;
+        }
+
         public static void Initialize(GameContainer reference, VoidSector voids, OuterworldSector outer)
         {
             _gameRef = reference;
@@ -52,12 +61,13 @@ namespace ExNihilo.Systems.Backend
                 _lookup.Clear();
                 _void.ClearPlayers();
                 _outer.ClearPlayers();
+                if (NetworkManager.Active) GameContainer.Console.ForceMessage("<Asura>", "Disconnected", Color.Purple, Color.White);
             }
             else if (_lookup.TryGetValue(id, out var val))
             {
                 GameContainer.Console.ForceMessage("<Asura>", _lookup[id].AssignedName + " has disconnected", Color.Purple, Color.White);
-                _void.ClearPlayers(val.AssignedName);
-                _outer.ClearPlayers(val.AssignedName);
+                _void.ClearPlayers(val.UniqueID);
+                _outer.ClearPlayers(val.UniqueID);
                 _lookup.Remove(id);
                 
                 if (NetworkManager.Hosting)
@@ -155,7 +165,7 @@ namespace ExNihilo.Systems.Backend
             }
 
             if (NetworkManager.Hosting) ReconfigureMiniIDs();
-            _outer.UpdatePlayers(_lookup[id].AssignedName, charMap);
+            _outer.UpdatePlayers(_lookup[id].UniqueID, _lookup[id].AssignedName, charMap);
 
             if (NetworkManager.Hosting)
             {
@@ -200,8 +210,7 @@ namespace ExNihilo.Systems.Backend
             message.Write((long)data[0]);
             message.Write((float)data[1]);
             message.Write((float)data[2]);
-            message.Write((float)data[3]);
-            message.Write((sbyte)data[4]);
+            message.Write((sbyte)data[3]);
         }
         private static bool ReadStandardPlayerUpdate(NetIncomingMessage message)
         {
@@ -212,7 +221,7 @@ namespace ExNihilo.Systems.Backend
             if (_lookup.TryGetValue(id, out var val))
             {
                 var player = _outer.OtherPlayers.FirstOrDefault(p => p.Name == val.AssignedName);
-                player?.ForceValues(message.ReadFloat(), message.ReadFloat(), message.ReadFloat(), message.ReadSByte());
+                player?.ForceValues(message.ReadFloat(), message.ReadFloat(), message.ReadSByte());
             }
 
             return true;

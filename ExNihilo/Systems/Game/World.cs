@@ -15,12 +15,12 @@ namespace ExNihilo.Systems.Game
 {
     public class World : IUI
     {
-        protected readonly List<Tuple<AnimatableTexture, Vector2>> Overlays;
+        protected readonly List<Tuple<AnimatableTexture, Coordinate>> Overlays;
         protected readonly ScaleRuleSet WorldRules = TextureLibrary.DefaultScaleRuleSet;
         protected readonly int TimerID;
         protected int TileSize;
         protected float CurrentWorldScale;
-        protected Coordinate PlayerCustomHitBox, PlayerCustomHitBoxOffset;
+        protected Coordinate PlayerCustomHitBox, PlayerCustomHitBoxOffset, LastWindowSize;
         protected InteractionMap Map;
         protected Texture2D WorldTexture;
         protected Vector2 CurrentWorldPosition;
@@ -35,7 +35,7 @@ namespace ExNihilo.Systems.Game
             TileSize = tileSize;
             CurrentWorldPosition = new Vector2();
             CurrentWorldScale = 1;
-            Overlays = new List<Tuple<AnimatableTexture, Vector2>>();
+            Overlays = new List<Tuple<AnimatableTexture, Coordinate>>();
             PlayerCustomHitBox = new Coordinate();
             PlayerOverlay = null;
             OtherPlayerOverlays = new List<PlayerOverlay>();
@@ -78,6 +78,7 @@ namespace ExNihilo.Systems.Game
         {
             var oldScale = CurrentWorldScale;
             CurrentWorldScale = WorldRules.GetScale(gameWindow);
+            LastWindowSize = gameWindow;
 
             if (PlayerOverlay != null)
             {
@@ -103,15 +104,17 @@ namespace ExNihilo.Systems.Game
 
         public virtual void Draw(SpriteBatch spriteBatch)
         {
-            spriteBatch.Draw(WorldTexture, CurrentWorldPosition, null, Color.White, 0, Vector2.Zero, CurrentWorldScale, SpriteEffects.None, 0);
+            spriteBatch.Draw(WorldTexture, (Vector2)(Coordinate)CurrentWorldPosition, null, Color.White, 0, Vector2.Zero, CurrentWorldScale, SpriteEffects.None, 0);
         }
 
         public virtual void DrawOverlays(SpriteBatch spriteBatch)
         {
-            PlayerOverlay?.Draw(spriteBatch);
+            if (PlayerOverlay is null) return;
+            
+            PlayerOverlay.Draw(spriteBatch);
             foreach (var player in OtherPlayerOverlays)
             {
-                player.Draw(spriteBatch, CurrentWorldPosition, CurrentWorldScale);
+                player.Draw(spriteBatch, (Vector2)(Coordinate)CurrentWorldPosition, CurrentWorldScale, PlayerOverlay.Scale);
             }
             foreach (var (tex, pos) in Overlays)
             {
@@ -184,34 +187,36 @@ namespace ExNihilo.Systems.Game
         {
             OtherPlayerOverlays.Add(player);
         }
-        public void AddPlayer(string name, int[] charSet)
+        public void AddPlayer(long id, string name, int[] charSet)
         {
             var tex = TextureUtilities.GetPlayerTexture(GameContainer.Graphics, charSet);
-            var instance = OtherPlayerOverlays.FirstOrDefault(p => p.Name == name);
+            var instance = OtherPlayerOverlays.FirstOrDefault(p => p.ID == id);
             if (instance is null)
             {
-                OtherPlayerOverlays.Add(new PlayerOverlay(new EntityContainer(GameContainer.Graphics, name, tex), false));
+                OtherPlayerOverlays.Add(new PlayerOverlay(new EntityContainer(GameContainer.Graphics, name, tex), false, id));
+                OtherPlayerOverlays[OtherPlayerOverlays.Count-1].OnResize(GameContainer.Graphics, LastWindowSize);
             }
             else
             {
                 instance.ForceEntityRef(new EntityContainer(GameContainer.Graphics, name, tex));
             }
         }
-        public void RemovePlayer(string name)
+        public void RemovePlayer(long id)
         {
-            var player = OtherPlayerOverlays.FirstOrDefault(p => p.Name == name);
+            var player = OtherPlayerOverlays.FirstOrDefault(p => p.ID == id);
             if (player != null) OtherPlayerOverlays.Remove(player);
         }
 
         public object[] GetStandardUpdateArray()
         {
-            return new object[] { NetworkManager.MyUniqueID, CurrentWorldPosition.X, CurrentWorldPosition.Y, CurrentWorldScale, PlayerOverlay.GetCurrentState()};
+            var offset = (PlayerOverlay.PlayerCenterScreen - CurrentWorldPosition) / CurrentWorldScale;
+            return new object[] { NetworkManager.MyUniqueID, offset.X, offset.Y, PlayerOverlay.GetCurrentState()};
         }
 
         public void AddOverlay(AnimatableTexture texture, int x, int y)
         {
-            var pos = new Vector2(x * TileSize, y * TileSize);
-            Overlays.Add(new Tuple<AnimatableTexture, Vector2>(texture, pos));
+            var pos = new Coordinate(x * TileSize, y * TileSize);
+            Overlays.Add(new Tuple<AnimatableTexture, Coordinate>(texture, pos));
         }
         public void AddInteractive(Interactive obj, int x, int y, int width=1, int height=1)
         {

@@ -13,19 +13,21 @@ namespace ExNihilo.Entity
     {
         private readonly ScaleRuleSet _rules = TextureLibrary.HalfScaleRuleSet;
         private EntityContainer _entity;
-        private float _currentScale, _baseScale;
+        public readonly long ID;
         private readonly bool _useCustomPos;
         public string Name => _entity.Name;
+        public float Scale { get; private set; }
 
         public Coordinate PlayerCenterScreen { get; private set; }
         public Vector2 PlayerCustomWorldPos;
 
-        public PlayerOverlay(EntityContainer entity, bool centered)
+        public PlayerOverlay(EntityContainer entity, bool centered, long id=0)
         {
-            _currentScale = 1;
+            Scale = 1;
             PlayerCenterScreen = new Coordinate();
             _entity = entity;
             _useCustomPos = !centered;
+            ID = id;
         }
 
         public void LoadContent(GraphicsDevice graphics, ContentManager content)
@@ -34,24 +36,24 @@ namespace ExNihilo.Entity
 
         public void OnResize(GraphicsDevice graphics, Coordinate gameWindow)
         {
-            _currentScale = _rules.GetScale(gameWindow);
+            Scale = _rules.GetScale(gameWindow);
             PlayerCenterScreen = new Coordinate(gameWindow.X / 2, gameWindow.Y / 2) - TextureUtilities.GetOffset(TextureUtilities.PositionType.Center, _entity.Texture);
         }
 
         public void Draw(SpriteBatch spriteBatch)
         {
-            if (!_useCustomPos) _entity.Texture.Draw(spriteBatch, PlayerCenterScreen, ColorScale.White, _currentScale);
+            if (!_useCustomPos) _entity.Texture.Draw(spriteBatch, PlayerCenterScreen, ColorScale.White, Scale);
         }
 
-        public void Draw(SpriteBatch spriteBatch, Vector2 worldPos, float curScale)
+        public void Draw(SpriteBatch spriteBatch, Vector2 worldPos, float curScale, float drawScale)
         {
             if (_useCustomPos)
             {
                 //customPos will be the worldPos of the world that makes this overlay centered
-                var pos = (Coordinate)(worldPos - (curScale / _baseScale) * PlayerCustomWorldPos);
-                _entity.Texture.Draw(spriteBatch, pos, ColorScale.White, _currentScale);
+                var pos = worldPos + curScale * PlayerCustomWorldPos;
+                _entity.Texture.Draw(spriteBatch, pos, ColorScale.White, drawScale);
             }
-            else _entity.Texture.Draw(spriteBatch, PlayerCenterScreen, ColorScale.White, _currentScale);
+            else _entity.Texture.Draw(spriteBatch, PlayerCenterScreen, ColorScale.White, Scale);
         }
 
         public void Push(Coordinate push)
@@ -73,15 +75,14 @@ namespace ExNihilo.Entity
             _entity = entity;
         }
 
-        public object[] GetStandardUpdateArray()
+        public object[] GetStandardUpdateArray(long id)
         {
-            return new object[] { NetworkManager.MyUniqueID, PlayerCustomWorldPos.X, PlayerCustomWorldPos.Y, _baseScale, GetCurrentState() };
+            return new object[] { id, PlayerCustomWorldPos.X, PlayerCustomWorldPos.Y, GetCurrentState() };
         }
-        public void ForceValues(float x, float y, float scale, sbyte type)
+        public void ForceValues(float x, float y, sbyte type)
         {
             PlayerCustomWorldPos.X = x;
             PlayerCustomWorldPos.Y = y;
-            _baseScale = scale;
             _entity.Entity.SetState((EntityTexture.State) type);
         }
     }

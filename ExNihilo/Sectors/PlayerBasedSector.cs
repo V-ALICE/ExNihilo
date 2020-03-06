@@ -166,10 +166,10 @@ namespace ExNihilo.Sectors
         }
 
         public void ClearPlayers() { _world.ClearPlayers(); }
-        public void ClearPlayers(string name) { _world.RemovePlayer(name); }
-        public void UpdatePlayers(string name, int[] charSet)
+        public void ClearPlayers(long id) { _world.RemovePlayer(id); }
+        public void UpdatePlayers(long id, string name, int[] charSet)
         {
-            _world.AddPlayer(name, charSet);
+            _world.AddPlayer(id, name, charSet);
         }
 
         public object[] GetStandardUpdateArray()

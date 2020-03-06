@@ -122,6 +122,7 @@ namespace ExNihilo
         {
             e.Cancel = true;
             //if (MessageBox.Show(@"Are you sure you want to quit?", @"Confirm Quit", MessageBoxButtons.YesNo) == DialogResult.Yes)
+            NetworkManager.CloseConnections();
             ExitGame();
         }
         private void f_ResizeBegin(object sender, EventArgs e)
@@ -172,7 +173,7 @@ namespace ExNihilo
             _frameTimeID = UniversalTime.NewTimer(true, 1.5);
             TextureLibrary.LoadRuleSets();
             UniversalTime.TurnOnTimer(SystemClockID, _frameTimeID);
-            NetworkManager.Initialize(3, 10, 5, 1, 0.01, UpdateNetwork, NetworkLinker.OnDisconnect);
+            NetworkManager.Initialize(3, 10, 10, 1, 0, UpdateNetwork, NetworkLinker.OnDisconnect);
             
             ColorScale.AddToGlobal("Random", new ColorScale(2f, 32, 222));
             ColorScale.LoadColors("COLOR.info");
@@ -282,7 +283,7 @@ namespace ExNihilo
                 NetworkManager.SendMessage(myData, NetworkLinker.StandardPlayerUpdate);
                 foreach (var player in OtherPlayers)
                 {
-                    var data = player.GetStandardUpdateArray();
+                    var data = player.GetStandardUpdateArray(NetworkLinker.GetUniqueIDByName(player.Name));
                     NetworkManager.SendMessage(data, NetworkLinker.StandardPlayerUpdate);
                 }
             }
@@ -393,7 +394,7 @@ namespace ExNihilo
         public bool Unpack(PackedGame game)
         {
             if (game is null) return false;
-
+            NetworkManager.CloseConnections();
             foreach (var sector in _sectorDirectory.Values) sector?.Unpack(game);
             return true;
         }

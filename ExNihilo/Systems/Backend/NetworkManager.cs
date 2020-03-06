@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Net.Sockets;
 using System.Runtime.Remoting.Messaging;
 using System.Threading;
 using Lidgren.Network;
@@ -106,7 +107,8 @@ namespace ExNihilo.Systems.Backend
             var config = new NetPeerConfiguration(name)
             {
                 Port = port,
-                MaximumConnections = _maxConnections
+                MaximumConnections = _maxConnections,
+                //ConnectionTimeout = (float) _heartbeatTimeout
             };
             Hosting = true;
 
@@ -121,6 +123,12 @@ namespace ExNihilo.Systems.Backend
                 CloseConnections();
                 return false;
             }
+            catch (SocketException e)
+            {
+                LastError = e.Message;
+                CloseConnections();
+                return false;
+            }
 
             return true;
         }
@@ -129,7 +137,7 @@ namespace ExNihilo.Systems.Backend
         {
             if (Active) CloseConnections();
 
-            var config = new NetPeerConfiguration(name);
+            var config = new NetPeerConfiguration(name);// {ConnectionTimeout = (float)_heartbeatTimeout};
             Hosting = false;
 
             try
@@ -324,16 +332,13 @@ namespace ExNihilo.Systems.Backend
                 }
             }
 
-            //Check if time to send status updates to clients
-            if (Hosting)
+            //Check if time to send status updates to connections
+            _updateTimer += elapsedTimeSec;
+            if (_updateTimer > _hostUpdateRate)
             {
-                _updateTimer += elapsedTimeSec;
-                if (_updateTimer > _hostUpdateRate)
-                {
-                    //Send update to clients
-                    _updateTimer = 0;
-                    _onUpdate.Invoke();
-                }
+                //Send update to clients
+                _updateTimer = 0;
+                _onUpdate.Invoke();
             }
 
             return 0;
