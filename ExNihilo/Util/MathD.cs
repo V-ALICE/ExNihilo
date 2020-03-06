@@ -37,6 +37,11 @@ namespace ExNihilo.Util
             return (int)(x - 1);
         }
 
+        public static Vector2 Flatten(Vector2 v)
+        {
+            return new Vector2(RoundDown(v.X), RoundDown(v.Y));
+        }
+
         //Produces a number in the specified range with a 50% change to be positive/negative
         public static int RandomlySigned(Random r, int min, int max)
         {

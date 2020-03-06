@@ -3,12 +3,11 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Net.Sockets;
-using System.Runtime.Remoting.Messaging;
-using System.Threading;
 using Lidgren.Network;
 
-namespace ExNihilo.Systems.Backend
+namespace ExNihilo.Systems.Backend.Network
 {
+
     public static class NetworkManager
     {
         private class ClientInfoPackage
@@ -24,9 +23,81 @@ namespace ExNihilo.Systems.Backend
             }
         }
 
+        public class MessageStruct
+        {
+            public bool Valid;
+            public short MessageID;
+            public long SenderUniqueID, ReceiverUniqueID;
+
+            public MessageStruct(NetIncomingMessage message)
+            {
+                try
+                {
+                    MessageID = message.ReadInt16();
+                    SenderUniqueID = message.ReadInt64();
+                    ReceiverUniqueID = message.ReadInt64();
+                    Valid = true;
+                }
+                catch (Exception)
+                {
+                    Valid = false;
+                }
+            }
+
+            public MessageStruct(short type, long senderId, long receiverId=-1)
+            {
+                Valid = true;
+                MessageID = type;
+                SenderUniqueID = senderId;
+                ReceiverUniqueID = receiverId;
+            }
+
+            public virtual void WriteOut(NetOutgoingMessage message)
+            {
+                if (!Valid) return;
+                message.Write(MessageID);
+                message.Write(SenderUniqueID);
+                message.Write(ReceiverUniqueID);
+            }
+
+            public bool IsRecipient(long myId)
+            {
+                return SenderUniqueID != myId && (ReceiverUniqueID == -1 || ReceiverUniqueID == myId);
+            }
+        }
+
+        public class NewConnection : MessageStruct
+        {
+            public int VersionNum;
+
+            public NewConnection(long receiverId, int verNum) : base((short)BasicMessageTypes.NewConnection, 0, receiverId)
+            {
+                VersionNum = verNum;
+            }
+
+            public NewConnection(NetIncomingMessage message) : base(message)
+            {
+                try
+                {
+                    VersionNum = message.ReadInt32();
+                }
+                catch (Exception)
+                {
+                    Valid = false;
+                }
+            }
+
+            public override void WriteOut(NetOutgoingMessage message)
+            {
+                if (!Valid) return;
+                base.WriteOut(message);
+                message.Write(VersionNum);
+            }
+        }
+
         private enum BasicMessageTypes : short
         {
-            UniqueID = -2,
+            NewConnection = -2,
             Heartbeat = -1
         }
         private const int _verNum = 2020030310;
@@ -180,53 +251,52 @@ namespace ExNihilo.Systems.Backend
             return error;
         }
 
-        private static short HandleBasicMessage(NetIncomingMessage message)
+        private static bool HandleBasicMessage(NetIncomingMessage message)
         {
             var id = message.PeekInt16();
-            if (id == (short) BasicMessageTypes.UniqueID)
+            if (id == (short) BasicMessageTypes.NewConnection)
             {
-                message.ReadInt16();
+                var data = new NewConnection(message);
                 if (Hosting)
                 {
                     //Client is asking for uniqueID
-                    var version = message.ReadInt32();
-                    if (version != _verNum)
+                    if (data.VersionNum != _verNum)
                     {
-                        message.SenderConnection.Disconnect("bye");
+                        DisconnectClient(message.SenderConnection.RemoteUniqueIdentifier);
                         LastError = "Client with ID " + message.SenderConnection.RemoteUniqueIdentifier + " attempted to connect using a different application version";
-                        return -2;
+                        return true;
                     }
 
+                    var outgoingData = new NewConnection(message.SenderConnection.RemoteUniqueIdentifier, _verNum);
                     var msg = _host.CreateMessage();
-                    msg.Write((short) BasicMessageTypes.UniqueID);
-                    msg.Write(_verNum);
-                    msg.Write(message.SenderConnection.RemoteUniqueIdentifier);
+                    outgoingData.WriteOut(msg);
                     _host.SendMessage(msg, message.SenderConnection, NetDeliveryMethod.ReliableOrdered);
                     LastNotice = "Client with ID " + message.SenderConnection.RemoteUniqueIdentifier + " requested UniqueID";
                 }
                 else
                 {
                     //Unique ID from host
-                    if (message.ReadInt32() != _verNum)
+                    if (data.VersionNum != _verNum)
                     {
                         CloseConnections();
                         LastError = "Host is running a different application version";
-                        return -2;
+                        return true;
                     }
-                    MyUniqueID = message.ReadInt64();
+
+                    MyUniqueID = data.ReceiverUniqueID;
                     LastNotice = "Received unique ID " + MyUniqueID + " from host";
                 }
 
-                return id;
+                return true;
             }
 
             if (id == (short) BasicMessageTypes.Heartbeat)
             {
-                message.ReadInt16();
+                var data = new MessageStruct(message);
                 if (Hosting)
                 {
                     //Heartbeat from a client
-                    var client = _link.FirstOrDefault(c => c.UserID == message.SenderConnection.RemoteUniqueIdentifier);
+                    var client = _link.FirstOrDefault(c => c.UserID == data.SenderUniqueID);
                     if (client is null)
                     {
                         LastError = "Received heartbeat from unknown client with ID " + message.SenderConnection.RemoteUniqueIdentifier;
@@ -244,10 +314,10 @@ namespace ExNihilo.Systems.Backend
                     _lastPingTime = message.SenderConnection.AverageRoundtripTime;
                 }
 
-                return id;
+                return true;
             }
 
-            return 0;
+            return false;
         }
 
         public static void DisconnectClient(long id)
@@ -315,20 +385,17 @@ namespace ExNihilo.Systems.Backend
             {
                 _sendHeartbeatTimer = 0;
 
-                //Send heartbeat
-                var msg = Connection.CreateMessage();
-                msg.Write((short)BasicMessageTypes.Heartbeat);
-                if (Hosting) _host.SendToAll(msg, NetDeliveryMethod.ReliableOrdered);
-                else _client.SendMessage(msg, NetDeliveryMethod.ReliableOrdered);
-
                 if (!Hosting && MyUniqueID == 0)
                 {
                     //Still waiting for UniqueID. Request again
-                    var msg2 = _client.CreateMessage();
-                    msg2.Write((short)BasicMessageTypes.UniqueID);
-                    msg2.Write(_verNum);
-                    msg2.Write((long) 0);
-                    _client.SendMessage(msg2, NetDeliveryMethod.ReliableOrdered);
+                    var data2 = new NewConnection(-1, _verNum);
+                    SendMessage(data2);
+                }
+                else
+                {
+                    //Send heartbeat
+                    var data = new MessageStruct((short)BasicMessageTypes.Heartbeat, MyUniqueID);
+                    SendMessage(data);
                 }
             }
 
@@ -344,7 +411,7 @@ namespace ExNihilo.Systems.Backend
             return 0;
         }
 
-        public static int Update(double elapsedTimeSec, Func<NetIncomingMessage, bool> output)
+        public static void Update(double elapsedTimeSec, Func<NetIncomingMessage, bool> output)
         {
             if (Active && !Connected && !_connecting && !Hosting)
             {
@@ -352,8 +419,7 @@ namespace ExNihilo.Systems.Backend
                 LastError = "Lost connection to host";
             }
 
-            var anyDataReceived = HandleTimerChecks(elapsedTimeSec);
-            if (anyDataReceived != 0) return anyDataReceived;
+            if (HandleTimerChecks(elapsedTimeSec) != 0) return;
 
             NetIncomingMessage message;
             while ((message = Connection?.ReadMessage()) != null)
@@ -372,21 +438,21 @@ namespace ExNihilo.Systems.Backend
                         LastError = message.ReadString();
                         break;
                     case NetIncomingMessageType.Data:
-                        var messageID = message.PeekInt16();
-                        if (HandleBasicMessage(message) != 0) break;
-                        if (output.Invoke(message)) anyDataReceived++;
-                        else LastError = "Failed to read unknown message with ID " + messageID;
+                        if (HandleBasicMessage(message)) break;
+
+                        var messageId = message.PeekInt16();
+                        if (!output.Invoke(message)) LastError = "Failed to read unknown message with ID " + messageId;
                         break;
                     case NetIncomingMessageType.StatusChanged:
-                        var connectionID = message.SenderConnection.RemoteUniqueIdentifier;
+                        var connectionId = message.SenderConnection.RemoteUniqueIdentifier;
                         switch ((NetConnectionStatus)message.ReadByte())
                         {
                             case NetConnectionStatus.Connected:
                                 if (Hosting)
                                 {
                                     //Record new connection
-                                    LastNotice = "New client with ID " + connectionID + " has connected";
-                                    _link.Add(new ClientInfoPackage { UserID = connectionID });
+                                    LastNotice = "New client with ID " + connectionId + " has connected";
+                                    _link.Add(new ClientInfoPackage { UserID = connectionId });
                                 }
                                 else
                                 {
@@ -395,11 +461,8 @@ namespace ExNihilo.Systems.Backend
                                     _connecting = false;
 
                                     //Request UniqueID
-                                    var msg = _client.CreateMessage();
-                                    msg.Write((short)BasicMessageTypes.UniqueID);
-                                    msg.Write(_verNum);
-                                    msg.Write((long)0);
-                                    _client.SendMessage(msg, message.SenderConnection, NetDeliveryMethod.ReliableOrdered);
+                                    var data = new NewConnection(-1, _verNum);
+                                    SendMessage(data);
                                 }
 
                                 break;
@@ -408,13 +471,13 @@ namespace ExNihilo.Systems.Backend
                                 if (Hosting)
                                 {
                                     //Remove disconnected client from links
-                                    LastNotice = "Client with ID " + connectionID + " has disconnected";
+                                    LastNotice = "Client with ID " + connectionId + " has disconnected";
                                     for (int i = _link.Count - 1; i >= 0; i--)
                                     {
-                                        if (_link[i].UserID == connectionID)
+                                        if (_link[i].UserID == connectionId)
                                         {
                                             _link.RemoveAt(i);
-                                            _onDisconnect?.Invoke(connectionID);
+                                            _onDisconnect?.Invoke(connectionId);
                                         }
                                     }
 
@@ -437,15 +500,13 @@ namespace ExNihilo.Systems.Backend
 
                 Connection?.Recycle(message);
             }
-
-            return anyDataReceived;
         }
         
-        public static void SendMessage(object[] data, Action<object[], NetOutgoingMessage> filler)
+        public static void SendMessage(MessageStruct data)
         {
             if (!Connected) return;
             var message = Connection.CreateMessage();
-            filler.Invoke(data, message);
+            data.WriteOut(message);
             if (Hosting) _host.SendToAll(message, NetDeliveryMethod.ReliableOrdered);
             else _client.SendMessage(message, NetDeliveryMethod.ReliableOrdered);
         }

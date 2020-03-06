@@ -3,6 +3,7 @@ using ExNihilo.Entity;
 using ExNihilo.Input.Commands;
 using ExNihilo.Menus;
 using ExNihilo.Systems;
+using ExNihilo.Systems.Backend.Network;
 using ExNihilo.Systems.Bases;
 using ExNihilo.Systems.Game;
 using ExNihilo.Util;
@@ -172,9 +173,9 @@ namespace ExNihilo.Sectors
             _world.AddPlayer(id, name, charSet);
         }
 
-        public object[] GetStandardUpdateArray()
+        public StandardUpdate GetStandardUpdate()
         {
-            return _world.GetStandardUpdateArray();
+            return _world.GetStandardUpdate();
         }
 
         public void ToggleCollisions(bool collisionOn)

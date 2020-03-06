@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using ExNihilo.Entity;
 using ExNihilo.Systems.Backend;
+using ExNihilo.Systems.Backend.Network;
 using ExNihilo.Systems.Bases;
 using ExNihilo.UI.Bases;
 using ExNihilo.Util;
@@ -104,21 +105,22 @@ namespace ExNihilo.Systems.Game
 
         public virtual void Draw(SpriteBatch spriteBatch)
         {
-            spriteBatch.Draw(WorldTexture, (Vector2)(Coordinate)CurrentWorldPosition, null, Color.White, 0, Vector2.Zero, CurrentWorldScale, SpriteEffects.None, 0);
+            spriteBatch.Draw(WorldTexture, MathD.Flatten(CurrentWorldPosition), null, Color.White, 0, Vector2.Zero, CurrentWorldScale, SpriteEffects.None, 0);
         }
 
         public virtual void DrawOverlays(SpriteBatch spriteBatch)
         {
             if (PlayerOverlay is null) return;
             
-            PlayerOverlay.Draw(spriteBatch);
             foreach (var player in OtherPlayerOverlays)
             {
-                player.Draw(spriteBatch, (Vector2)(Coordinate)CurrentWorldPosition, CurrentWorldScale, PlayerOverlay.Scale);
+                player.Draw(spriteBatch, MathD.Flatten(CurrentWorldPosition), CurrentWorldScale, PlayerOverlay.Scale);
             }
+            PlayerOverlay.Draw(spriteBatch);
+
             foreach (var (tex, pos) in Overlays)
             {
-                tex.Draw(spriteBatch, CurrentWorldPosition + CurrentWorldScale * pos, ColorScale.White, CurrentWorldScale);
+                tex.Draw(spriteBatch, MathD.Flatten(CurrentWorldPosition) + CurrentWorldScale * pos, ColorScale.White, CurrentWorldScale);
             }
 
             if (D.Bug && PlayerOverlay != null)
@@ -207,10 +209,10 @@ namespace ExNihilo.Systems.Game
             if (player != null) OtherPlayerOverlays.Remove(player);
         }
 
-        public object[] GetStandardUpdateArray()
+        public StandardUpdate GetStandardUpdate()
         {
             var offset = (PlayerOverlay.PlayerCenterScreen - CurrentWorldPosition) / CurrentWorldScale;
-            return new object[] { NetworkManager.MyUniqueID, offset.X, offset.Y, PlayerOverlay.GetCurrentState()};
+            return new StandardUpdate(NetworkManager.MyUniqueID, offset.X, offset.Y, (sbyte) PlayerOverlay.GetCurrentState());
         }
 
         public void AddOverlay(AnimatableTexture texture, int x, int y)

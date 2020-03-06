@@ -1,5 +1,6 @@
 ﻿using ExNihilo.Systems;
 using ExNihilo.Systems.Backend;
+using ExNihilo.Systems.Backend.Network;
 using ExNihilo.UI.Bases;
 using ExNihilo.Util;
 using ExNihilo.Util.Graphics;
@@ -75,9 +76,9 @@ namespace ExNihilo.Entity
             _entity = entity;
         }
 
-        public object[] GetStandardUpdateArray(long id)
+        public StandardUpdate GetStandardUpdate(long id)
         {
-            return new object[] { id, PlayerCustomWorldPos.X, PlayerCustomWorldPos.Y, GetCurrentState() };
+            return new StandardUpdate(id, PlayerCustomWorldPos.X, PlayerCustomWorldPos.Y, (sbyte) GetCurrentState());
         }
         public void ForceValues(float x, float y, sbyte type)
         {

@@ -1,5 +1,6 @@
 ﻿using ExNihilo.Systems;
 using ExNihilo.Systems.Backend;
+using ExNihilo.Systems.Backend.Network;
 
 namespace ExNihilo.Input.Commands.Types
 {
@@ -14,7 +15,7 @@ namespace ExNihilo.Input.Commands.Types
         public override void Activate()
         {
             var name = "Console";
-            if (_g.Player != null) name = _g.Player.Name + (NetworkLinker._myMiniID > 0 ? "-" + NetworkLinker._myMiniID : "");
+            if (_g.Player != null) name = _g.Player.Name + (NetworkLinker.MyMiniID > 0 ? "-" + NetworkLinker.MyMiniID : "");
             Receiver.PushConsole(name, GameContainer.ActiveSectorID == GameContainer.SectorID.Loading);
         }
     }

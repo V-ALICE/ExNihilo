@@ -11,6 +11,7 @@ using ExNihilo.Menus;
 using ExNihilo.Sectors;
 using ExNihilo.Systems;
 using ExNihilo.Systems.Backend;
+using ExNihilo.Systems.Backend.Network;
 using ExNihilo.Systems.Game;
 using ExNihilo.Systems.Game.Items;
 using ExNihilo.Util;
@@ -277,20 +278,16 @@ namespace ExNihilo
 
         private void UpdateNetwork()
         {
+            var myData = ((OuterworldSector)_sectorDirectory[SectorID.Outerworld]).GetStandardUpdate();
+            NetworkManager.SendMessage(myData);
+
             if (NetworkManager.Hosting)
-            {
-                var myData = ((OuterworldSector)_sectorDirectory[SectorID.Outerworld]).GetStandardUpdateArray();
-                NetworkManager.SendMessage(myData, NetworkLinker.StandardPlayerUpdate);
+            { 
                 foreach (var player in OtherPlayers)
                 {
-                    var data = player.GetStandardUpdateArray(NetworkLinker.GetUniqueIDByName(player.Name));
-                    NetworkManager.SendMessage(data, NetworkLinker.StandardPlayerUpdate);
+                    var data = player.GetStandardUpdate(NetworkLinker.GetUniqueIDByName(player.Name));
+                    NetworkManager.SendMessage(data);
                 }
-            }
-            else
-            {
-                var data = ((OuterworldSector)_sectorDirectory[SectorID.Outerworld]).GetStandardUpdateArray();
-                NetworkManager.SendMessage(data, NetworkLinker.StandardPlayerUpdate);
             }
         }
 
@@ -431,7 +428,7 @@ namespace ExNihilo
                     Console.ForceMessage("<error>", NetworkManager.GetErrorAndClear(), Color.DarkRed, Color.White);
                 }
                 while (!NetworkManager.Connected) { Thread.Sleep(100); }
-                NetworkManager.SendMessage(new object[]{NetworkManager.MyUniqueID, Player.Name, Player.TextureSet, NetworkLinker._myMiniID}, NetworkLinker.InitialPlayerUpdate);
+                NetworkManager.SendMessage(new PlayerIntroduction(NetworkManager.MyUniqueID, Player.Name, NetworkLinker.MyMiniID, Player.TextureSet));
             }
 
             if (ActiveSectorID != SectorID.Outerworld) return;

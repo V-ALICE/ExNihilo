@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using ExNihilo.Entity;
 using ExNihilo.Systems.Backend;
+using ExNihilo.Systems.Backend.Network;
 using ExNihilo.Systems.Game;
 using ExNihilo.UI;
 using ExNihilo.Util;
@@ -106,7 +107,7 @@ namespace ExNihilo.Menus
             Container.Pack(); //Save game
 
             var c = GetCurrentChar();
-            NetworkManager.SendMessage(new object[] { NetworkManager.MyUniqueID, c.Name, c.TextureSet, NetworkLinker._myMiniID }, NetworkLinker.InitialPlayerUpdate);
+            NetworkManager.SendMessage(new PlayerIntroduction(NetworkManager.MyUniqueID, c.Name, NetworkLinker.MyMiniID, c.TextureSet));
         }
 
         private void SelectChar(UICallbackPackage package)

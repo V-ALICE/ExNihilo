@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using ExNihilo.Input.Commands;
+using ExNihilo.Systems.Backend.Network;
 using ExNihilo.Systems.Bases;
 using ExNihilo.UI.Bases;
 using ExNihilo.Util;
@@ -264,9 +265,8 @@ namespace ExNihilo.Systems.Backend
             }
             else if (_activeText.Length != 0)
             {
-                //var name = g.Player?.Name ?? "Console";
                 _console.AddMessage("<"+name+">", _activeText, Color.DeepSkyBlue, Color.White);
-                NetworkManager.SendMessage(new object[] { NetworkManager.MyUniqueID, _activeText}, NetworkLinker.ConsoleMessage);
+                NetworkManager.SendMessage(new ConsoleMessage(NetworkManager.MyUniqueID, _activeText));
             }
 
             CloseConsole();
