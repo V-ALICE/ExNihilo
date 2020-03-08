@@ -53,14 +53,13 @@ namespace ExNihilo
         public List<PlayerOverlay> OtherPlayers => ((OuterworldSector)_sectorDirectory[SectorID.Outerworld]).OtherPlayers;
         public bool VoidIsActive => ((VoidSector) _sectorDirectory[SectorID.Void]).VoidIsActive;
 
-        public static ConsoleHandler Console { get; private set; }
         public static GraphicsDevice Graphics { get; private set; }
         public static SectorID ActiveSectorID;
 
         public SectorID PreviousSectorID;
         protected bool ShowDebugInfo;
         public static bool FormTouched;
-        protected bool ConsoleActive => Console.Active;
+        protected bool ConsoleActive => SystemConsole.Active;
         protected int SystemClockID;
         protected SpriteBatch SpriteBatch;
 
@@ -77,7 +76,7 @@ namespace ExNihilo
         private void OnResize()
         {
             ParticleBackdrop.OnResize(_windowSize);
-            Console.OnResize(GraphicsDevice, _windowSize);
+            SystemConsole.OnResize(GraphicsDevice, _windowSize);
             _mouseScale = TextureLibrary.DefaultScaleRuleSet.GetScale(_windowSize);
             foreach (var sector in _sectorDirectory.Values) sector?.OnResize(GraphicsDevice, _windowSize);
         }
@@ -165,7 +164,7 @@ namespace ExNihilo
             _mouseScale = 1;
             _lastMousePosition = new Point();
             _mouse = new MouseController();
-            Console = new ConsoleHandler(this);
+            SystemConsole.Initialize(this);
             _handler = new CommandHandler();
             _superHandler = new CommandHandler();
             _handler.InitializeBase(this);
@@ -177,6 +176,10 @@ namespace ExNihilo
             NetworkManager.Initialize(3, 10, 10, 1, 0, UpdateNetwork, NetworkLinker.OnDisconnect);
             
             ColorScale.AddToGlobal("Random", new ColorScale(2f, 32, 222));
+            var rainbow = new ColorScale(1.0f, false, ColorScale.Red, ColorScale.RedOrange, ColorScale.Orange, ColorScale.OrangeYellow, 
+                                                    ColorScale.Yellow, ColorScale.YellowGreen, ColorScale.Green, ColorScale.GreenBlue, 
+                                                    ColorScale.Blue, ColorScale.BlueViolet, ColorScale.Violet, ColorScale.VioletRed);
+            ColorScale.AddToGlobal("Rainbow", rainbow);
             ColorScale.LoadColors("COLOR.info");
 
             //IsMouseVisible = true;
@@ -238,7 +241,7 @@ namespace ExNihilo
 
             TextDrawer.Initialize(GraphicsDevice, Content.Load<Texture2D>("UI/FONT"));
             foreach (var sector in _sectorDirectory.Values) sector?.LoadContent(GraphicsDevice, Content);
-            Console.LoadContent(GraphicsDevice, Content);
+            SystemConsole.LoadContent(GraphicsDevice, Content);
 
             _mouseTexture = Content.Load<Texture2D>("UI/CURSOR");
             BoxMenu.Menu.LoadContent(GraphicsDevice, Content);
@@ -271,7 +274,7 @@ namespace ExNihilo
             }
 
             if (!tmp.StateChange) return;
-            if (ConsoleActive) Console.CloseConsole();
+            if (ConsoleActive) SystemConsole.CloseConsole();
             if (tmp.LeftDown) ActiveSector?.OnLeftClick(tmp.MousePosition);
             else if (tmp.LeftUp) ActiveSector?.OnLeftRelease(tmp.MousePosition);
         }
@@ -296,7 +299,7 @@ namespace ExNihilo
             UniversalTime.Update(gameTime);  //Update game timers
             ColorScale.UpdateGlobalScales(); //Update dynamic colors
             ParticleBackdrop.Update();       //Update dynamic particles
-            Console.Update();                //Update console window (for message timeouts etc.)
+            SystemConsole.Update();                //Update console window (for message timeouts etc.)
             NetworkManager.Update(gameTime.ElapsedGameTime.TotalSeconds, NetworkLinker.InterpretIncomingMessage);
 
             if (IsActive)
@@ -328,7 +331,7 @@ namespace ExNihilo
             ActiveSector?.Draw(SpriteBatch, ShowDebugInfo);
 
             UpdateFrameRateAndPing(); //FPS numbers are calculated based on drawn frames
-            Console.Draw(SpriteBatch); //Console will handle when it should draw
+            SystemConsole.Draw(SpriteBatch); //Console will handle when it should draw
             if (!IsMouseVisible) _mouseTexture.Draw(SpriteBatch, _mouseDrawPos, ColorScale.White, _mouseScale);
             if (ShowDebugInfo) DrawDebugInfo(SpriteBatch);
 
@@ -364,7 +367,7 @@ namespace ExNihilo
         public void OpenConsole(string initMessage="")
         {
             if (IsMouseVisible) return;
-            Console.OpenConsole(initMessage);
+            SystemConsole.OpenConsole(initMessage);
         }
 
         public void ExitGame()
@@ -376,7 +379,7 @@ namespace ExNihilo
 
         public void BackOut()
         {
-            if (ConsoleActive) Console.CloseConsole();
+            if (ConsoleActive) SystemConsole.CloseConsole();
             else ActiveSector?.BackOut();
         }
 
@@ -385,7 +388,7 @@ namespace ExNihilo
             var game = new PackedGame(this, SaveHandler.GetLastID());
             foreach (var sector in _sectorDirectory.Values) sector?.Pack(game);
             SaveHandler.Save(SaveHandler.LastLoadedFile, game);
-            Console.ForceMessage("<Asura>", "Game has been saved", Color.Purple, Color.White);
+            SystemConsole.ForceMessage("<Asura>", "Game has been saved", Color.Purple, Color.White);
         }
 
         public bool Unpack(PackedGame game)
@@ -400,6 +403,7 @@ namespace ExNihilo
         {
             AudioManager.MusicVolume = param.MusicVolume;
             AudioManager.EffectVolume = param.EffectVolume;
+            SystemConsole.MyColor = new Color(param.R, param.G, param.B);
         }
 
         public void StartNewGame(int floor, List<PlayerOverlay> refList)
@@ -408,27 +412,33 @@ namespace ExNihilo
             (_sectorDirectory[SectorID.Void] as VoidSector)?.StartNewGame(floor, refList);
         }
 
+        public PlayerIntroduction GetCurrentIntroduction()
+        {
+            if (Player is null) return null;
+            return new PlayerIntroduction(NetworkManager.MyUniqueID, Player.Name, NetworkLinker.MyMiniID, SystemConsole.MyColor.R, SystemConsole.MyColor.G, SystemConsole.MyColor.B, Player.TextureSet);
+        }
+
         public async void GLOBAL_DEBUG_COMMAND(string input)
         {
             void DoHost()
             {
-                Console.ForceMessage("<Asura>", "Starting host", Color.Purple, Color.White);
+                SystemConsole.ForceMessage("<Asura>", "Starting host", Color.Purple, Color.White);
                 if (!NetworkManager.StartNewHost("test", 14444))
                 {
-                    Console.ForceMessage("<error>", NetworkManager.GetErrorAndClear(), Color.DarkRed, Color.White);
+                     SystemConsole.ForceMessage("<error>", NetworkManager.GetErrorAndClear(), Color.DarkRed, Color.White);
                 }
                 while (!NetworkManager.Connected) { Thread.Sleep(100); }
             }
 
             void DoClient()
             {
-                Console.ForceMessage("<Asura>", "Starting client", Color.Purple, Color.White);
+                 SystemConsole.ForceMessage("<Asura>", "Starting client", Color.Purple, Color.White);
                 if (!NetworkManager.ConnectToHost("test", "127.0.0.1", 14444))
                 {
-                    Console.ForceMessage("<error>", NetworkManager.GetErrorAndClear(), Color.DarkRed, Color.White);
+                     SystemConsole.ForceMessage("<error>", NetworkManager.GetErrorAndClear(), Color.DarkRed, Color.White);
                 }
                 while (!NetworkManager.Connected) { Thread.Sleep(100); }
-                NetworkManager.SendMessage(new PlayerIntroduction(NetworkManager.MyUniqueID, Player.Name, NetworkLinker.MyMiniID, Player.TextureSet));
+                NetworkManager.SendMessage(GetCurrentIntroduction());
             }
 
             if (ActiveSectorID != SectorID.Outerworld) return;

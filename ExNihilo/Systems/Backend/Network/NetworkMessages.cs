@@ -50,13 +50,17 @@ namespace ExNihilo.Systems.Backend.Network
     {
         public string Name;
         public byte SubID;
-        public int[] CharSet;      
+        public int[] CharSet;
+        public byte R, G, B;
 
-        public PlayerIntroduction(long senderId, string name, byte subId, int[] charSet) : base((short) NetworkMessageType.PlayerIntroduction, senderId)
+        public PlayerIntroduction(long senderId, string name, byte subId, byte r, byte g, byte b, int[] charSet) : base((short) NetworkMessageType.PlayerIntroduction, senderId)
         {
             Name = name;
             SubID = subId;
             CharSet = charSet;
+            R = r;
+            G = g;
+            B = b;
         }
 
         public PlayerIntroduction(NetIncomingMessage message) : base(message)
@@ -65,6 +69,9 @@ namespace ExNihilo.Systems.Backend.Network
             {
                 Name = message.ReadString();
                 SubID = message.ReadByte();
+                R = message.ReadByte();
+                G = message.ReadByte();
+                B = message.ReadByte();
                 CharSet = new[] {message.ReadInt32(), message.ReadInt32(), message.ReadInt32(), message.ReadInt32()};
             }
             catch (Exception)
@@ -79,6 +86,9 @@ namespace ExNihilo.Systems.Backend.Network
             base.WriteOut(message);
             message.Write(Name);
             message.Write(SubID);
+            message.Write(R);
+            message.Write(G);
+            message.Write(B);
             message.Write(CharSet[0]);
             message.Write(CharSet[1]);
             message.Write(CharSet[2]);

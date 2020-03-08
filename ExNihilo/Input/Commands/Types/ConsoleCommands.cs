@@ -4,43 +4,41 @@ using ExNihilo.Systems.Backend.Network;
 
 namespace ExNihilo.Input.Commands.Types
 {
-    public class PushConsole : ConsoleCommand
+    public class PushConsole : SuperCommand
     {
-        private GameContainer _g;
-        public PushConsole(GameContainer g, ConsoleHandler game) : base(game)
+        public PushConsole(GameContainer game) : base(game)
         {
-            _g = g;
         }
 
         public override void Activate()
         {
             var name = "Console";
-            if (_g.Player != null) name = _g.Player.Name + (NetworkLinker.MyMiniID > 0 ? "-" + NetworkLinker.MyMiniID : "");
-            Receiver.PushConsole(name, GameContainer.ActiveSectorID == GameContainer.SectorID.Loading);
+            if (Receiver.Player != null) name = Receiver.Player.Name + (NetworkLinker.MyMiniID > 0 ? "-" + NetworkLinker.MyMiniID : "");
+            SystemConsole.PushConsole(name, GameContainer.ActiveSectorID == GameContainer.SectorID.Loading);
         }
     }
 
-    public class RememberLastMessage : ConsoleCommand
+    public class RememberLastMessage : SuperCommand
     {
-        public RememberLastMessage(ConsoleHandler game) : base(game)
+        public RememberLastMessage(GameContainer game) : base(game)
         {
         }
 
         public override void Activate()
         {
-            Receiver.GetLastMessage();
+            SystemConsole.GetLastMessage();
         }
     }
 
-    public class ForgetCurrentMessage : ConsoleCommand
+    public class ForgetCurrentMessage : SuperCommand
     {
-        public ForgetCurrentMessage(ConsoleHandler game) : base(game)
+        public ForgetCurrentMessage(GameContainer game) : base(game)
         {
         }
 
         public override void Activate()
         {
-            Receiver.ClearOutMessage();
+            SystemConsole.ClearOutMessage();
         }
     }
 

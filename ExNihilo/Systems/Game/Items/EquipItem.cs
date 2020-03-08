@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Runtime.Serialization;
+using ExNihilo.Systems.Backend;
 using ExNihilo.Systems.Bases;
 using ExNihilo.Util;
 using ExNihilo.Util.Graphics;
@@ -118,7 +119,7 @@ namespace ExNihilo.Systems.Game.Items
                 }
                 catch (Exception)
                 {
-                    GameContainer.Console.ForceMessage("<warning>", "Ignoring malformed material line \"" + line + "\"", Color.DarkOrange, Color.White);
+                    SystemConsole.ForceMessage("<warning>", "Ignoring malformed material line \"" + line + "\"", Color.DarkOrange, Color.White);
                 }
             }
         }
@@ -165,7 +166,7 @@ namespace ExNihilo.Systems.Game.Items
                                     _materials.Add(set[j]);
                                     tokens[4] = 0;
                                 }
-                                else GameContainer.Console.ForceMessage("<warning>", set[j] + " is not a valid material", Color.DarkOrange, Color.White);
+                                else SystemConsole.ForceMessage("<warning>", set[j] + " is not a valid material", Color.DarkOrange, Color.White);
                             }
                             break;
                         case "ICON":
@@ -195,7 +196,7 @@ namespace ExNihilo.Systems.Game.Items
                 }
                 catch (Exception)
                 {
-                    GameContainer.Console.ForceMessage("<warning>", "Ignoring malformed item pack line \"" + lines[0] + "\"", Color.DarkOrange, Color.White);
+                    SystemConsole.ForceMessage("<warning>", "Ignoring malformed item pack line \"" + lines[0] + "\"", Color.DarkOrange, Color.White);
                 }
                 lines.RemoveAt(0);
             }

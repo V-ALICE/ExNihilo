@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
+using ExNihilo.Systems.Backend;
 using ExNihilo.Systems.Bases;
 using ExNihilo.Systems.Game.Items.ExNihilo.Systems.Game.Items;
 using Microsoft.Xna.Framework;
@@ -77,7 +78,7 @@ namespace ExNihilo.Systems.Game.Items
                                         _equipSet[equip.Slot].Add(equip);
                                         _totalEquipChance += equip.Chance;
                                     }
-                                    else GameContainer.Console.ForceMessage("<error>", "Item with name \"" + equip.Name + "\" is invalid", Color.DarkRed, Color.White);
+                                    else SystemConsole.ForceMessage("<error>", "Item with name \"" + equip.Name + "\" is invalid", Color.DarkRed, Color.White);
                                     break;
                                 case "USE":
                                     var use = new UseItem(g, curTex, name, lines);
@@ -86,7 +87,7 @@ namespace ExNihilo.Systems.Game.Items
                                         _useSet.Add(use);
                                         _totalUseChance += use.Chance;
                                     }
-                                    else GameContainer.Console.ForceMessage("<error>", "Item with name \"" + use.Name + "\" is invalid", Color.DarkRed, Color.White);
+                                    else SystemConsole.ForceMessage("<error>", "Item with name \"" + use.Name + "\" is invalid", Color.DarkRed, Color.White);
                                     break;
                                 case "INSTANT":
                                     var instant = new InstantItem(g, curTex, name, lines);
@@ -95,7 +96,7 @@ namespace ExNihilo.Systems.Game.Items
                                         _instantSet.Add(instant);
                                         _totalInstantChance += instant.Chance;
                                     }
-                                    else GameContainer.Console.ForceMessage("<error>", "Item with name \"" + instant.Name + "\" is invalid", Color.DarkRed, Color.White);
+                                    else SystemConsole.ForceMessage("<error>", "Item with name \"" + instant.Name + "\" is invalid", Color.DarkRed, Color.White);
                                     break;
                                 default:
                                     throw new IndexOutOfRangeException();
@@ -103,7 +104,7 @@ namespace ExNihilo.Systems.Game.Items
                         }
                         else
                         {
-                            GameContainer.Console.ForceMessage("<warning>", "Ignoring unexpected line \"" + lines[0] + "\" in item pack description", Color.DarkOrange, Color.White);
+                            SystemConsole.ForceMessage("<warning>", "Ignoring unexpected line \"" + lines[0] + "\" in item pack description", Color.DarkOrange, Color.White);
                             lines.RemoveAt(0);
                         }
                     }
@@ -112,11 +113,11 @@ namespace ExNihilo.Systems.Game.Items
                 }
                 catch (IndexOutOfRangeException)
                 {
-                    GameContainer.Console.ForceMessage("<error>", "Item pack file \"" + fileName + "\" is malformed", Color.DarkRed, Color.White);
+                    SystemConsole.ForceMessage("<error>", "Item pack file \"" + fileName + "\" is malformed", Color.DarkRed, Color.White);
                 }
                 catch (Exception e)
                 {
-                    GameContainer.Console.ForceMessage("<error>", e.Message, Color.DarkRed, Color.White);
+                    SystemConsole.ForceMessage("<error>", e.Message, Color.DarkRed, Color.White);
                 }
             }
 

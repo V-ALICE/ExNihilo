@@ -106,5 +106,15 @@ namespace ExNihilo.UI
             if (!Loaded || DontDrawThis) return;
             TextDrawer.DrawSmartText(spriteBatch, OriginPosition, Text, CurrentScale, param, Colors);
         }
+
+        public override void ChangeColor(ColorScale color)
+        {
+            Colors = new[] {color};
+        }
+
+        public void ChangeColor(ColorScale[] colors)
+        {
+            Colors = colors;
+        }
     }
 }

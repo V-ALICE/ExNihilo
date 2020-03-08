@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Text;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 
@@ -121,6 +122,7 @@ namespace ExNihilo.Util.Graphics
                 }
                 if (t == ' ') //space
                 {
+                    if (wavy > 0) wavy--;
                     if (underlining > 0)
                     {
                         underlining--;
@@ -138,28 +140,27 @@ namespace ExNihilo.Util.Graphics
                     switch (smartText[i+1])
                     {
                         case 'c': //change color
-                            i++; //consume c
-                            if (i + 1 == smartText.Length) return aPos; //make sure there's actually something after
-                            if (char.IsDigit(smartText, i+1)) //Make sure it's actually a number after
+                            i += 2; //fully consume @c
+                            if (i == smartText.Length) return aPos; //make sure there's actually something after
+                            if (char.IsDigit(smartText, i)) //Make sure it's actually a number after
                             {
-                                i++; //consume digit
                                 var param = int.Parse(smartText[i].ToString());
                                 if (colors.Length > param) c = colors[param]; //change color if there's actually a color at that position
                             }
                             break;
                         case 'h': //insert half space
-                            i++; //consume h
+                            i++; //fully consume @h
                             if (p.ReducedSpaces)
                                 aPos.X = (int)Math.Round(aPos.X + 0.5 * multiplier * AlphaWidth);
                             else
                                 aPos.X = (int)Math.Round(aPos.X + 0.5 * multiplier * (AlphaWidth + AlphaSpacer));
                             break;
                         case 'n': //insert half newline skip (can be done mid line as well)
-                            i++; //consume n
+                            i++; //fully consume @n
                             aPos.Y = (int) Math.Round(aPos.Y + 0.5f * multiplier * (AlphaHeight + LineSpacer));
                             break;
                         case 's': //sin wave
-                            i += 2; //fully consume s
+                            i += 2; //fully consume @s
                             string s = "";
                             if (i == smartText.Length) return aPos; //make sure there's actually something after
                             while (smartText[i] != '@')
@@ -174,8 +175,8 @@ namespace ExNihilo.Util.Graphics
                                 sineOffset = 2*Math.PI / lenS;
                             }
                             break;
-                        case 'u': //underline for some amount of characterss
-                            i+=2; //fully consume u
+                        case 'u': //underline for some amount of characters
+                            i += 2; //fully consume @u
                             string u = "";
                             if (i == smartText.Length) return aPos; //make sure there's actually something after
                             while (smartText[i] != '@')
@@ -196,7 +197,7 @@ namespace ExNihilo.Util.Graphics
                 if (wavy > 0)
                 {
                     wavy--;
-                    var offset = new Vector2(0, (float) Math.Round(10 * Math.Sin(7 * metro + wavy * sineOffset)));
+                    var offset = new Vector2(0, (float) Math.Round(multiplier*5 * Math.Sin(7 * metro + wavy * sineOffset)));
                     spriteBatch.Draw(GetLetter(t), aPos+offset, null, c, 0, Vector2.Zero, multiplier, SpriteEffects.None, 0);
                 }
                 else
@@ -215,10 +216,71 @@ namespace ExNihilo.Util.Graphics
             return aPos; //return the would be placement of the next letter
         }
 
+        public static string GetDeclutteredString(string smartText)
+        {
+            var result = new StringBuilder(smartText);
+            for (int i = 0; i < result.Length; i++)
+            {
+                if (result[i] != '@' && !_charTextures.ContainsKey(result[i]))
+                {
+                    result[i] = ' ';
+                }
+            }
+
+            return result.ToString();
+        }
+
+        public static int GetSmartTextLength(string smartText)
+        {
+            int len = 0, maxLen = 0;
+            for (var i = 0; i < smartText.Length; i++)
+            {
+                var t = smartText[i];
+                if (t == '\n') //newline
+                {
+                    len = 0;
+                    continue;
+                }
+                if (t == '@')//smart text
+                {
+                    if (i + 1 == smartText.Length) continue; //make sure there's actually something after
+                    switch (smartText[i + 1])
+                    {
+                        case 'c':
+                            i += 2; //consume c and number
+                            break;
+                        case 'h': //insert half space
+                            i++; //consume h
+                            len++; //Not sure about this
+                            break;
+                        case 'u': //underline for some amount of characters
+                        case 's': //sine wave for some amount of characters
+                            i++; //consume first @
+                            while (smartText[i] != '@')
+                            {
+                                i++;
+                                if (i == smartText.Length) break; //ignore malformed strings
+                            }
+                            break;
+                        default:
+                            i++;
+                            break;
+                    }
+                }
+                else
+                {
+                    len++;
+                }
+
+                if (len > maxLen) maxLen = len;
+            }
+
+            return maxLen;
+        }
         public static Coordinate GetSmartTextSize(string smartText, float multiplier=1, bool reducedSpaces=false)
         {
             int currentX = 0;
-            Coordinate pixelSize = new Coordinate();
+            var pixelSize = new Coordinate();
             for (var i = 0; i < smartText.Length; i++)
             {
                 var t = smartText[i];
@@ -242,6 +304,9 @@ namespace ExNihilo.Util.Graphics
                     if (i + 1 == smartText.Length) continue; //make sure there's actually something after
                     switch (smartText[i + 1])
                     {
+                        case 'c':
+                            i+=2; //consume c and number
+                            break;
                         case 'h': //insert half space
                             i++; //consume h
                             if (reducedSpaces)
@@ -255,12 +320,12 @@ namespace ExNihilo.Util.Graphics
                             break;
                         case 'u': //underline for some amount of characters
                         case 's': //sine wave for some amount of characters
+                            i++; //consume initial @
                             while (smartText[i] != '@')
                             {
                                 i++;
                                 if (i == smartText.Length) break; //ignore malformed strings
                             }
-                            i++; //consume second @
                             break;
                         default:
                             i++;
@@ -291,38 +356,22 @@ namespace ExNihilo.Util.Graphics
                 return a;
             }
 
-            int GetTrueLength(string input)
-            {
-                var t = 0;
-                input = input.TrimEnd(' ');
-                for (int i = 0; i < input.Length; i++)
-                {
-                    if (input[i] == '@')
-                    {
-                        i += 2;
-                        if (input[i - 1] == 'c') i++;
-                    }
-                    else if (input[i] != '\n') t++;
-                }
-                return t;
-            }
-
             //Splits on spaces, new lines, and dashes
             var newSplit = "";
             var newLine = "";
-            if (GetTrueLength(smartText) <= boxWidthInChars) return smartText;
+            if (GetSmartTextLength(smartText) <= boxWidthInChars) return smartText;
             while (smartText.Length > 0)
             {
                 var nextChunk = GetNextSplit(smartText);
-                var nextLength = GetTrueLength(nextChunk);
+                var nextLength = GetSmartTextLength(nextChunk);
                 if (nextLength > boxWidthInChars)
                 {
                     //next chunk is longer than a full line
-                    var charsToUse = boxWidthInChars - GetTrueLength(newLine);
+                    var charsToUse = boxWidthInChars - GetSmartTextLength(newLine);
                     newLine += nextChunk.Substring(0, charsToUse);
                     smartText = smartText.Substring(charsToUse);
                 }
-                else if (GetTrueLength(newLine) + nextLength < boxWidthInChars)
+                else if (GetSmartTextLength(newLine) + nextLength < boxWidthInChars)
                 {
                     //Next chunk can fit on current line
                     newLine += nextChunk;

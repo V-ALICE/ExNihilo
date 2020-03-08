@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using ExNihilo.Sectors;
+using ExNihilo.Util.Graphics;
 using Lidgren.Network;
 using Microsoft.Xna.Framework;
 
@@ -22,6 +23,7 @@ namespace ExNihilo.Systems.Backend.Network
             public long UniqueID;
             public byte MiniID;
             public string Name;
+            public Color Color;
             public int[] charSet;
         }
         private static readonly Dictionary<long, GameAssociation> _lookup = new Dictionary<long, GameAssociation>();
@@ -52,13 +54,13 @@ namespace ExNihilo.Systems.Backend.Network
                 _outer.ClearPlayers();
                 if (NetworkManager.Active)
                 {
-                    GameContainer.Console.ForceMessage("<Asura>", "Disconnected", Color.Purple, Color.White);
+                    SystemConsole.ForceMessage("<Asura>", "Disconnected", Color.Purple, Color.White);
                 }
             }
             else if (_lookup.TryGetValue(id, out var val))
             {
                 //Someone else has disconnected
-                GameContainer.Console.ForceMessage("<Asura>", _lookup[id].AssignedName + " has disconnected", Color.Purple, Color.White);
+                SystemConsole.ForceMessage("<Asura>", _lookup[id].AssignedName + " has disconnected", Color.Purple, Color.White);
                 _void.ClearPlayers(val.UniqueID);
                 _outer.ClearPlayers(val.UniqueID);
                 _lookup.Remove(id);
@@ -70,10 +72,10 @@ namespace ExNihilo.Systems.Backend.Network
                     if (!NetworkManager.Active) return;
                     ReconfigureMiniIDs();
                     ForwardMessage(new MessageStruct((short)NetworkMessageType.Disconnect, MyUniqueID, id));
-                    ForwardMessage(new PlayerIntroduction(MyUniqueID, _gameRef.Player.Name, MyMiniID, _gameRef.Player.TextureSet));
+                    ForwardMessage(_gameRef.GetCurrentIntroduction());
                     foreach (var p in _lookup.Values)
                     {
-                        ForwardMessage(new PlayerIntroduction(p.UniqueID, p.Name, p.MiniID, p.charSet));
+                        ForwardMessage(new PlayerIntroduction(p.UniqueID, p.Name, p.MiniID, p.Color.R, p.Color.G, p.Color.B, p.charSet));
                     }
                 }
             }
@@ -119,7 +121,7 @@ namespace ExNihilo.Systems.Backend.Network
                     ReadDisconnect(message);
                     break;
                 default:
-                    GameContainer.Console.ForceMessage("<error>", "Received network message of unknown type", Color.DarkRed, Color.White);
+                    SystemConsole.ForceMessage("<error>", "Received network message of unknown type", Color.DarkRed, Color.White);
                     return false;
             }
             return true;
@@ -141,10 +143,11 @@ namespace ExNihilo.Systems.Backend.Network
                 obj.Name = data.Name;
                 obj.charSet = data.CharSet;
                 obj.MiniID = data.SubID;
+                obj.Color = new Color(data.R, data.G, data.B);
             }
             else
             {
-                obj = new GameAssociation { UniqueID = data.SenderUniqueID, Name = data.Name, charSet = data.CharSet, MiniID = data.SubID };
+                obj = new GameAssociation { UniqueID = data.SenderUniqueID, Name = data.Name, charSet = data.CharSet, MiniID = data.SubID, Color = new Color(data.R, data.G, data.B) };
                 _lookup.Add(data.SenderUniqueID, obj);
             }
 
@@ -156,10 +159,10 @@ namespace ExNihilo.Systems.Backend.Network
             //If hosting, inform all clients of all players to keep everyone on the same page
             if (NetworkManager.Hosting)
             {
-                ForwardMessage(new PlayerIntroduction(MyUniqueID, _gameRef.Player.Name, MyMiniID, _gameRef.Player.TextureSet));
+                ForwardMessage(_gameRef.GetCurrentIntroduction());
                 foreach (var p in _lookup.Values)
                 {
-                    ForwardMessage(new PlayerIntroduction(p.UniqueID, p.Name, p.MiniID, p.charSet));
+                    ForwardMessage(new PlayerIntroduction(p.UniqueID, p.Name, p.MiniID, p.Color.R, p.Color.G, p.Color.B, p.charSet));
                 }
             }
         }
@@ -170,7 +173,7 @@ namespace ExNihilo.Systems.Backend.Network
 
             if (_lookup.TryGetValue(data.SenderUniqueID, out var val))
             {
-                GameContainer.Console.ForceMessage("<" + val.AssignedName + ">", data.Message, Color.ForestGreen, Color.White);
+                SystemConsole.ForceMessage("<" + val.AssignedName + ">", data.Message, val.Color, Color.White);
                 ForwardMessage(data);
             }
         } 

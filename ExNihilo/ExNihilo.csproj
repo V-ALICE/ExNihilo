@@ -102,7 +102,7 @@
     <Compile Include="Systems\Backend\Network\NetworkMessages.cs" />
     <Compile Include="Systems\Bases\Interactable.cs" />
     <Compile Include="Systems\Bases\IPlayer.cs" />
-    <Compile Include="Systems\Backend\Console.cs" />
+    <Compile Include="Systems\Backend\SystemConsole.cs" />
     <Compile Include="Systems\Bases\ISavable.cs" />
     <Compile Include="Systems\Bases\ISuperPlayer.cs" />
     <Compile Include="Systems\Bases\Item.cs" />
@@ -133,7 +133,7 @@
     <Compile Include="UI\UIText.cs" />
     <Compile Include="UI\UITogglable.cs" />
     <Compile Include="Util\Graphics\AnimatableTexture.cs" />
-    <Compile Include="Util\AudioManager.cs" />
+    <Compile Include="Systems\Backend\AudioManager.cs" />
     <Compile Include="Util\Graphics\ColorScale.cs" />
     <Compile Include="Util\Coordinate.cs" />
     <Compile Include="Util\EncryptedSerializer.cs" />

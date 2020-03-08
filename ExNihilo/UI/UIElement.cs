@@ -128,7 +128,7 @@ namespace ExNihilo.UI
             Texture.Draw(spriteBatch, OriginPosition, ColorScale?.Get() ?? Color.White, CurrentScale);
         }
 
-        public void ChangeColor(ColorScale color)
+        public virtual void ChangeColor(ColorScale color)
         {
             ColorScale = color;
         }

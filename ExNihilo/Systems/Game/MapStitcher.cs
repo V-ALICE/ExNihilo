@@ -89,7 +89,7 @@ namespace ExNihilo.Systems.Game
             }
             catch (IndexOutOfRangeException)
             {
-                GameContainer.Console.ForceMessage("<error>", "Ignoring unexpected line \"" + line + "\" in tile map description", Color.DarkRed, Color.White);
+                SystemConsole.ForceMessage("<error>", "Ignoring unexpected line \"" + line + "\" in tile map description", Color.DarkRed, Color.White);
             }
         }
 
@@ -184,7 +184,7 @@ namespace ExNihilo.Systems.Game
                         }
                         else
                         {
-                            GameContainer.Console.ForceMessage("<warning>", "Ignoring unexpected line \"" + line + "\" in tile map description", Color.DarkOrange, Color.White);
+                            SystemConsole.ForceMessage("<warning>", "Ignoring unexpected line \"" + line + "\" in tile map description", Color.DarkOrange, Color.White);
                         }
                     }
                     else if (line.StartsWith("BOX "))
@@ -219,7 +219,7 @@ namespace ExNihilo.Systems.Game
                     else
                     {
                         //Most likely trying to load tiles without loading a file first
-                        GameContainer.Console.ForceMessage("<warning>", "Ignoring unexpected line \"" + line + "\" in tile map description", Color.DarkOrange, Color.White);
+                        SystemConsole.ForceMessage("<warning>", "Ignoring unexpected line \"" + line + "\" in tile map description", Color.DarkOrange, Color.White);
                     }
                 }
 
@@ -227,20 +227,20 @@ namespace ExNihilo.Systems.Game
             }
             catch (FileNotFoundException)
             {
-                GameContainer.Console.ForceMessage("<error>", "Texture map file \"" + fileName + "\" does not exist or is malformed", Color.DarkRed, Color.White);
-                GameContainer.Console.ForceMessage("<error>", "Texture map is invalid. Loading emergency default", Color.DarkRed, Color.White);
+                SystemConsole.ForceMessage("<error>", "Texture map file \"" + fileName + "\" does not exist or is malformed", Color.DarkRed, Color.White);
+                SystemConsole.ForceMessage("<error>", "Texture map is invalid. Loading emergency default", Color.DarkRed, Color.White);
                 return Default(g);
             }
             catch (IndexOutOfRangeException)
             {
-                GameContainer.Console.ForceMessage("<error>", "Texture map file \"" + fileName + "\" is malformed", Color.DarkRed, Color.White);
-                GameContainer.Console.ForceMessage("<error>", "Texture map is invalid. Loading emergency default", Color.DarkRed, Color.White);
+                SystemConsole.ForceMessage("<error>", "Texture map file \"" + fileName + "\" is malformed", Color.DarkRed, Color.White);
+                SystemConsole.ForceMessage("<error>", "Texture map is invalid. Loading emergency default", Color.DarkRed, Color.White);
                 return Default(g);
             }
             catch (Exception e)
             {
-                GameContainer.Console.ForceMessage("<error>", e.Message, Color.DarkRed, Color.White);
-                GameContainer.Console.ForceMessage("<error>", "Texture map is invalid. Loading emergency default", Color.DarkRed, Color.White);
+                SystemConsole.ForceMessage("<error>", e.Message, Color.DarkRed, Color.White);
+                SystemConsole.ForceMessage("<error>", "Texture map is invalid. Loading emergency default", Color.DarkRed, Color.White);
                 return Default(g);
             }
 
@@ -260,7 +260,7 @@ namespace ExNihilo.Systems.Game
             }
 
             if (tmfSet.Count != 0) return tmfSet.ToArray();
-            GameContainer.Console.ForceMessage("<error>", "Texture map is invalid. Loading emergency default", Color.DarkRed, Color.White);
+            SystemConsole.ForceMessage("<error>", "Texture map is invalid. Loading emergency default", Color.DarkRed, Color.White);
             return Default(g);
         }
 
@@ -273,7 +273,7 @@ namespace ExNihilo.Systems.Game
                     return m.Value[rand.Next(m.Value.Count)];
                 }
             }
-            GameContainer.Console.ForceMessage("<warning>", "Texture map contains no definitions for ID " + type, Color.DarkRed, Color.White);
+            SystemConsole.ForceMessage("<warning>", "Texture map contains no definitions for ID " + type, Color.DarkRed, Color.White);
             return null;
         }
 

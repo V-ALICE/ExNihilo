@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.Serialization;
+using ExNihilo.Systems.Backend;
 using ExNihilo.Systems.Bases;
 using ExNihilo.Util;
 using ExNihilo.Util.Graphics;
@@ -103,7 +104,7 @@ namespace ExNihilo.Systems.Game.Items
                     }
                     catch (Exception)
                     {
-                        GameContainer.Console.ForceMessage("<warning>", "Ignoring malformed item pack line \"" + lines[0] + "\"", Color.DarkOrange, Color.White);
+                        SystemConsole.ForceMessage("<warning>", "Ignoring malformed item pack line \"" + lines[0] + "\"", Color.DarkOrange, Color.White);
                     }
                     lines.RemoveAt(0);
                 }

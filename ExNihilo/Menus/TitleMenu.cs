@@ -1,8 +1,8 @@
-﻿using System.Diagnostics.Eventing.Reader;
+﻿using System;
 using System.Threading.Tasks;
-using ExNihilo.Input.Controllers;
-using ExNihilo.Systems;
+using System.Windows.Forms;
 using ExNihilo.Systems.Backend;
+using ExNihilo.Systems.Backend.Network;
 using ExNihilo.Systems.Game;
 using ExNihilo.UI;
 using ExNihilo.Util;
@@ -29,6 +29,9 @@ namespace ExNihilo.Menus
         {
             _type = CurrentMenu.Options;
             _optionsUI.OnMoveMouse(_lastMousePosition);
+
+            var text = _optionsUI.GetElement("ColorText") as UIText;
+            text?.ChangeColor(SystemConsole.MyColor);
         }
 
         private void ExitGame(UICallbackPackage package)
@@ -121,6 +124,50 @@ namespace ExNihilo.Menus
             }
         }
 
+        private void ChangeNameColor(UICallbackPackage package)
+        {
+            var colorWheel = _optionsUI.GetElement("ColorWheel");
+            var text = _optionsUI.GetElement("ColorText") as UIText;
+
+            var center = new Point(colorWheel.OriginPosition.X + colorWheel.CurrentPixelSize.X/2, colorWheel.OriginPosition.Y + colorWheel.CurrentPixelSize.Y/2);
+            var v = new Vector2(package.ScreenPos.X - center.X, package.ScreenPos.Y-center.Y);
+            var angle = MathHelper.ToDegrees(MathHelper.WrapAngle((float) (Math.Atan2(-v.X, -v.Y) + MathHelper.PiOver2)));
+
+            var segment = Math.Abs(angle);
+            const float oneSegment = 180 / 12f;
+            if (segment < oneSegment)
+            {
+                SystemConsole.MyColor = ColorScale.Red;
+            }
+            else if (segment < 3 * oneSegment)
+            {
+                SystemConsole.MyColor = angle < 0 ? ColorScale.VioletRed : ColorScale.RedOrange;
+            }
+            else if (segment < 5 * oneSegment)
+            {
+                SystemConsole.MyColor = angle < 0 ? ColorScale.Violet : ColorScale.Orange;
+            }
+            else if (segment < 7 * oneSegment)
+            {
+                SystemConsole.MyColor = angle < 0 ? ColorScale.BlueViolet : ColorScale.OrangeYellow;
+            }
+            else if (segment < 9 * oneSegment)
+            {
+                SystemConsole.MyColor = angle < 0 ? ColorScale.Blue : ColorScale.Yellow;
+            }
+            else if (segment < 11 * oneSegment)
+            {
+                SystemConsole.MyColor = angle < 0 ? ColorScale.GreenBlue : ColorScale.YellowGreen;
+            }
+            else
+            {
+                SystemConsole.MyColor = ColorScale.Green;
+            }
+            text?.ChangeColor(SystemConsole.MyColor);
+
+            NetworkManager.SendMessage(Container.GetCurrentIntroduction());
+        }
+
 /********************************************************************
 ------->Loading Menu Callbacks
 ********************************************************************/
@@ -156,7 +203,7 @@ namespace ExNihilo.Menus
             var success = await Task.Run(() => Container.Unpack(save));
             if (!success)
             {
-                GameContainer.Console.ForceMessage("<error>", "Failed to load save", Color.DarkRed, Color.White);
+                SystemConsole.ForceMessage("<error>", "Failed to load save", Color.DarkRed, Color.White);
                 Container.RequestSectorChange(GameContainer.SectorID.Outerworld);
             }
             else if (save.InVoid)
@@ -262,8 +309,7 @@ namespace ExNihilo.Menus
         private readonly UIPanel _titleUI, _optionsUI, _loadUI, _newGameUI;
         private Point _lastMousePosition;
         private const int MAX_NEWGAME_TEXT_SIZE = 15;
-
-
+        
         private UIPanel ActivePanel()
         {
             switch (_type)
@@ -311,8 +357,8 @@ namespace ExNihilo.Menus
             // Option Menu setup
             var backButton = new UIClickable("BackButton", "UI/button/SmallButton", new Coordinate(10, -10), ColorScale.White, _optionsUI, PositionType.BottomLeft, PositionType.BottomLeft);
             var backButtonText = new UIText("BackButtonText", new Coordinate(), "Back", ColorScale.Black, backButton, PositionType.Center, PositionType.Center);
-            var effectVolumeBar = new UIElement("EffectVolumeBar", "UI/field/SmallFillBar", new Vector2(0.45f, 0.2f), ColorScale.White, _optionsUI, PositionType.TopRight);
-            var musicVolumeBar = new UIElement("MusicVolumeBar", "UI/field/SmallFillBar", new Vector2(0.55f, 0.2f), ColorScale.White, _optionsUI, PositionType.TopLeft);
+            var effectVolumeBar = new UIElement("EffectVolumeBar", "UI/field/SmallFillBar", new Vector2(0.45f, 0.25f), ColorScale.White, _optionsUI, PositionType.TopRight);
+            var musicVolumeBar = new UIElement("MusicVolumeBar", "UI/field/SmallFillBar", new Vector2(0.55f, 0.25f), ColorScale.White, _optionsUI, PositionType.TopLeft);
             var effectVolumeBarFill = new UIExtendable("EffectVolumeBarFill", "UI/fill/BarFillRed", new Coordinate(18, 6), ColorScale.White, effectVolumeBar, PositionType.TopLeft, PositionType.TopLeft, new Coordinate(240, 28), true, false);
             var musicVolumeBarFill = new UIExtendable("MusicVolumeBarFill", "UI/fill/BarFillBlue", new Coordinate(18, 6), ColorScale.White, musicVolumeBar, PositionType.TopLeft, PositionType.TopLeft, new Coordinate(240, 28), true, false);
             var effectVolumeBarText = new UIText("EffectVolumeBarText", new Coordinate(2, -4), "Effect Volume", ColorScale.Grey, effectVolumeBarFill, PositionType.BottomLeft, PositionType.TopLeft);
@@ -342,7 +388,11 @@ namespace ExNihilo.Menus
             var pulseColorText = new UIText("PulseColorText", new Coordinate(5, 0), "Pulse", ColorScale.GetFromGlobal("Pulse"), pulseColor, PositionType.CenterLeft, PositionType.CenterRight);
             var techniColorText = new UIText("TechniColorText", new Coordinate(5, 0), "Technicolor", ColorScale.GetFromGlobal("Rainbow"), techniColor, PositionType.CenterLeft, PositionType.CenterRight);
             var moodyColorText = new UIText("MoodyColorText", new Coordinate(5, 0), "Moody", ColorScale.GetFromGlobal("Random"), moodyColor, PositionType.CenterLeft, PositionType.CenterRight);
+            var _colorWheel = new UIClickable("ColorWheel", "UI/decor/ColorWheel", new Coordinate(0, 75), ColorScale.White, musicVolumeBar, PositionType.CenterTop, PositionType.Center);
+            var colorText = new UIText("ColorText", new Coordinate(0, 0), "<Name Color>", ColorScale.GreenBlue, _colorWheel, PositionType.Center, PositionType.Center);
 
+            _colorWheel.RegisterCallback(ChangeNameColor);
+            _colorWheel.SetRules(TextureLibrary.TinyScaleRuleSet);
             backButton.RegisterCallback(SwapToTitleFromOptions);
             effectVolumeBarFill.RegisterCallback(ApplyEffectVolume);
             musicVolumeBarFill.RegisterCallback(ApplyMusicVolume);
@@ -355,7 +405,7 @@ namespace ExNihilo.Menus
 
             particleStylePanel.AddElements(noParticles, rainParticles, windParticles, randomParticles, emberParticles, noParticlesText, rainParticlesText, windParticlesText, randomParticlesText, emberwParticlesText, particleStyleText, particleText);
             particleColorPanel.AddElements(defaultColor, pulseColor, whiteColor, techniColor, moodyColor, defaultColorText, whiteColorText, pulseColorText, techniColorText, moodyColorText, particleColorText);
-            _optionsUI.AddElements(backButton, backButtonText, effectVolumeBar, musicVolumeBar, effectVolumeBarFill, musicVolumeBarFill, effectVolumeBarText, musicVolumeBarText, particleStylePanel, particleColorPanel);
+            _optionsUI.AddElements(backButton, backButtonText, effectVolumeBar, musicVolumeBar, effectVolumeBarFill, musicVolumeBarFill, effectVolumeBarText, musicVolumeBarText, particleStylePanel, particleColorPanel, _colorWheel, colorText);
 
             // Load Menu setup
             var loadPanel = new UIPanel("LoadFilePanel", new Vector2(0.5f, 1), new Vector2(0, 0.5f), PositionType.CenterBottom);

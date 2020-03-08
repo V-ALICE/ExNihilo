@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Runtime.Remoting.Messaging;
 using ExNihilo.Input.Commands;
 using ExNihilo.Systems.Backend.Network;
 using ExNihilo.Systems.Bases;
@@ -112,7 +113,7 @@ namespace ExNihilo.Systems.Backend
 
         public void AddMessage(string starter, string text, ColorScale startColor, ColorScale messageColor)
         {
-            var tmp = new Message(text, _lineLiveTime, starter, startColor, messageColor);
+            var tmp = new Message(TextDrawer.GetDeclutteredString(text.ToUpper()), _lineLiveTime, TextDrawer.GetDeclutteredString(starter.ToUpper()), startColor, messageColor);
             tmp.SmartSplit(_maxLineLength);
             _messages.Add(tmp);
             while (_messages.Count > _memoryMax) _messages.RemoveAt(0);
@@ -149,36 +150,60 @@ namespace ExNihilo.Systems.Backend
 
     }
 
-    public class ConsoleHandler : IUI, ITypable
+    public static class SystemConsole
     {
-        private readonly ConsoleBox _console;
-        private readonly CommandHandler _handler;
-        private Texture2D _backdrop;
-        private string _activeText;
-        private Vector2 _backdropPos;
-        private Coordinate _activeMessagePosition, _oldMessagePosition;
-        private int _maxCharacterCount, _maxLineCount;
-        private float _currentScale;
-        private ScaleRuleSet _rules;
-        private string _lastMessage;
-        public bool Active, Ready;
-
-        public ConsoleHandler(GameContainer g)
+        private class ConsoleReceiver : ITypable
         {
-            _handler = new CommandHandler();
-            _handler.InitializeConsole(g, this);
-            _console = new ConsoleBox(_maxLineCount, _maxCharacterCount);
-            _lastMessage = "";
-            _activeText = "";
+            public void ReceiveInput(string input)
+            {
+                _activeText += input;
+            }
+
+            public void Backspace(int len)
+            {
+                if (_activeText.Length >= len) _activeText = _activeText.Substring(0, _activeText.Length - len);
+            }
         }
 
-        public void LoadContent(GraphicsDevice graphics, ContentManager content)
+        private static readonly ConsoleReceiver _receiver = new ConsoleReceiver();
+        private static ConsoleBox _console;
+        private static readonly CommandHandler _handler = new CommandHandler();
+        private static Texture2D _backdrop;
+        private static Vector2 _backdropPos;
+        private static Coordinate _activeMessagePosition, _oldMessagePosition;
+        private static int _maxCharacterCount, _maxLineCount;
+        private static float _currentScale;
+        private static ScaleRuleSet _rules;
+        private static string _lastMessage="", _activeText="";
+
+        public static bool Active, Ready;
+
+        private static Color _myColor;
+        public static Color MyColor
+        {
+            get => _myColor;
+            set
+            {
+                _myColor = value;
+                SaveHandler.Parameters.R = value.R;
+                SaveHandler.Parameters.G = value.G;
+                SaveHandler.Parameters.B = value.B;
+            }
+        }
+
+        public static void Initialize(GameContainer g)
+        {
+            _console = new ConsoleBox(_maxLineCount, _maxCharacterCount);
+            _handler.InitializeConsole(g);
+        }
+
+        public static void LoadContent(GraphicsDevice graphics, ContentManager content)
         {
             _currentScale = 1;
             _rules = TextureLibrary.ReducedScaleRuleSet;
         }
 
-        public void OnResize(GraphicsDevice graphics, Coordinate gameWindow)
+        public static void OnResize(GraphicsDevice graphics, Coordinate gameWindow)
         {
             //Values
             int height = gameWindow.Y / 4;
@@ -205,7 +230,7 @@ namespace ExNihilo.Systems.Backend
             }
         }
 
-        public void Update()
+        public static void Update()
         {
             _console.Update();
             if (!Active) return;
@@ -213,7 +238,7 @@ namespace ExNihilo.Systems.Backend
             _handler.UpdateInput();
         }
 
-        public void Draw(SpriteBatch spriteBatch)
+        public static void Draw(SpriteBatch spriteBatch)
         {
             if (Active)
             {
@@ -239,21 +264,21 @@ namespace ExNihilo.Systems.Backend
             }
         }
 
-        public void OpenConsole(string initMessage)
+        public static void OpenConsole(string initMessage)
         {
             if (Active || TypingKeyboard.Active) return;
             Active = true;
             if (_activeText.Length == 0) _activeText = initMessage;
-            TypingKeyboard.Lock(this);
+            TypingKeyboard.Lock(_receiver);
         }
 
-        public void CloseConsole()
+        public static void CloseConsole()
         {
             Active = false;
-            TypingKeyboard.Unlock(this);
+            TypingKeyboard.Unlock(_receiver);
         }
 
-        public void PushConsole(string name, bool loading)
+        public static void PushConsole(string name, bool loading)
         {
             if (_activeText.StartsWith("/"))
             {
@@ -265,7 +290,7 @@ namespace ExNihilo.Systems.Backend
             }
             else if (_activeText.Length != 0)
             {
-                _console.AddMessage("<"+name+">", _activeText, Color.DeepSkyBlue, Color.White);
+                _console.AddMessage("<"+name+">", _activeText, MyColor, Color.White);
                 NetworkManager.SendMessage(new ConsoleMessage(NetworkManager.MyUniqueID, _activeText));
             }
 
@@ -274,8 +299,8 @@ namespace ExNihilo.Systems.Backend
             _activeText = "";
         }
 
-        private List<Tuple<string, string, ColorScale, ColorScale>> queue = new List<Tuple<string, string, ColorScale, ColorScale>>();
-        public void ForceMessage(string starter, string message, ColorScale startColor, ColorScale messageColor)
+        private static List<Tuple<string, string, ColorScale, ColorScale>> queue = new List<Tuple<string, string, ColorScale, ColorScale>>();
+        public static void ForceMessage(string starter, string message, ColorScale startColor, ColorScale messageColor)
         {
             if (!Ready)
             {
@@ -285,24 +310,19 @@ namespace ExNihilo.Systems.Backend
             _console.AddMessage(starter, message, startColor, messageColor);
         }
 
-        public void GetLastMessage()
+        public static void ClearConsole()
+        {
+            _console.ClearMemory();
+        }
+
+        public static void GetLastMessage()
         {
             _activeText = _lastMessage;
         }
 
-        public void ClearOutMessage()
+        public static void ClearOutMessage()
         {
             _activeText = "";
-        }
-
-        public void Backspace(int len)
-        {
-            if (_activeText.Length >= len) _activeText = _activeText.Substring(0, _activeText.Length - len);
-        }
-
-        public void ReceiveInput(string input)
-        {
-            _activeText += input;
         }
     }
 }

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using ExNihilo.Systems.Backend;
 using Microsoft.Xna.Framework;
 
 namespace ExNihilo.Util.Graphics
@@ -8,10 +9,24 @@ namespace ExNihilo.Util.Graphics
     public class ColorScale
     {
         private static readonly Dictionary<string, ColorScale> _globalScaleMap = new Dictionary<string, ColorScale>();
+        //Base game colors
         public static ColorScale White = new ColorScale(Color.White);
         public static ColorScale Black = new ColorScale(Color.Black);
         public static ColorScale Grey = new ColorScale(Color.Gray);
         public static ColorScale Ghost = new ColorScale(new Color(160, 160, 160, 128));
+        //Color wheel colors
+        public static ColorScale Red = new Color(254, 39, 18);
+        public static ColorScale RedOrange = new Color(253, 83, 8);
+        public static ColorScale Orange = new Color(251, 153, 2);
+        public static ColorScale OrangeYellow = new Color(250, 188, 2);
+        public static ColorScale Yellow = new Color(254, 254, 51);
+        public static ColorScale YellowGreen = new Color(208, 234, 43);
+        public static ColorScale Green = new Color(102, 176, 50);
+        public static ColorScale GreenBlue = new Color(3, 145, 206);
+        public static ColorScale Blue = new Color(2, 71, 254);
+        public static ColorScale BlueViolet = new Color(61, 1, 164);
+        public static ColorScale Violet = new Color(134, 1, 175);
+        public static ColorScale VioletRed = new Color(167, 25, 75);
 
         public static void LoadColors(string file)
         {
@@ -38,7 +53,7 @@ namespace ExNihilo.Util.Graphics
                 }
                 catch (Exception)
                 {
-                    GameContainer.Console.ForceMessage("<warning>", "Ignoring malformed color line \"" + line + "\"", Color.DarkOrange, Color.White);
+                    SystemConsole.ForceMessage("<warning>", "Ignoring malformed color line \"" + line + "\"", Color.DarkOrange, Color.White);
                 }
             }
         }
@@ -102,7 +117,7 @@ namespace ExNihilo.Util.Graphics
         {
             var c = _globalScaleMap.TryGetValue(name, out var color);
             if (c) return color;
-            GameContainer.Console.ForceMessage("<error>", "Trying to load nonexistent color \"" + name + "\"", Color.DarkRed, Color.White);
+            SystemConsole.ForceMessage("<error>", "Trying to load nonexistent color \"" + name + "\"", Color.DarkRed, Color.White);
             return null;
         }
 

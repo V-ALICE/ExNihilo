@@ -504,7 +504,7 @@ namespace ExNihilo.Systems.Backend.Network
         
         public static void SendMessage(MessageStruct data)
         {
-            if (!Connected) return;
+            if (!Connected || data is null) return;
             var message = Connection.CreateMessage();
             data.WriteOut(message);
             if (Hosting) _host.SendToAll(message, NetDeliveryMethod.ReliableOrdered);

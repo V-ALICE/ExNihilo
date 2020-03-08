@@ -29,16 +29,6 @@ namespace ExNihilo.Input.Commands.Types
         public abstract void Activate();
     }
 
-    public abstract class ConsoleCommand : ICommand
-    {
-        protected readonly ConsoleHandler Receiver;
-        protected ConsoleCommand(ConsoleHandler receiver)
-        {
-            Receiver = receiver;
-        }
-        public abstract void Activate();
-    }
-
     public abstract class GameplayCommand : ICommand
     {
         protected readonly IPlayer Receiver;

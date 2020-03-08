@@ -1,8 +1,6 @@
 ﻿using System;
-using System.Diagnostics.Eventing.Reader;
 using System.Runtime.Serialization;
 using ExNihilo.Util.Graphics;
-using Microsoft.Xna.Framework.Graphics;
 using Color = Microsoft.Xna.Framework.Color;
 
 namespace ExNihilo.Systems.Bases
@@ -31,13 +29,13 @@ namespace ExNihilo.Systems.Bases
         [OnDeserialized]
         internal void OnDeserialized(StreamingContext context)
         {
-           if (Quality < 3) QualityColor = Color.DarkRed;
-           else if (Quality == 6) QualityColor = Color.DarkGreen;
-           else if (Quality == 7) QualityColor = Color.Blue;
-           else if (Quality == 8) QualityColor = Color.DarkOrange;
-           else if (Quality == 9) QualityColor = Color.BlueViolet;
+           if (Quality < 3) QualityColor = ColorScale.VioletRed;
+           else if (Quality == 6) QualityColor = ColorScale.Green;
+           else if (Quality == 7) QualityColor = ColorScale.BlueViolet;
+           else if (Quality == 8) QualityColor = ColorScale.OrangeYellow;
+           else if (Quality == 9) QualityColor = ColorScale.Violet;
            else if (Quality == 10) QualityColor = ColorScale.GetFromGlobal("Rainbow");
-           else QualityColor = Color.Black;
+           else QualityColor = ColorScale.Black;
 
            IconColor = ColorName.Length > 0 ? ColorScale.GetFromGlobal(ColorName) : (ColorScale)new Color(r, g, b, a);
         }

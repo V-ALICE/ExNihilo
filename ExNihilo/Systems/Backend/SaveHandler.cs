@@ -86,6 +86,7 @@ namespace ExNihilo.Systems.Backend
     {
         public float MusicVolume, EffectVolume;
         public byte ParticleType, ParticleColor;
+        public byte R, G, B;
 
         public GameParameters()
         {
@@ -94,6 +95,9 @@ namespace ExNihilo.Systems.Backend
             EffectVolume = 0.5f;
             ParticleType = 4;
             ParticleColor = 0;
+            R = 3;
+            G = 145;
+            B = 206;
         }
     }
 
@@ -123,7 +127,7 @@ namespace ExNihilo.Systems.Backend
             }
             catch (Exception e)
             {
-                GameContainer.Console.ForceMessage("<error>", e.Message, Color.DarkRed, ColorScale.White);
+                SystemConsole.ForceMessage("<error>", e.Message, Color.DarkRed, ColorScale.White);
             }
         }
 
@@ -157,7 +161,7 @@ namespace ExNihilo.Systems.Backend
                 }
                 catch (Exception e)
                 {
-                    GameContainer.Console.ForceMessage("<error>", e.Message, Color.DarkRed, ColorScale.White);
+                    SystemConsole.ForceMessage("<error>", e.Message, Color.DarkRed, ColorScale.White);
                 }
             }
         }
