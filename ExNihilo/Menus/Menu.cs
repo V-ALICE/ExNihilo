@@ -20,21 +20,22 @@ namespace ExNihilo.Menus
         }
 
         protected GameContainer Container;
-        public bool Dead { get; protected set; }
 
-        protected Menu(GameContainer container)
+        protected Action OnExit;
+
+        protected Menu(GameContainer container, Action onExit)
         {
             Container = container;
+            OnExit = onExit;
         }
 
         public virtual void Enter(Point point)
         {
-            Dead = false;
         }
 
         public virtual void BackOut()
         {
-            Dead = true;
+            OnExit?.Invoke();
         }
 
         protected virtual void MenuDown()

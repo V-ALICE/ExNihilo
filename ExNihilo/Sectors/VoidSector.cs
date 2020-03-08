@@ -33,7 +33,7 @@ namespace ExNihilo.Sectors
 
         public override void Enter(Point point, Coordinate gameWindow)
         {
-            VoidIsActive = true;
+            //VoidIsActive = true;
             _invRef.SetReference(Player);
             BoxMenu.Menu.SetReference(Player);
             base.Enter(point, gameWindow);
@@ -76,6 +76,7 @@ namespace ExNihilo.Sectors
 
         public override void Unpack(PackedGame game)
         {
+            VoidIsActive = game.InVoid;
             ActiveLevel.Unpack(game);
         }
 
@@ -88,6 +89,7 @@ namespace ExNihilo.Sectors
                 foreach (var player in refList) ActiveLevel.AddPlayerRef(player);
             }
             SetFloor(floor);
+            VoidIsActive = true;
         }
 
         public void PrintMap(bool all=false)

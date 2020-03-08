@@ -56,12 +56,18 @@ namespace ExNihilo.Sectors
 
         public override void Initialize()
         {
+            void CharChange()
+            {
+                _invRef.SetReference(Player);
+                _menuPoint = null;
+            }
+
             base.Initialize();
-            _characterMenu = new CharacterMenu(Container, _world);
-            _divineMenu = new DivineMenu(Container);
-            _multiplayerMenu = new MultiplayerMenu(Container);
-            _fishMenu = new NoteMenu(Container, "No fishing allowed", true);
-            _voidMenu = new NoteMenu(Container, "Ready to Enter the Void?", false);
+            _characterMenu = new CharacterMenu(Container, CharChange, _world);
+            _divineMenu = new DivineMenu(Container, () => { _menuPoint = null;});
+            _multiplayerMenu = new MultiplayerMenu(Container, () => { _menuPoint = null; });
+            _fishMenu = new NoteMenu(Container, "No fishing allowed", x => { _menuPoint = null; }, true);
+            _voidMenu = new NoteMenu(Container, "Ready to Enter the Void?", TriggerVoid);
         }
 
         public override void LoadContent(GraphicsDevice graphicsDevice, ContentManager content)
@@ -95,22 +101,17 @@ namespace ExNihilo.Sectors
 ------->Game functions
 ********************************************************************/
 
+        private void TriggerVoid(bool accepted)
+        {
+            _menuPoint = null;
+            if (accepted) Container.StartNewGame(1, OtherPlayers);
+        }
+
         public override void OnLeftRelease(Point point)
         {
             if (_menuActive)
             {
                 _menuPoint.OnLeftRelease(point);
-                if (ReferenceEquals(_menuPoint, _voidMenu) && _voidMenu.Confirmed) //TODO: this is a dumb way to detect this
-                {
-                    _voidMenu.BackOut();
-                    Container.StartNewGame(1, OtherPlayers);
-                }
-
-                if (_menuPoint.Dead)
-                {
-                    if (_menuPoint is CharacterMenu) _invRef.SetReference(Player);
-                    _menuPoint = null;
-                }
             }
         }
 

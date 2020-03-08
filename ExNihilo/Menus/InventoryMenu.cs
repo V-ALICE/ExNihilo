@@ -83,7 +83,7 @@ namespace ExNihilo.Menus
 
         private void CloseMenu(UICallbackPackage package)
         {
-            Dead = true;
+            OnExit?.Invoke();
         }
 
         private PlayerEntityContainer _playerRef;
@@ -102,7 +102,7 @@ namespace ExNihilo.Menus
         private const int _descCharLen = 30;
         //Text box is 9 rows of 30 characters
 
-        public InventoryMenu(GameContainer container) : base(container)
+        public InventoryMenu(GameContainer container, Action onExit) : base(container, onExit)
         {
             _panelUI = new UIPanel("this.MenuKing", new Vector2(0.5f, 0.5f), Vector2.One, Position.Center);
 

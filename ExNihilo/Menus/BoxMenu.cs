@@ -1,4 +1,5 @@
 ﻿
+using System;
 using System.Linq;
 using ExNihilo.Entity;
 using ExNihilo.Systems.Backend;
@@ -99,7 +100,7 @@ namespace ExNihilo.Menus
         }
         private void CloseMenu(UICallbackPackage package)
         {
-            Dead = true;
+            OnExit?.Invoke();
         }
 
         private BoxInteractive _boxRef;
@@ -114,7 +115,7 @@ namespace ExNihilo.Menus
         private int _lastTextSlot = -1, _iconRefSize;
         private const int _descCharLen = 30;
 
-        private BoxMenu(GameContainer container) : base(container)
+        private BoxMenu(GameContainer container) : base(container, null)
         {
             _panelUI = new UIPanel("this.MenuKing", new Vector2(0.5f, 0.5f), Vector2.One, Position.Center);
 
@@ -202,9 +203,10 @@ namespace ExNihilo.Menus
 
             _lastTextSlot = -1;
         }
-        public void Enter(Point point, BoxInteractive refBox)
+        public void Enter(Point point, BoxInteractive refBox, Action onExit)
         {
             base.Enter(point);
+            OnExit = onExit;
             _boxRef = refBox;
             UpdateDisplay();
             _lastMousePosition = new Point(-1, -1);

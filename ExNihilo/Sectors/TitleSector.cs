@@ -33,7 +33,12 @@ namespace ExNihilo.Sectors
 
         public override void Initialize()
         {
-            _title = new TitleMenu(Container);
+            void GoBack()
+            {
+                RequestSectorChange(Container.PreviousSectorID);
+            }
+
+            _title = new TitleMenu(Container, GoBack);
         }
 
         public override void LoadContent(GraphicsDevice graphicsDevice, ContentManager content)
@@ -65,7 +70,6 @@ namespace ExNihilo.Sectors
         public override void BackOut()
         {
             _title.BackOut();
-            if (_title.Dead) RequestSectorChange(Container.PreviousSectorID);
         }
         public override void ReceiveCommand(Menu.MenuCommand command)
         {

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using System.Xml.Serialization;
 using ExNihilo.Systems.Backend;
 using ExNihilo.Systems.Backend.Network;
 using ExNihilo.Systems.Game;
@@ -222,10 +223,11 @@ namespace ExNihilo.Menus
         {
             if (_deleteMode)
             {
-                //TODO: make a popup warning for trying to delete a file(?)
-                SaveHandler.DeleteSave(package.Caller);
-                UpdateLoadButtonText();
-                ToggleLoadButtons();
+                _deleteCaller = package.Caller;
+                _warningMessage = new NoteMenu(Container, "Are you sure you want to delete\nthis save? This cannot be undone", DeleteFileAction);
+                _warningMessage.LoadContent(Container.GraphicsDevice, Container.Content);
+                _warningMessage.Enter(_lastMousePosition);
+                _warningMessage.OnResize(Container.GraphicsDevice, _lastWindowSize);
             }
             else
             {
@@ -247,6 +249,18 @@ namespace ExNihilo.Menus
             var delText = _loadUI.GetElement("DeleteFileButtonText") as UIText;
             delText?.SetText(_deleteMode ? "Cancel" : "Delete File", ColorScale.Black);
             ToggleLoadButtons();
+        }
+
+        private void DeleteFileAction(bool accepted)
+        {
+            _warningMessage = null;
+            if (accepted)
+            {
+                SaveHandler.DeleteSave(_deleteCaller);
+                UpdateLoadButtonText();
+                ToggleLoadButtons();
+            }
+            _deleteCaller = "";
         }
 
 /********************************************************************
@@ -304,10 +318,12 @@ namespace ExNihilo.Menus
         }
 
         private CurrentMenu _type;
-        private string _slot;
+        private string _slot, _deleteCaller;
         private bool _deleteMode, _textEntryMode;
         private readonly UIPanel _titleUI, _optionsUI, _loadUI, _newGameUI;
         private Point _lastMousePosition;
+        private Coordinate _lastWindowSize;
+        private NoteMenu _warningMessage;
         private const int MAX_NEWGAME_TEXT_SIZE = 15;
         
         private UIPanel ActivePanel()
@@ -326,7 +342,7 @@ namespace ExNihilo.Menus
             }
         }
 
-        public TitleMenu(GameContainer container) : base(container)
+        public TitleMenu(GameContainer container, Action onExit) : base(container, onExit)
         {
             _lastMousePosition = new Point();
 
@@ -452,7 +468,6 @@ namespace ExNihilo.Menus
         {
             _lastMousePosition = point;
             _titleUI.OnMoveMouse(point);
-            Dead = false;
             _type = CurrentMenu.Title;
             (_newGameUI.GetElement("NewGameInputBoxText") as UIText)?.SetText("New File");
             UpdateLoadButtonText();
@@ -462,22 +477,23 @@ namespace ExNihilo.Menus
         {
             if (_textEntryMode)
             {
+                _textEntryMode = false;
                 (_newGameUI.GetElement("NewGameInputBox") as UITogglable)?.ForcePush(false);
-                Dead = false;
+                return;
             }
+
+            if (_warningMessage != null) return;
             switch (_type)
             {
                 case CurrentMenu.NewGame:
                     _type = CurrentMenu.Play;
-                    Dead = false;
                     break;
                 case CurrentMenu.Play:
                 case CurrentMenu.Options:
                     _type = CurrentMenu.Title;
-                    Dead = false;
                     break;
                 default:
-                    Dead = true;
+                    OnExit?.Invoke();
                     break;
             }
         }
@@ -492,6 +508,8 @@ namespace ExNihilo.Menus
 
         public override void OnResize(GraphicsDevice graphics, Coordinate gameWindow)
         {
+            _lastWindowSize = gameWindow;
+            _warningMessage?.OnResize(graphics, gameWindow);
             _titleUI.OnResize(graphics, gameWindow);
             _optionsUI.OnResize(graphics, gameWindow);
             _loadUI.OnResize(graphics, gameWindow);
@@ -501,23 +519,26 @@ namespace ExNihilo.Menus
         public override void Draw(SpriteBatch spriteBatch)
         {
             ActivePanel().Draw(spriteBatch);
+            _warningMessage?.Draw(spriteBatch);
         }
 
         public override bool OnMoveMouse(Point point)
         {
-            ActivePanel().OnMoveMouse(point);
+            if (_warningMessage != null) _warningMessage.OnMoveMouse(point);
+            else ActivePanel().OnMoveMouse(point);
             _lastMousePosition = point;
             return false;
         }
 
         public override bool OnLeftClick(Point point)
         {
-            return ActivePanel().OnLeftClick(point);
+            return _warningMessage?.OnLeftClick(point) ?? ActivePanel().OnLeftClick(point);
         }
 
         public override void OnLeftRelease(Point point)
         {
-            ActivePanel().OnLeftRelease(point);
+            if (_warningMessage != null) _warningMessage.OnLeftRelease(point);
+            else ActivePanel().OnLeftRelease(point);
         }
 
         public override void Backspace(int len)

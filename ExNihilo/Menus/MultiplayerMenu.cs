@@ -1,4 +1,5 @@
-﻿using ExNihilo.Systems.Backend;
+﻿using System;
+using ExNihilo.Systems.Backend;
 using ExNihilo.UI;
 using ExNihilo.Util;
 using ExNihilo.Util.Graphics;
@@ -15,7 +16,14 @@ namespace ExNihilo.Menus
 ********************************************************************/
         private void CloseMenu(UICallbackPackage package)
         {
-            Dead = true;
+            OnExit?.Invoke();
+        }
+
+        private void NoteAction(bool accepted)
+        {
+            _showingNote = false;
+            if (accepted) _panelUI.OnMoveMouse(_lastMousePosition);
+            else OnExit?.Invoke();
         }
 
 /********************************************************************
@@ -26,7 +34,7 @@ namespace ExNihilo.Menus
         private Point _lastMousePosition;
         private bool _showingNote;
 
-        public MultiplayerMenu(GameContainer container) : base(container)
+        public MultiplayerMenu(GameContainer container, Action onExit) : base(container, onExit)
         {
             _lastMousePosition = new Point();
 
@@ -39,14 +47,15 @@ namespace ExNihilo.Menus
             SetRulesAll(TextureLibrary.MediumScaleRuleSet, exitButton, exitButtonX);
             exitButton.SetExtraStates("UI/button/RedBulbDown", "UI/button/RedBulbOver");
 
+            
+
             _panelUI.AddElements(backdrop, exitButton, exitButtonX);
 
-            _note = new NoteMenu(container, "There's a familiar island off in\nthe distance. Call out?", false);
+            _note = new NoteMenu(container, "There's a familiar island off in\nthe distance. Call out?", NoteAction);
         }
 
         public override void Enter(Point point)
         {
-            Dead = false;
             _lastMousePosition = point;
             _showingNote = true;
             _note.Enter(point);
@@ -85,16 +94,7 @@ namespace ExNihilo.Menus
 
         public override void OnLeftRelease(Point point)
         {
-            if (_showingNote)
-            {
-                _note.OnLeftRelease(point);
-                if (_note.Dead) Dead = true;
-                else if (_note.Confirmed)
-                {
-                    _showingNote = false;
-                    _panelUI.OnMoveMouse(_lastMousePosition);
-                }
-            }
+            if (_showingNote) _note.OnLeftRelease(point);
             else _panelUI.OnLeftRelease(point);
         }
 

@@ -1,4 +1,5 @@
-﻿using ExNihilo.Systems.Backend;
+﻿using System;
+using ExNihilo.Systems.Backend;
 using ExNihilo.UI;
 using ExNihilo.Util;
 using ExNihilo.Util.Graphics;
@@ -15,7 +16,7 @@ namespace ExNihilo.Menus
 ********************************************************************/
         private void CloseMenu(UICallbackPackage package)
         {
-            Dead = true;
+            OnExit?.Invoke();
         }
 
 /********************************************************************
@@ -23,7 +24,7 @@ namespace ExNihilo.Menus
 ********************************************************************/
         private readonly UIPanel _panelUI;
 
-        public DivineMenu(GameContainer container) : base(container)
+        public DivineMenu(GameContainer container, Action onExit) : base(container, onExit)
         {
             _panelUI = new UIPanel("this.MenuKing", new Vector2(0.5f, 0.5f), Vector2.One, TextureUtilities.PositionType.Center);
 
@@ -39,7 +40,6 @@ namespace ExNihilo.Menus
 
         public override void Enter(Point point)
         {
-            Dead = false;
             _panelUI.OnMoveMouse(point);
         }
 

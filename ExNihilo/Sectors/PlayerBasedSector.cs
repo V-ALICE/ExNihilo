@@ -53,7 +53,7 @@ namespace ExNihilo.Sectors
 
         public override void Initialize()
         {
-            _invRef = new InventoryMenu(Container);
+            _invRef = new InventoryMenu(Container, () => { _menuPoint = null;});
             _playerHandler = new CommandHandler();
             _playerHandler.InitializePlayer(this);
             _superPlayerHandler = new CommandHandler();
@@ -101,7 +101,6 @@ namespace ExNihilo.Sectors
             if (_menuActive)
             {
                 _menuPoint.BackOut();
-                if (_menuPoint.Dead) _menuPoint = null;
             }
             else base.BackOut();
         }
@@ -117,7 +116,6 @@ namespace ExNihilo.Sectors
             else if (_menuPoint is InventoryMenu)
             {
                 _menuPoint.BackOut();
-                if (_menuPoint.Dead) _menuPoint = null;
             }
         }
 
@@ -138,7 +136,6 @@ namespace ExNihilo.Sectors
             if (_menuActive)
             {
                 _menuPoint.OnLeftRelease(point);
-                if (_menuPoint.Dead) _menuPoint = null;
             }
         }
 
@@ -151,7 +148,7 @@ namespace ExNihilo.Sectors
                 {
                     case BoxInteractive box:
                         _menuPoint = box.Access();
-                        BoxMenu.Menu.Enter(_lastMousePosition, box);
+                        BoxMenu.Menu.Enter(_lastMousePosition, box, () => { _menuPoint = null;});
                         if (_menuActive) _world.Halt();
                         break;
                     case MenuInteractive menu:

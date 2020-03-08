@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using ExNihilo.Entity;
 using ExNihilo.Systems.Backend;
 using ExNihilo.Systems.Backend.Network;
@@ -20,7 +21,7 @@ namespace ExNihilo.Menus
 ********************************************************************/
         private void CloseMenu(UICallbackPackage package)
         {
-            Dead = true;
+            OnExit?.Invoke();
         }
 
         private void DeleteChar()
@@ -75,7 +76,7 @@ namespace ExNihilo.Menus
             }
 
             var message = "Are you sure you want to\ndelete " + _chars[_charInJeopardy].Name + "?";
-            _warningMessage = new NoteMenu(Container, message, false);
+            _warningMessage = new NoteMenu(Container, message, DeleteCharAction);
             _warningMessage.LoadContent(Container.GraphicsDevice, Container.Content);
             _type = CurrentMenu.Warning;
             _warningMessage.Enter(_lastMousePosition);
@@ -143,6 +144,15 @@ namespace ExNihilo.Menus
             else (_panelUI.GetElement("ChangeCharButton") as UIClickable)?.Enable();
 
             _panelUI.GetElement("CharacterDisplay")?.ChangeTexture(_chars[_selectedChar].Entity.GetTexture(EntityTexture.State.DownMoving));
+        }
+
+        private void DeleteCharAction(bool accepted)
+        {
+            _warningMessage = null;
+            _charInJeopardy = -1;
+            _type = CurrentMenu.Main;
+            _panelUI.OnMoveMouse(_lastMousePosition);
+            if (accepted) DeleteChar();
         }
 
 /********************************************************************
@@ -271,7 +281,7 @@ namespace ExNihilo.Menus
         public const int MAX_NEWCHAR_TEXT_SIZE = 15, MAX_CHARACTERS = 7;
         private const int _bodyCount = 3, _hairCount = 42, _clothCount = 43, _colorCount = 10;
 
-        public CharacterMenu(GameContainer container, World world) : base(container)
+        public CharacterMenu(GameContainer container, Action onExit, World world) : base(container, onExit)
         {
             _world = world;
             var rules = new ScaleRuleSet
@@ -434,7 +444,6 @@ namespace ExNihilo.Menus
             _charInJeopardy = -1;
             _lastMousePosition = point;
             _panelUI.OnMoveMouse(point);
-            Dead = false;
             _textEntryMode = false;
             _type = CurrentMenu.Main;
             _selectedChar = _currentChar;
@@ -547,21 +556,6 @@ namespace ExNihilo.Menus
                     break;
                 case CurrentMenu.Warning:
                     _warningMessage.OnLeftRelease(point);
-                    if (_warningMessage.Confirmed)
-                    {
-                        DeleteChar();
-                        _warningMessage = null;
-                        _charInJeopardy = -1;
-                        _type = CurrentMenu.Main;
-                        _panelUI.OnMoveMouse(_lastMousePosition);
-                    }
-                    else if (_warningMessage.Dead)
-                    {
-                        _warningMessage = null;
-                        _charInJeopardy = -1;
-                        _type = CurrentMenu.Main;
-                        _panelUI.OnMoveMouse(_lastMousePosition);
-                    }
                     break;
             }
         }
