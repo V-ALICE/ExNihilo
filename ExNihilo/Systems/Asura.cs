@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using ExNihilo.Sectors;
 using ExNihilo.Systems.Backend;
+using ExNihilo.Systems.Backend.Network;
 using ExNihilo.Systems.Bases;
 using ExNihilo.Systems.Game;
 using ExNihilo.Systems.Game.Items;
@@ -83,10 +84,16 @@ namespace ExNihilo.Systems
                     return;
                 }
 
+                if (NetworkManager.Active && !NetworkManager.Hosting)
+                {
+                    SystemConsole.ForceMessage("<error>", "Only host can force floor change", Color.DarkRed, Color.White);
+                    return;
+                }
+
                 if (int.TryParse(args, out int num) && num > 0)
                 {
                     SystemConsole.ForceMessage("<Asura>", "Swapping to floor " + args, Color.Purple, Color.White);
-                    _theVoid.SetFloor(num);
+                    _game.PushVoid(VoidSector.Seed, MathD.urand.Next(), num);
                 }
                 else SystemConsole.ForceMessage("<error>", "\"" + args + "\" is not a valid floor value", Color.DarkRed, Color.White);
             }
@@ -95,22 +102,23 @@ namespace ExNihilo.Systems
             //Sets level generation type
             void SetGenType(string args)
             {
+                if (_game.VoidIsActive)
+                {
+                    SystemConsole.ForceMessage("<warning>", "Generation change will apply next time the floor swaps", Color.DarkOrange, Color.White);
+                }
                 switch (args)
                 {
                     case "standard1":
                         SystemConsole.ForceMessage("<Asura>", "Changing generation algorithm to standard1", Color.Purple, Color.White);
                         _theVoid.SetGenType(MapGenerator.Type.Standard1);
-                        if (GameContainer.ActiveSectorID == GameContainer.SectorID.Void) _theVoid.SetFloor();
                         break;
                     case "standard2":
                         SystemConsole.ForceMessage("<Asura>", "Changing generation algorithm to standard2", Color.Purple, Color.White);
                         _theVoid.SetGenType(MapGenerator.Type.Standard2);
-                        if (GameContainer.ActiveSectorID == GameContainer.SectorID.Void) _theVoid.SetFloor();
                         break;
                     case "messy":
                         SystemConsole.ForceMessage("<Asura>", "Changing generation algorithm to messy", Color.Purple, Color.White);
                         _theVoid.SetGenType(MapGenerator.Type.MessyBoxes);
-                        if (GameContainer.ActiveSectorID == GameContainer.SectorID.Void) _theVoid.SetFloor();
                         break;
                     default:
                         SystemConsole.ForceMessage("<error>", "\"" + args + "\" is not a valid gentype value", Color.DarkRed, Color.White);
@@ -122,9 +130,9 @@ namespace ExNihilo.Systems
             //Sets HP to given value
             void SetHP(string args)
             {
-                if (GameContainer.ActiveSectorID == GameContainer.SectorID.MainMenu)
+                if (_game.Player is null)
                 {
-                    SystemConsole.ForceMessage("<error>", "Cannot change player values on title screen", Color.DarkRed, Color.White);
+                    SystemConsole.ForceMessage("<error>", "No player loaded", Color.DarkRed, Color.White);
                     return;
                 }
 
@@ -140,9 +148,9 @@ namespace ExNihilo.Systems
             //Sets MP to given value
             void SetMP(string args)
             {
-                if (GameContainer.ActiveSectorID == GameContainer.SectorID.MainMenu)
+                if (_game.Player is null)
                 {
-                    SystemConsole.ForceMessage("<error>", "Cannot change player values on title screen", Color.DarkRed, Color.White);
+                    SystemConsole.ForceMessage("<error>", "No player has been loaded", Color.DarkRed, Color.White);
                     return;
                 }
 
@@ -160,9 +168,12 @@ namespace ExNihilo.Systems
             {
                 if (int.TryParse(args, out int num) && num >= 0)
                 {
+                    if (_game.VoidIsActive)
+                    {
+                        SystemConsole.ForceMessage("<warning>", "Parallax change will apply next time the floor swaps", Color.DarkOrange, Color.White);
+                    }
                     SystemConsole.ForceMessage("<Asura>", "Changing parallax to level " + args, Color.Purple, Color.White);
                     _theVoid.SetParallax(num);
-                    if (GameContainer.ActiveSectorID == GameContainer.SectorID.Void) _theVoid.SetFloor();
                 }
                 else SystemConsole.ForceMessage("<error>", "\"" + args + "\" is not a valid parallax value", Color.DarkRed, Color.White);
             }
@@ -171,8 +182,12 @@ namespace ExNihilo.Systems
             //Set currently active seed for map generation
             void SetSeed(string args)
             {
-                _theVoid.SetSeed(Utilities.GetAbsoluteSeed(MathD.urand, args));
-                if (GameContainer.ActiveSectorID == GameContainer.SectorID.Void) _theVoid.SetFloor();
+                if (_game.VoidIsActive)
+                {
+                    SystemConsole.ForceMessage("<warning>", "Seed change will apply next time the floor swaps", Color.DarkOrange, Color.White);
+                }
+
+                VoidSector.Seed = Utilities.GetAbsoluteSeed(MathD.urand, args);
                 SystemConsole.ForceMessage("<Asura>", "Setting active seed to " + args, Color.Purple, Color.White);
             }
             _paramSet.Add("seed", SetSeed);
@@ -204,9 +219,12 @@ namespace ExNihilo.Systems
                             return;
                         }
                     }
+                    if (_game.VoidIsActive)
+                    {
+                        SystemConsole.ForceMessage("<warning>", "Texture pack change will apply next time the floor swaps", Color.DarkOrange, Color.White);
+                    }
                     SystemConsole.ForceMessage("<Asura>", "Setting texture pack to " + args, Color.Purple, Color.White);
                     _theVoid.SetTexturePack(set);
-                    if (GameContainer.ActiveSectorID == GameContainer.SectorID.Void) _theVoid.SetFloor();
                 }
                 else SystemConsole.ForceMessage("<error>", "Can only set texture pack using 1 to 3 files", Color.DarkRed, Color.White);
             }
@@ -247,6 +265,9 @@ namespace ExNihilo.Systems
             _helpInfo.Add("save", 
                 "\n/save -> Forces the current game to save");
 
+            _helpInfo.Add("randomseed", 
+                "\nrandomseed -> Sets the current seed randomly");
+
             _helpInfo.Add("give", 
                 "\n/give [type] [level] [quality] -> Give the current player an item of the given type, level, and quality" +
                 "\n/give [type] [level]           -> Give the current player an item of the given type and level" +
@@ -268,11 +289,11 @@ namespace ExNihilo.Systems
 
             _helpInfo.Add("set floor",
                 "\n/set floor [value] -> Set current floor to given value" +
-                "\nValue must be greater than zero. This will trigger a loading sequence if used in the Void.");
+                "\nValue must be greater than zero");
 
             _helpInfo.Add("set gentype",
                 "\n/set gentype [value] -> Set active generation algorithm. Default is Standard2" +
-                "\nValue must be standard1, standard2, messy. This will trigger a loading sequence if used in the Void.");
+                "\nValue must be standard1, standard2, messy");
 
             _helpInfo.Add("set hp",
                 "\n/set hp [value] -> Sets current player's HP to given value");
@@ -282,11 +303,10 @@ namespace ExNihilo.Systems
 
             _helpInfo.Add("set parallax",
                 "\n/set parallax [value] -> Set parallax level" +
-                "\nValue must be greater than or equal to zero. This will trigger a loading sequence if used in the Void.");
+                "\nValue must be greater than or equal to zero");
 
             _helpInfo.Add("set seed",
-                "\n/set seed [value] -> Set current active seed based on the input value"+
-                "\nThis will trigger a loading sequence if used in the Void.");
+                "\n/set seed [value] -> Set current active seed based on the input value");
 
             _helpInfo.Add("set speed",
                 "\n/set speed [value] -> Set own movement speed with the given multiplier" +
@@ -296,7 +316,7 @@ namespace ExNihilo.Systems
                 "\n/set textures [value]                 -> Load a complete (ALL) texture pack" + 
                 "\n/set textures [value] [value]         -> Load a separate wall and floor texture pack (in that order)" +
                 "\n/set textures [value] [value] [value] -> Load separate wall, floor, and other texture packs (in that order)" +
-                "\nValue(s) must be files that exist. This will freeze the game for a bit. It will also trigger a loading sequence if used in the Void.");
+                "\nValue(s) must be files that exist. This may freeze the game for a short time");
         }
         private static void SetupCommands()
         {
@@ -337,9 +357,9 @@ namespace ExNihilo.Systems
             //Exports the current map set to a file
             void ExportAllMaps(string args)
             {
-                if (GameContainer.ActiveSectorID != GameContainer.SectorID.Void)
+                if (!_game.VoidIsActive)
                 {
-                    SystemConsole.ForceMessage("<error>", "Can only export maps from within the void", Color.DarkRed, Color.White);
+                    SystemConsole.ForceMessage("<error>", "No level loaded", Color.DarkRed, Color.White);
                     return;
                 }
 
@@ -353,9 +373,22 @@ namespace ExNihilo.Systems
             void Seed(string args)
             {
                 if (args.Length != 0) SystemConsole.ForceMessage("<warning>", "Ignoring unexpected argument(s) \"" + args + "\"", Color.DarkOrange, Color.White);
-                SystemConsole.ForceMessage("<Asura>", "Current seed is " + _theVoid.GetSeed(), Color.Purple, Color.White);
+                SystemConsole.ForceMessage("<Asura>", "Current seed is " + VoidSector.Seed, Color.Purple, Color.White);
             }
             _basicCommands.Add("seed", Seed);
+
+            //Sets a random seed
+            void RandomSeed(string args)
+            {
+                if (args.Length != 0) SystemConsole.ForceMessage("<warning>", "Ignoring unexpected argument(s) \"" + args + "\"", Color.DarkOrange, Color.White);
+                if (_game.VoidIsActive)
+                {
+                    SystemConsole.ForceMessage("<warning>", "Generation change will apply next time the floor swaps", Color.DarkOrange, Color.White);
+                }
+                VoidSector.Seed = MathD.urand.Next();
+                SystemConsole.ForceMessage("<Asura>", "Setting random seed", Color.Purple, Color.White);
+            }
+            _basicCommands.Add("randomseed", RandomSeed);
 
             //****************************************************************************************
 
@@ -387,23 +420,28 @@ namespace ExNihilo.Systems
             //Return from void to outerworld
             void Return(string args)
             {
-                if (GameContainer.ActiveSectorID != GameContainer.SectorID.Void)
+                if (!_game.VoidIsActive)
                 {
-                    SystemConsole.ForceMessage("<error>", "Can only return from within the void", Color.DarkRed, Color.White);
+                    SystemConsole.ForceMessage("<error>", "Nowhere to return from", Color.DarkRed, Color.White);
+                    return;
+                }
+                if (NetworkManager.Active && !NetworkManager.Hosting)
+                {
+                    SystemConsole.ForceMessage("<error>", "Only host can force return", Color.DarkRed, Color.White);
                     return;
                 }
 
                 if (args.Length != 0) SystemConsole.ForceMessage("<warning>", "Ignoring unexpected argument(s) \"" + args + "\"", Color.DarkOrange, Color.White);
-                _game.RequestSectorChange(GameContainer.SectorID.Outerworld);
+                _game.ExitVoid();
             }
             _elevatedCommands.Add("return", Return);
 
             //Force the game to save
             void Save(string args)
             {
-                if (GameContainer.ActiveSectorID == GameContainer.SectorID.MainMenu)
+                if (_game.Player is null)
                 {
-                    SystemConsole.ForceMessage("<error>", "Cannot force save on title screen", Color.DarkRed, Color.White);
+                    SystemConsole.ForceMessage("<error>", "No save loaded", Color.DarkRed, Color.White);
                     return;
                 }
 
@@ -414,9 +452,9 @@ namespace ExNihilo.Systems
 
             void GiveItem(string args)
             {
-                if (GameContainer.ActiveSectorID == GameContainer.SectorID.MainMenu)
+                if (_game.Player is null)
                 {
-                    SystemConsole.ForceMessage("<error>", "Cannot change character values on title screen", Color.DarkRed, Color.White);
+                    SystemConsole.ForceMessage("<error>", "No player loaded", Color.DarkRed, Color.White);
                     return;
                 }
 
@@ -474,7 +512,6 @@ namespace ExNihilo.Systems
             //Temp debug function for toggling extra debug display
             void Debug(string args)
             {
-                if (args.Length != 0) SystemConsole.ForceMessage("<warning>", "Ignoring unexpected argument(s) \"" + args + "\"", Color.DarkOrange, Color.White);
                 D.Bug = !D.Bug;
             }
             _elevatedCommands.Add("debug", Debug);

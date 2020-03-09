@@ -12,9 +12,9 @@ namespace ExNihilo.Systems.Backend.Network
         ConsoleMessage,
         PlayerIntroduction,
         StandardUpdate,
-        //SetAscended,
-        //IdentifyRequest,
         Disconnect,
+        VoidPrompt,
+        OuterworldPrompt
     }
 
     public class ConsoleMessage : NetworkManager.MessageStruct
@@ -129,6 +129,41 @@ namespace ExNihilo.Systems.Backend.Network
             message.Write(X);
             message.Write(Y);
             message.Write(State);
+        }
+    }
+
+    public class VoidPrompt : NetworkManager.MessageStruct
+    {
+        public int Seed, ItemSeed, Floor;
+
+        public VoidPrompt(long senderId, int seed, int itemSeed, int floor) : base((short)NetworkMessageType.VoidPrompt, senderId)
+        {
+            Seed = seed;
+            ItemSeed = itemSeed;
+            Floor = floor;
+        }
+
+        public VoidPrompt(NetIncomingMessage message) : base(message)
+        {
+            try
+            {
+                Seed = message.ReadInt32();
+                ItemSeed = message.ReadInt32();
+                Floor = message.ReadInt32();
+            }
+            catch (Exception)
+            {
+                Valid = false;
+            }
+        }
+
+        public override void WriteOut(NetOutgoingMessage message)
+        {
+            if (!Valid) return;
+            base.WriteOut(message);
+            message.Write(Seed);
+            message.Write(ItemSeed);
+            message.Write(Floor);
         }
     }
 }

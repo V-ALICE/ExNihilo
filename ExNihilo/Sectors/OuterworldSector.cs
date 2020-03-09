@@ -1,6 +1,7 @@
 ﻿using ExNihilo.Entity;
 using ExNihilo.Menus;
 using ExNihilo.Systems.Backend;
+using ExNihilo.Systems.Backend.Network;
 using ExNihilo.Systems.Bases;
 using ExNihilo.Systems.Game;
 using ExNihilo.Util;
@@ -101,10 +102,15 @@ namespace ExNihilo.Sectors
 ------->Game functions
 ********************************************************************/
 
+        public void CheckMultiplayer()
+        {
+            _voidMenu.UpdateConfirm(NetworkManager.Active && !NetworkManager.Hosting);
+        }
+
         private void TriggerVoid(bool accepted)
         {
             _menuPoint = null;
-            if (accepted) Container.StartNewGame(1, OtherPlayers);
+            if (accepted) Container.PushVoid(VoidSector.Seed, MathD.urand.Next(), 1);
         }
 
         public override void OnLeftRelease(Point point)

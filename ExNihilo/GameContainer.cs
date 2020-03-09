@@ -49,9 +49,12 @@ namespace ExNihilo
         private CommandHandler _handler, _superHandler;
         private Point _lastMousePosition;
 
-        public PlayerEntityContainer Player => ((OuterworldSector)_sectorDirectory[SectorID.Outerworld]).Player;
-        public List<PlayerOverlay> OtherPlayers => ((OuterworldSector)_sectorDirectory[SectorID.Outerworld]).OtherPlayers;
-        public bool VoidIsActive => ((VoidSector) _sectorDirectory[SectorID.Void]).VoidIsActive;
+        private VoidSector _void => (VoidSector) _sectorDirectory[SectorID.Void];
+        private OuterworldSector _outer => (OuterworldSector) _sectorDirectory[SectorID.Outerworld];
+
+        public PlayerEntityContainer Player => _outer.Player;
+        public List<PlayerOverlay> OtherPlayers => _outer.OtherPlayers;
+        public bool VoidIsActive => _void.VoidIsActive;
 
         public static GraphicsDevice Graphics { get; private set; }
         public static SectorID ActiveSectorID;
@@ -281,8 +284,8 @@ namespace ExNihilo
 
         private void UpdateNetwork()
         {
-            var myData = ((OuterworldSector)_sectorDirectory[SectorID.Outerworld]).GetStandardUpdate();
-            NetworkManager.SendMessage(myData);
+            if (ActiveSectorID == SectorID.Loading) return;
+            NetworkManager.SendMessage(VoidIsActive ? _void.GetStandardUpdate() : _outer.GetStandardUpdate());
 
             if (NetworkManager.Hosting)
             { 
@@ -318,7 +321,7 @@ namespace ExNihilo
         protected void DrawDebugInfo(SpriteBatch spriteBatch)
         {
             var text = _currentFrameRate + " FPS (" + GraphicsDevice.Adapter.Description + ")";
-            if (_currentPing > 0) text += "  " + _currentPing + "ms Ping";
+            if (_currentPing >= 0) text += "  " + _currentPing + "ms Ping";
             TextDrawer.DrawDumbText(spriteBatch, new Coordinate(1, 1), text, 1, Color.White);
         }
 
@@ -406,10 +409,19 @@ namespace ExNihilo
             SystemConsole.MyColor = new Color(param.R, param.G, param.B);
         }
 
-        public void StartNewGame(int floor, List<PlayerOverlay> refList)
+        public void ExitVoid()
         {
-            //This exists solely so that other sectors can tell the void to start a new game
-            (_sectorDirectory[SectorID.Void] as VoidSector)?.StartNewGame(floor, refList);
+            if (!VoidIsActive) return;
+            if (ActiveSectorID == SectorID.MainMenu) RequestSectorChange(SectorID.Void); //Does this matter?
+            _void.Return();
+            RequestSectorChange(SectorID.Outerworld);
+            NetworkManager.SendMessage(new NetworkManager.MessageStruct((short)NetworkMessageType.OuterworldPrompt, NetworkManager.MyUniqueID));
+        }
+
+        public void PushVoid(int seed, int itemSeed, int floor)
+        {
+            if (NetworkManager.Hosting) NetworkManager.SendMessage(new VoidPrompt(NetworkManager.MyUniqueID, seed, itemSeed, floor));
+            _void.Descend(seed, itemSeed, floor, OtherPlayers);
         }
 
         public PlayerIntroduction GetCurrentIntroduction()
@@ -428,6 +440,7 @@ namespace ExNihilo
                      SystemConsole.ForceMessage("<error>", NetworkManager.GetErrorAndClear(), Color.DarkRed, Color.White);
                 }
                 while (!NetworkManager.Connected) { Thread.Sleep(100); }
+                _outer.CheckMultiplayer();
             }
 
             void DoClient()
@@ -439,6 +452,7 @@ namespace ExNihilo
                 }
                 while (!NetworkManager.Connected) { Thread.Sleep(100); }
                 NetworkManager.SendMessage(GetCurrentIntroduction());
+                _outer.CheckMultiplayer();
             }
 
             if (ActiveSectorID != SectorID.Outerworld) return;

@@ -16,6 +16,7 @@ namespace ExNihilo.Sectors
         private PlayerEntityContainer Player => Container.Player;
 
         public bool VoidIsActive;
+        public static int Seed;
 
         public VoidSector(GameContainer container) : base(container, new Level())
         {
@@ -39,16 +40,13 @@ namespace ExNihilo.Sectors
             base.Enter(point, gameWindow);
         }
 
-        public override void Leave(GameContainer.SectorID newSector)
+        public void Return()
         {
-            if (newSector == GameContainer.SectorID.Outerworld)
-            {
-                VoidIsActive = false;
-                ActiveLevel.Purge();
-                Container.Pack();
-                Player.Inventory.Dirty = true;
-                AudioManager.PlaySong("Outerworld", true);
-            }
+            VoidIsActive = false;
+            ActiveLevel.Purge();
+            Container.Pack();
+            Player.Inventory.Dirty = true;
+            AudioManager.PlaySong("Outerworld", true);
         }
 
         protected override void DrawDebugInfo(SpriteBatch spriteBatch)
@@ -70,25 +68,31 @@ namespace ExNihilo.Sectors
 ********************************************************************/
         public override void Pack(PackedGame game)
         {
+            game.Seed = Seed;
             game.InVoid = VoidIsActive;
             ActiveLevel.Pack(game);
         }
 
         public override void Unpack(PackedGame game)
         {
+            Seed = game.Seed;
             VoidIsActive = game.InVoid;
             ActiveLevel.Unpack(game);
         }
 
-        public void StartNewGame(int floor, List<PlayerOverlay> refList)
+        public void Descend(int seed, int itemSeed, int floor, List<PlayerOverlay> refList)
         {
+            ActiveLevel.ChangeSeed(seed);
             ActiveLevel.Reset(Player, new Coordinate(10, 10), new Coordinate(3, 10));
-            ActiveLevel.ClearPlayers();
-            if (refList != null)
+            if (!VoidIsActive)
             {
-                foreach (var player in refList) ActiveLevel.AddPlayerRef(player);
+                ActiveLevel.ClearPlayers();
+                if (refList != null)
+                {
+                    foreach (var player in refList) ActiveLevel.AddPlayerRef(player);
+                }
             }
-            SetFloor(floor);
+            ActiveLevel.DoGenerationQueue(Container, floor, itemSeed);
             VoidIsActive = true;
         }
 
@@ -100,11 +104,6 @@ namespace ExNihilo.Sectors
 /********************************************************************
 ------->Parameter functions
 ********************************************************************/
-
-        public void SetFloor(int floor=-1)
-        {
-            ActiveLevel.DoGenerationQueue(Container, floor);
-        }
 
         public void SetGenType(MapGenerator.Type type)
         {
@@ -121,14 +120,5 @@ namespace ExNihilo.Sectors
             ActiveLevel.ChangeParallax(levels);
         }
 
-        public void SetSeed(int seed)
-        {
-            ActiveLevel.ChangeSeed(seed);
-        }
-
-        public int GetSeed()
-        {
-            return ActiveLevel.GetSeed();
-        }
     }
 }

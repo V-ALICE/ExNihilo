@@ -6,13 +6,16 @@ using Lidgren.Network;
 using Microsoft.Xna.Framework;
 
 using MessageStruct = ExNihilo.Systems.Backend.Network.NetworkManager.MessageStruct;
+using Disconnect = ExNihilo.Systems.Backend.Network.NetworkManager.MessageStruct;
+using OuterworldPrompt = ExNihilo.Systems.Backend.Network.NetworkManager.MessageStruct;
 
 namespace ExNihilo.Systems.Backend.Network
 {
     public static class NetworkLinker
     {
         private static GameContainer _gameRef;
-        private static PlayerBasedSector _outer, _void;
+        private static OuterworldSector _outer;
+        private static VoidSector _void;
         public static byte MyMiniID;
         private static long MyUniqueID => NetworkManager.MyUniqueID;
 
@@ -54,7 +57,7 @@ namespace ExNihilo.Systems.Backend.Network
                 _outer.ClearPlayers();
                 if (NetworkManager.Active)
                 {
-                    SystemConsole.ForceMessage("<Asura>", "Disconnected", Color.Purple, Color.White);
+                    SystemConsole.ForceMessage("<Asura>", "Multiplayer ended", Color.Purple, Color.White);
                 }
             }
             else if (_lookup.TryGetValue(id, out var val))
@@ -71,7 +74,7 @@ namespace ExNihilo.Systems.Backend.Network
                     NetworkManager.DisconnectClient(id);
                     if (!NetworkManager.Active) return;
                     ReconfigureMiniIDs();
-                    ForwardMessage(new MessageStruct((short)NetworkMessageType.Disconnect, MyUniqueID, id));
+                    ForwardMessage(new Disconnect((short)NetworkMessageType.Disconnect, MyUniqueID, id));
                     ForwardMessage(_gameRef.GetCurrentIntroduction());
                     foreach (var p in _lookup.Values)
                     {
@@ -79,6 +82,7 @@ namespace ExNihilo.Systems.Backend.Network
                     }
                 }
             }
+            _outer.CheckMultiplayer();
         }
 
         private static void ReconfigureMiniIDs()
@@ -119,6 +123,12 @@ namespace ExNihilo.Systems.Backend.Network
                     break;
                 case NetworkMessageType.Disconnect:
                     ReadDisconnect(message);
+                    break;
+                case NetworkMessageType.VoidPrompt:
+                    ReadVoidPrompt(message);
+                    break;
+                case NetworkMessageType.OuterworldPrompt:
+                    ReadOuterworldPrompt(message);
                     break;
                 default:
                     SystemConsole.ForceMessage("<error>", "Received network message of unknown type", Color.DarkRed, Color.White);
@@ -187,9 +197,23 @@ namespace ExNihilo.Systems.Backend.Network
         }
         private static void ReadDisconnect(NetIncomingMessage message)
         {
-            var data = new MessageStruct(message);
+            var data = new Disconnect(message);
             if (data.ReceiverUniqueID == -1 || data.ReceiverUniqueID == NetworkManager.MyUniqueID) NetworkManager.CloseConnections();
             else OnDisconnect(data.ReceiverUniqueID);
+        }
+        private static void ReadVoidPrompt(NetIncomingMessage message)
+        {
+            var data = new VoidPrompt(message);
+            if (!data.IsRecipient(MyUniqueID)) return;
+
+            _gameRef.PushVoid(data.Seed, data.ItemSeed, data.Floor);
+        }
+        private static void ReadOuterworldPrompt(NetIncomingMessage message)
+        {
+            var data = new OuterworldPrompt(message);
+            if (!data.IsRecipient(MyUniqueID)) return;
+
+            _gameRef.ExitVoid();
         }
     }
 }

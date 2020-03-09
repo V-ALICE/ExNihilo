@@ -64,14 +64,8 @@ namespace ExNihilo.Util.Graphics
 
         public static Texture2D GetLetter(char let)
         {
-            try
-            {
-                return _charTextures[let.ToString().ToUpper()[0]];
-            }
-            catch (KeyNotFoundException)
-            {
-                return _charTextures[' '];
-            }
+            if (_charTextures.TryGetValue(let.ToString().ToUpper()[0], out var tex)) return tex;
+            return _charTextures[' '];
         }       
 
         public static Coordinate DrawDumbText(SpriteBatch spriteBatch, Coordinate pos, string dumbText, float multiplier, ColorScale c)

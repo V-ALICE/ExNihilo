@@ -2,6 +2,7 @@
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.Xml.Serialization;
+using ExNihilo.Sectors;
 using ExNihilo.Systems.Backend;
 using ExNihilo.Systems.Backend.Network;
 using ExNihilo.Systems.Game;
@@ -209,7 +210,7 @@ namespace ExNihilo.Menus
             }
             else if (save.InVoid)
             {
-                Container.StartNewGame(save.Floor, null); //How is this going to work for multiplayer
+                Container.PushVoid(VoidSector.Seed, MathD.urand.Next(), save.Floor); //This will change in future
                 AudioManager.PlaySong("Void", true);
             }
             else

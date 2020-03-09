@@ -318,7 +318,7 @@ namespace ExNihilo.Systems.Game
             return map.ToArray();
         }
 
-        public static Texture2D StitchMap(GraphicsDevice graphics, InteractionMap set, int level, Random rand, TileTextureMap wall, TileTextureMap floor, TileTextureMap other)
+        public static Texture2D StitchMap(GraphicsDevice graphics, InteractionMap set, int level, Random rand, Random items, TileTextureMap wall, TileTextureMap floor, TileTextureMap other)
         {
             var texture = new Texture2D(graphics, wall.TileSize * set.Map.X, wall.TileSize * (set.Map.Y + 5));
 
@@ -350,7 +350,7 @@ namespace ExNihilo.Systems.Game
                             var idb = TileRef.ToString(GetSurroundings(set.Map, j, i));
                             TextureUtilities.SetSubTexture(texture, floor.GetAnyOfType(idb, rand), j * floor.TileSize, i * floor.TileSize);
                             var (closed, open) = other.GetAnyBox(rand);
-                            var box = new BoxInteractive("Box", open, closed, MathD.urand, level);
+                            var box = new BoxInteractive("Box", open, closed, items, level);
                             set.AddBox(box, j, i);
                             break;
                     }

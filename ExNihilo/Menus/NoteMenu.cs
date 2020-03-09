@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Runtime.InteropServices;
 using ExNihilo.UI;
 using ExNihilo.Util;
 using ExNihilo.Util.Graphics;
@@ -54,6 +55,13 @@ namespace ExNihilo.Menus
         public override void Enter(Point point)
         {
             _panelUI.OnMoveMouse(point);
+        }
+
+        public void UpdateConfirm(bool disableConfirm)
+        {
+            var confirmButton = _panelUI.GetElement("ConfirmButton") as UIClickable;
+            if (disableConfirm) confirmButton?.Disable(ColorScale.Grey);
+            else confirmButton?.Enable();
         }
 
         public override void LoadContent(GraphicsDevice graphics, ContentManager content)

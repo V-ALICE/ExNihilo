@@ -217,7 +217,7 @@ namespace ExNihilo.Systems.Game.Items
             int count, quality = qual;
             if (qual < 0)
             {
-                count = (int)MathD.BellRange(MathD.urand, min, max);
+                count = (int)MathD.BellRange(rand, min, max);
                 quality = 10 * (count - min) / (max - min); //0-10
                 count /= 5;
             }
