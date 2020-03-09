@@ -1,10 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Runtime.Remoting.Messaging;
 using ExNihilo.Input.Commands;
 using ExNihilo.Systems.Backend.Network;
 using ExNihilo.Systems.Bases;
-using ExNihilo.UI.Bases;
 using ExNihilo.Util;
 using ExNihilo.Util.Graphics;
 using Microsoft.Xna.Framework;
@@ -175,7 +173,6 @@ namespace ExNihilo.Systems.Backend
         private static float _currentScale;
         private static ScaleRuleSet _rules;
         private static string _lastMessage="", _activeText="";
-
         public static bool Active, Ready;
 
         private static Color _myColor;
@@ -195,6 +192,7 @@ namespace ExNihilo.Systems.Backend
         {
             _console = new ConsoleBox(_maxLineCount, _maxCharacterCount);
             _handler.InitializeConsole(g);
+            ColorScale.AddToGlobal("__blinker", new ColorScale(0.5f, false, Color.White, Color.White, Color.Transparent));
         }
 
         public static void LoadContent(GraphicsDevice graphics, ContentManager content)
@@ -247,7 +245,7 @@ namespace ExNihilo.Systems.Backend
                 if (_activeText.Length + 2 > _maxCharacterCount) message += _activeText.Substring(_activeText.Length + 2 - _maxCharacterCount);
                 else message += _activeText;
 
-                TextDrawer.DrawSmartText(spriteBatch, _activeMessagePosition, message, _currentScale, null, Color.White);
+                TextDrawer.DrawSmartText(spriteBatch, _activeMessagePosition, message+"@c1|", _currentScale, null, ColorScale.White, ColorScale.GetFromGlobal("__blinker"));
             }
 
             List<Message> pile = _console.GetAllMessages(); //oldest to newest
