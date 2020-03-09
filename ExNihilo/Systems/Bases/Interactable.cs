@@ -35,6 +35,8 @@ namespace ExNihilo.Systems.Bases
 
     public class BoxInteractive : MenuInteractive
     {
+        public bool Dirty { get; private set; }
+        public int Index;
         public const int ContainerSize = 6;
         private const int _slotFillChance = 40;
         private readonly Texture2D _closed, _open;
@@ -68,6 +70,24 @@ namespace ExNihilo.Systems.Bases
         {
             _opened = true;
             return base.Access();
+        }
+
+        public void Remove(int id)
+        {
+            for (int i = 0; i < Contents.Length; i++)
+            {
+                if (Contents[i]?.UID == id)
+                {
+                    Contents[i] = null;
+                    Dirty = true;
+                    return;
+                }
+            }
+        }
+
+        public void Clean()
+        {
+            Dirty = false;
         }
     }
 

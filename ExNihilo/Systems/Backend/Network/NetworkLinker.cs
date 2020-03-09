@@ -130,6 +130,9 @@ namespace ExNihilo.Systems.Backend.Network
                 case NetworkMessageType.OuterworldPrompt:
                     ReadOuterworldPrompt(message);
                     break;
+                case NetworkMessageType.RemoveItem:
+                    ReadRemoveItem(message);
+                    break;
                 default:
                     SystemConsole.ForceMessage("<error>", "Received network message of unknown type", Color.DarkRed, Color.White);
                     return false;
@@ -214,6 +217,14 @@ namespace ExNihilo.Systems.Backend.Network
             if (!data.IsRecipient(MyUniqueID)) return;
 
             _gameRef.ExitVoid();
+        }
+        private static void ReadRemoveItem(NetIncomingMessage message)
+        {
+            var data = new RemoveItem(message);
+            if (!data.IsRecipient(MyUniqueID)) return;
+
+            _void.ForceRemoveFromBox(data.BoxNumber, data.ItemID);
+            ForwardMessage(data);
         }
     }
 }

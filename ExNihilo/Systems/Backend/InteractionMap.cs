@@ -168,9 +168,24 @@ namespace ExNihilo.Systems.Backend
 
         public void AddBox(BoxInteractive box, int x, int y)
         {
+            box.Index = _boxes.Count;
             AddInteractive(box, x, y, 1, 1);
 
             _boxes.Add(new Coordinate(x, y));
+        }
+
+        public void RemoveFromBox(int index, int id)
+        {
+            try
+            {
+                var loc = _boxes[index];
+                var box = _interactive[loc.Y][loc.X] as BoxInteractive;
+                box?.Remove(id);
+            }
+            catch (IndexOutOfRangeException)
+            {
+                SystemConsole.ForceMessage("<error>", "Attempted to remove item from box that does not exist", Color.DarkRed, Color.White);
+            }
         }
 
         public void DrawBoxes(SpriteBatch spriteBatch, Vector2 offset, int tileSize, float scale)

@@ -225,7 +225,7 @@ namespace ExNihilo.Systems.Game.Items
             {
                 foreach (var i in _equipSet[e.Type])
                 {
-                    if (i.UID == e.UID)
+                    if (i.UID == e.BaseUID)
                     {
                         item.Restore(i);
                         return true;
@@ -236,7 +236,7 @@ namespace ExNihilo.Systems.Game.Items
             {
                 foreach (var i in _useSet)
                 {
-                    if (i.UID == u.UID)
+                    if (i.UID == u.BaseUID)
                     {
                         item.Restore(i);
                         return true;

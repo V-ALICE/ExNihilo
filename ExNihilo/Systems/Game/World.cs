@@ -110,6 +110,7 @@ namespace ExNihilo.Systems.Game
 
         public virtual void DrawOverlays(SpriteBatch spriteBatch)
         {
+            Map.DrawBoxes(spriteBatch, MathD.Flatten(CurrentWorldPosition), TileSize, CurrentWorldScale);
             if (PlayerOverlay is null) return;
             
             foreach (var player in OtherPlayerOverlays)

@@ -14,7 +14,8 @@ namespace ExNihilo.Systems.Backend.Network
         StandardUpdate,
         Disconnect,
         VoidPrompt,
-        OuterworldPrompt
+        OuterworldPrompt,
+        RemoveItem
     }
 
     public class ConsoleMessage : NetworkManager.MessageStruct
@@ -164,6 +165,38 @@ namespace ExNihilo.Systems.Backend.Network
             message.Write(Seed);
             message.Write(ItemSeed);
             message.Write(Floor);
+        }
+    }
+
+    public class RemoveItem : NetworkManager.MessageStruct
+    {
+        public int BoxNumber, ItemID;
+
+        public RemoveItem(long senderId, int boxNum, int itemID) : base((short)NetworkMessageType.RemoveItem, senderId)
+        {
+            BoxNumber = boxNum;
+            ItemID = itemID;
+        }
+
+        public RemoveItem(NetIncomingMessage message) : base(message)
+        {
+            try
+            {
+                BoxNumber = message.ReadInt32();
+                ItemID = message.ReadInt32();
+            }
+            catch (Exception)
+            {
+                Valid = false;
+            }
+        }
+
+        public override void WriteOut(NetOutgoingMessage message)
+        {
+            if (!Valid) return;
+            base.WriteOut(message);
+            message.Write(BoxNumber);
+            message.Write(ItemID);
         }
     }
 }

@@ -36,7 +36,7 @@ namespace ExNihilo.Systems.Game.Items
                 i.AdjustInstant(_stats);
             }
 
-            public InstantInstance(Item item, int level, int quality, InstantItem.InstantItemStats stats) : base(item, level, quality)
+            public InstantInstance(int id, Item item, int level, int quality, InstantItem.InstantItemStats stats) : base(item, level, quality, id)
             {
                 _stats = stats;
             }
@@ -138,7 +138,7 @@ namespace ExNihilo.Systems.Game.Items
                     gold = (int) (item._gold * (rand.NextDouble() / 5 + 0.9) * (basic + count))
                 };
 
-                return new InstantInstance(item, level, quality, stats);
+                return new InstantInstance(rand.Next(), item, level, quality, stats);
             }
         }
     }

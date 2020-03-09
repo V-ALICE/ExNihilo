@@ -105,6 +105,11 @@ namespace ExNihilo.Sectors
 ------->Parameter functions
 ********************************************************************/
 
+        public void ForceRemoveFromBox(int boxNum, int itemId)
+        {
+            ActiveLevel.ForceRemoveFromBox(boxNum, itemId);
+        }
+
         public void SetGenType(MapGenerator.Type type)
         {
             ActiveLevel.ChangeGenerationType(type);

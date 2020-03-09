@@ -8,7 +8,8 @@ namespace ExNihilo.Systems.Bases
     [Serializable]
     public abstract class ItemInstance
     {
-        public readonly string UID;
+        public readonly string BaseUID;
+        public readonly int UID;
         public readonly int Level;
         public string Name { get; protected set; }
         [NonSerialized] protected AnimatableTexture Texture;
@@ -74,9 +75,10 @@ namespace ExNihilo.Systems.Bases
         }
         //public abstract int GetPrice();
 
-        protected ItemInstance(Item item, int level, int quality)
+        protected ItemInstance(Item item, int level, int quality, int uniqueID)
         {
-            UID = item.UID;
+            BaseUID = item.UID;
+            UID = uniqueID;
             Level = level;
             Name = item.Name;
             Texture = item.Texture;

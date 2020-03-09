@@ -3,6 +3,7 @@ using System;
 using System.Linq;
 using ExNihilo.Entity;
 using ExNihilo.Systems.Backend;
+using ExNihilo.Systems.Backend.Network;
 using ExNihilo.Systems.Bases;
 using ExNihilo.Systems.Game;
 using ExNihilo.Systems.Game.Items;
@@ -88,6 +89,7 @@ namespace ExNihilo.Menus
             else if (startSlotBox && !endSlotBox)
             {
                 //Swap item into inventory
+                NetworkManager.SendMessage(new RemoveItem(NetworkManager.MyUniqueID, _boxRefIndex, _boxRef.Contents[startSlotNum].UID));
                 _boxRef.Contents[startSlotNum] = _playerRef.Inventory.TryAddItem(_boxRef.Contents[startSlotNum], endSlotNum);
                 UpdateDisplay();
             }
@@ -112,7 +114,7 @@ namespace ExNihilo.Menus
         private readonly UIText _descText;
         private Point _lastMousePosition;
         private bool _mouseDown;
-        private int _lastTextSlot = -1, _iconRefSize;
+        private int _lastTextSlot = -1, _iconRefSize, _boxRefIndex;
         private const int _descCharLen = 30;
 
         private BoxMenu(GameContainer container) : base(container, null)
@@ -203,11 +205,12 @@ namespace ExNihilo.Menus
 
             _lastTextSlot = -1;
         }
-        public void Enter(Point point, BoxInteractive refBox, Action onExit)
+        public void Enter(Point point, BoxInteractive refBox, int boxIndex, Action onExit)
         {
             base.Enter(point);
             OnExit = onExit;
             _boxRef = refBox;
+            _boxRefIndex = boxIndex;
             UpdateDisplay();
             _lastMousePosition = new Point(-1, -1);
             OnMoveMouse(point);
@@ -228,6 +231,11 @@ namespace ExNihilo.Menus
 
         public override void Draw(SpriteBatch spriteBatch)
         {
+            if (_boxRef.Dirty)
+            {
+                UpdateDisplay();
+                _boxRef.Clean();
+            }
             _panelUI.Draw(spriteBatch);
             _panelUI.DrawFinal(spriteBatch);
         }

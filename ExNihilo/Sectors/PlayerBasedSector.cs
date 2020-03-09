@@ -148,7 +148,7 @@ namespace ExNihilo.Sectors
                 {
                     case BoxInteractive box:
                         _menuPoint = box.Access();
-                        BoxMenu.Menu.Enter(_lastMousePosition, box, () => { _menuPoint = null;});
+                        BoxMenu.Menu.Enter(_lastMousePosition, box, box.Index, () => { _menuPoint = null;});
                         if (_menuActive) _world.Halt();
                         break;
                     case MenuInteractive menu:

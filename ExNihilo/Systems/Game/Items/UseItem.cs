@@ -53,7 +53,7 @@ namespace ExNihilo.Systems.Game.Items
             return text + hp + mp;
         }
 
-        public UseInstance(Item item, int level, int quality, int mp, int hp, UseItem.AOE[] action) : base(item, level, quality)
+        public UseInstance(int id, Item item, int level, int quality, int mp, int hp, UseItem.AOE[] action) : base(item, level, quality, id)
         {
             _perform = action ?? new UseItem.AOE[0];
             _mp = mp;
@@ -175,7 +175,7 @@ namespace ExNihilo.Systems.Game.Items
             var mp = (int) ((basic + count) * (rand.NextDouble() / 5 + 0.9) * item._mp);
             var hp = (int) ((basic + count) * (rand.NextDouble() / 5 + 0.9) * item._hp);
 
-            return new UseInstance(item, level, quality, mp, hp, item._flags.ToArray());
+            return new UseInstance(rand.Next(), item, level, quality, mp, hp, item._flags.ToArray());
         }
     }
 }

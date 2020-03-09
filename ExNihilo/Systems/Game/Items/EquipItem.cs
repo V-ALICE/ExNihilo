@@ -18,7 +18,7 @@ namespace ExNihilo.Systems.Game.Items
         public readonly StatOffset Stats;
         public readonly EquipItem.SlotType Type;
 
-        public EquipInstance(EquipItem item, int level, int quality, string fullName, StatOffset stats, ColorScale icon) : base(item, level, quality)
+        public EquipInstance(int id, EquipItem item, int level, int quality, string fullName, StatOffset stats, ColorScale icon) : base(item, level, quality, id)
         {
             Stats = stats;
             Name = fullName;
@@ -249,7 +249,7 @@ namespace ExNihilo.Systems.Game.Items
             var trueName = matName + item.Name;
 
             //Return generated instance of input item
-            return new EquipInstance(item, level, quality, trueName, stats, color);
+            return new EquipInstance(rand.Next(), item, level, quality, trueName, stats, color);
         }
     }
 

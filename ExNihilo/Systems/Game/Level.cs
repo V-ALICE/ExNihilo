@@ -179,10 +179,15 @@ namespace ExNihilo.Systems.Game
             }
             base.Draw(spriteBatch);
             if (D.Bug) LineDrawer.DrawSquare(spriteBatch, CurrentWorldPosition, CurrentWorldScale * WorldTexture.Width, CurrentWorldScale * WorldTexture.Height, ColorScale.White);
-            Map.DrawBoxes(spriteBatch, MathD.Flatten(CurrentWorldPosition), TileSize, CurrentWorldScale);
         }
 
         // **********Params and Commands*************
+
+        public void ForceRemoveFromBox(int boxNum, int itemId)
+        {
+            Map.RemoveFromBox(boxNum, itemId);
+        }
+
         public void ChangeParallax(int parallax)
         {
             _parallax = parallax;
