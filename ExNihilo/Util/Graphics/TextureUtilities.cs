@@ -101,7 +101,7 @@ namespace ExNihilo.Util.Graphics
 
         public static Texture2D GetSubTexture(GraphicsDevice device, Texture2D sheet, Rectangle rect)
         {
-            while (GameContainer.FormTouched) { Thread.Sleep(100); }
+            while (GameContainer.FormTouched) { Thread.Sleep(10); }
             if (device == null) return null;
             if (rect.Width == 0 || rect.Height == 0) return null;
             var texture = new Texture2D(device, rect.Width, rect.Height);
@@ -111,7 +111,7 @@ namespace ExNihilo.Util.Graphics
 
         private static Color[] GetColorData(Texture2D sheet, Rectangle rect)
         {
-            while (GameContainer.FormTouched) { Thread.Sleep(100); }
+            while (GameContainer.FormTouched) { Thread.Sleep(10); }
             try
             {
                 var data = new Color[rect.Width * rect.Height];
@@ -128,7 +128,7 @@ namespace ExNihilo.Util.Graphics
         {
             if (main is null || sub is null) return;
             if (x < 0 || y < 0 || x + sub.Width > main.Width || y + sub.Height > main.Height) return;
-            while (GameContainer.FormTouched) { Thread.Sleep(100); }
+            while (GameContainer.FormTouched) { Thread.Sleep(10); }
             //try
             {
                 Color[] subData = new Color[sub.Width * sub.Height];

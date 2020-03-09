@@ -440,7 +440,8 @@ namespace ExNihilo
                      SystemConsole.ForceMessage("<error>", NetworkManager.GetErrorAndClear(), Color.DarkRed, Color.White);
                 }
                 while (!NetworkManager.Connected) { Thread.Sleep(100); }
-                _outer.CheckMultiplayer();
+                _outer.CheckNetwork();
+                _void.CheckNetwork();
             }
 
             void DoClient()
@@ -452,7 +453,8 @@ namespace ExNihilo
                 }
                 while (!NetworkManager.Connected) { Thread.Sleep(100); }
                 NetworkManager.SendMessage(GetCurrentIntroduction());
-                _outer.CheckMultiplayer();
+                _outer.CheckNetwork();
+                _void.CheckNetwork();
             }
 
             if (ActiveSectorID != SectorID.Outerworld) return;

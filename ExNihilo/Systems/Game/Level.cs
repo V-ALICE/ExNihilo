@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using ExNihilo.Entity;
+using ExNihilo.Menus;
 using ExNihilo.Systems.Backend;
 using ExNihilo.Systems.Bases;
 using ExNihilo.Util;
@@ -24,8 +25,8 @@ namespace ExNihilo.Systems.Game
 
         private readonly List<Texture2D> _subLevelTextures;
         private readonly List<InteractionMap> _subLevelMaps;
-        
-        private int _curLevel, _seed, _parallax;
+
+        private int _seed, _parallax, _curLevel;
         private MapGenerator.Type _genType;
 
         private TileTextureMap[] _wallTextureMapSet, _floorTextureMapSet, _otherTextureMapSet;
@@ -38,16 +39,16 @@ namespace ExNihilo.Systems.Game
             //_mobSet = new List<EntityContainer>();
         }
 
-        private async void GenerateLevel(GameContainer g, int slot, int level, int itemSeed)
-        {                                 
+        private async void GenerateLevel(GameContainer g, int slot, int level, int itemSeed, NoteMenu stairs)
+        {
+            var itemRand = new Random(itemSeed);
             (InteractionMap, Texture2D) DoAll()
             {
-                var itemRand = new Random(itemSeed);
                 var m = MapGenerator.Get(_seed, level, _genType, out var rand);
                 var wall = _wallTextureMapSet[rand.Next(_wallTextureMapSet.Length)];
                 var floor = _floorTextureMapSet is null ? wall : _floorTextureMapSet[rand.Next(_floorTextureMapSet.Length)];
                 var other = _otherTextureMapSet is null ? wall : _otherTextureMapSet[rand.Next(_otherTextureMapSet.Length)];
-                var t = MapStitcher.StitchMap(g.GraphicsDevice, m, level, rand, itemRand, wall, floor, other);
+                var t = MapStitcher.StitchMap(g.GraphicsDevice, m, level, rand, itemRand, wall, floor, other, stairs);
                 return (m, t);
             }
             
@@ -78,9 +79,10 @@ namespace ExNihilo.Systems.Game
             }
         }
 
-        public void DoGenerationQueue(GameContainer g, int level, int itemSeed)
+        public void DoGenerationQueue(GameContainer g, int level, int itemSeed, NoteMenu stairs)
         {
             if (level == -1) level = _curLevel;
+            else if (level == 0) level = _curLevel + 1;
             _fCount = 1 + _parallax;
             var offset = level - _curLevel;
             //if (offset == 0 && _subLevelMaps.Count == _parallax) return;
@@ -103,7 +105,7 @@ namespace ExNihilo.Systems.Game
                 {
                     //Either no pregenerated levels or this is first start
                     _fCount--;
-                    GenerateLevel(g, -1, level, itemSeed);
+                    GenerateLevel(g, -1, level, itemSeed, stairs);
                     _subLevelMaps.Clear();
                     _subLevelTextures.Clear();
                 }
@@ -114,7 +116,7 @@ namespace ExNihilo.Systems.Game
                     _fCount--;
                     _subLevelMaps.Add(null);
                     _subLevelTextures.Add(null);
-                    GenerateLevel(g, i, level + i + 1, itemSeed);
+                    GenerateLevel(g, i, level + i + 1, itemSeed, stairs);
                 }
             }
 
@@ -123,6 +125,7 @@ namespace ExNihilo.Systems.Game
 
         public void Purge()
         {
+            _curLevel = 0;
             _subLevelTextures.Clear();
             _subLevelMaps.Clear();
             Map = null;

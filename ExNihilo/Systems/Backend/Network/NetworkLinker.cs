@@ -82,7 +82,8 @@ namespace ExNihilo.Systems.Backend.Network
                     }
                 }
             }
-            _outer.CheckMultiplayer();
+            _outer.CheckNetwork();
+            _void.CheckNetwork();
         }
 
         private static void ReconfigureMiniIDs()

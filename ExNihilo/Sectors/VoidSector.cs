@@ -2,6 +2,7 @@
 using ExNihilo.Entity;
 using ExNihilo.Menus;
 using ExNihilo.Systems.Backend;
+using ExNihilo.Systems.Backend.Network;
 using ExNihilo.Systems.Game;
 using ExNihilo.Util;
 using Microsoft.Xna.Framework;
@@ -12,7 +13,7 @@ namespace ExNihilo.Sectors
 {
     public class VoidSector : PlayerBasedSector
     {
-        private Level ActiveLevel => _world as Level;
+        private Level ActiveLevel => World as Level;
         private PlayerEntityContainer Player => Container.Player;
 
         public bool VoidIsActive;
@@ -29,15 +30,21 @@ namespace ExNihilo.Sectors
         public override void OnResize(GraphicsDevice graphicsDevice, Coordinate gameWindow)
         {
             base.OnResize(graphicsDevice, gameWindow);
-            if (!(_menuPoint is BoxMenu)) BoxMenu.Menu.OnResize(graphicsDevice, gameWindow);
+            if (!(MenuPoint is BoxMenu)) BoxMenu.Menu.OnResize(graphicsDevice, gameWindow);
         }
 
         public override void Enter(Point point, Coordinate gameWindow)
         {
             //VoidIsActive = true;
-            _invRef.SetReference(Player);
+            InvRef.SetReference(Player);
             BoxMenu.Menu.SetReference(Player);
             base.Enter(point, gameWindow);
+        }
+
+        public override void LoadContent(GraphicsDevice graphicsDevice, ContentManager content)
+        {
+            base.LoadContent(graphicsDevice, content);
+            StairMenu.LoadContent(graphicsDevice, content);
         }
 
         public void Return()
@@ -52,14 +59,14 @@ namespace ExNihilo.Sectors
         protected override void DrawDebugInfo(SpriteBatch spriteBatch)
         {
             base.DrawDebugInfo(spriteBatch);
-            ActiveLevel.DrawDebugInfo(spriteBatch, _debugPosition);
+            ActiveLevel.DrawDebugInfo(spriteBatch, DebugPosition);
         }
 
         public override void Draw(SpriteBatch spriteBatch, bool drawDebugInfo)
         {  
-            _world.Draw(spriteBatch);
-            _world.DrawOverlays(spriteBatch);
-            _menuPoint?.Draw(spriteBatch);
+            World.Draw(spriteBatch);
+            World.DrawOverlays(spriteBatch);
+            MenuPoint?.Draw(spriteBatch);
             if (drawDebugInfo) DrawDebugInfo(spriteBatch);
         }
 
@@ -92,7 +99,7 @@ namespace ExNihilo.Sectors
                     foreach (var player in refList) ActiveLevel.AddPlayerRef(player);
                 }
             }
-            ActiveLevel.DoGenerationQueue(Container, floor, itemSeed);
+            ActiveLevel.DoGenerationQueue(Container, floor, itemSeed, StairMenu);
             VoidIsActive = true;
         }
 
@@ -102,8 +109,8 @@ namespace ExNihilo.Sectors
         }
 
 /********************************************************************
-------->Parameter functions
-********************************************************************/
+        ------->Parameter functions
+        ********************************************************************/
 
         public void ForceRemoveFromBox(int boxNum, int itemId)
         {

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
+using ExNihilo.Menus;
 using ExNihilo.Systems.Backend;
 using ExNihilo.Systems.Bases;
 using ExNihilo.Util;
@@ -54,7 +55,7 @@ namespace ExNihilo.Systems.Game
         public int TileSize;
         public bool CheckVoid;
         private readonly Dictionary<string, List<Texture2D>> _mapping;
-        private readonly List<Texture2D> _boxes, _oboxes;
+        private readonly List<Texture2D> _boxes, _oboxes, _stair;
 
         private void Entry(GraphicsDevice g, Texture2D texture, string line, Coordinate offset)
         {
@@ -99,15 +100,19 @@ namespace ExNihilo.Systems.Game
             var wall = TextureUtilities.CreateSingleColorTexture(g, 16, 16, Color.DarkRed);
             var floor = TextureUtilities.CreateSingleColorTexture(g, 16, 16, Color.DarkGreen);
             var stair = TextureUtilities.CreateSingleColorTexture(g, 16, 16, Color.DeepSkyBlue);
+            var box = TextureUtilities.CreateSingleColorTexture(g, 16, 16, Color.Purple);
             map.TileSize = 16;
-            map._mapping.Add("0", new List<Texture2D> { stair });
             map._mapping.Add("999939999", new List<Texture2D> { floor });
             map._mapping.Add("999949999", new List<Texture2D> { wall });
+            map._stair.Add(stair);
+            map._boxes.Add(box);
+
             return new[] {map};
         }
 
         private TileTextureMap()
         {
+            _stair = new List<Texture2D>();
             _boxes = new List<Texture2D>();
             _oboxes = new List<Texture2D>();
             _mapping = new Dictionary<string, List<Texture2D>>();
@@ -187,6 +192,14 @@ namespace ExNihilo.Systems.Game
                             SystemConsole.ForceMessage("<warning>", "Ignoring unexpected line \"" + line + "\" in tile map description", Color.DarkOrange, Color.White);
                         }
                     }
+                    else if (line.StartsWith("STAIR "))
+                    {
+                        //Add stair
+                        var split = line.Split(' ');
+                        var rect = new Rectangle(int.Parse(split[1]), int.Parse(split[2]), int.Parse(split[3]), int.Parse(split[4]));
+                        var tex = TextureUtilities.GetSubTexture(g, curTex, rect); //TODO: find a better way to do this
+                        foreach (var set in tmfSet) set._stair.Add(tex);
+                    }
                     else if (line.StartsWith("BOX "))
                     {
                         //Add box
@@ -213,6 +226,10 @@ namespace ExNihilo.Systems.Game
                     else if (curTex != null)
                     {
                         //Tile description (or possibly a junk line)
+                        if (line.StartsWith("0 "))
+                        {
+                            int y = 9;
+                        }
                         tmfSet[0].Entry(g, curTex, line, new Coordinate());
                         for (int i = 0; i < offsets.Count; i++) tmfSet[i + 1].Entry(g, curTex, line, offsets[i]);
                     }
@@ -266,12 +283,9 @@ namespace ExNihilo.Systems.Game
 
         public Texture2D GetAnyOfType(string type, Random rand)
         {
-            foreach (var m in _mapping)
+            foreach (var m in _mapping.Where(m => TileRef.Equals(m.Key, type)))
             {
-                if (TileRef.Equals(m.Key, type))
-                {
-                    return m.Value[rand.Next(m.Value.Count)];
-                }
+                return m.Value[rand.Next(m.Value.Count)];
             }
             SystemConsole.ForceMessage("<warning>", "Texture map contains no definitions for ID " + type, Color.DarkRed, Color.White);
             return null;
@@ -286,7 +300,7 @@ namespace ExNihilo.Systems.Game
         //Convenience function since stair ID is static
         public Texture2D GetAnyStairs(Random rand)
         {
-            return GetAnyOfType("0", rand);
+            return _stair[rand.Next(_stair.Count)];
         }
     } 
 
@@ -318,7 +332,7 @@ namespace ExNihilo.Systems.Game
             return map.ToArray();
         }
 
-        public static Texture2D StitchMap(GraphicsDevice graphics, InteractionMap set, int level, Random rand, Random items, TileTextureMap wall, TileTextureMap floor, TileTextureMap other)
+        public static Texture2D StitchMap(GraphicsDevice graphics, InteractionMap set, int level, Random rand, Random items, TileTextureMap wall, TileTextureMap floor, TileTextureMap other, NoteMenu stairs)
         {
             var texture = new Texture2D(graphics, wall.TileSize * set.Map.X, wall.TileSize * (set.Map.Y + 5));
 
@@ -344,7 +358,12 @@ namespace ExNihilo.Systems.Game
                             TextureUtilities.SetSubTexture(texture, floor.GetAnyOfType(idg, rand), j * floor.TileSize, i * floor.TileSize);
                             break;
                         case Tile.Stairs:
-                            TextureUtilities.SetSubTexture(texture, floor.GetAnyStairs(rand), j * floor.TileSize, i * floor.TileSize);
+                            var ids = TileRef.ToString(GetSurroundings(set.Map, j, i));
+                            TextureUtilities.SetSubTexture(texture, floor.GetAnyOfType(ids, rand), j * floor.TileSize, i * floor.TileSize);
+                            var stairTex = floor.GetAnyStairs(rand);
+                            TextureUtilities.SetSubTexture(texture, stairTex, j * floor.TileSize, i * floor.TileSize);
+                            var stair = new MenuInteractive("Stairs", stairs);
+                            set.AddInteractive(stair, j, i, stairTex.Width / floor.TileSize, stairTex.Height / floor.TileSize);
                             break;
                         case Tile.Box:
                             var idb = TileRef.ToString(GetSurroundings(set.Map, j, i));

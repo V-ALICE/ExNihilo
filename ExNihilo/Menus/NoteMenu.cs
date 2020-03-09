@@ -16,11 +16,13 @@ namespace ExNihilo.Menus
 ********************************************************************/
         private void CloseMenu(UICallbackPackage package)
         {
+            _panelUI.OnMoveMouse(new Point(-1, -1));
             _output.Invoke(false);
         }
 
         private void ConfirmMenu(UICallbackPackage package)
         {
+            _panelUI.OnMoveMouse(new Point(-1, -1));
             _output.Invoke(true);
         }
 

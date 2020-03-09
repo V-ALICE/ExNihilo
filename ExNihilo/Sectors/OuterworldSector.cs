@@ -17,7 +17,6 @@ namespace ExNihilo.Sectors
         private CharacterMenu _characterMenu;
         private DivineMenu _divineMenu;
         private MultiplayerMenu _multiplayerMenu;
-        private NoteMenu _voidMenu;
         private NoteMenu _fishMenu;
 
         public PlayerEntityContainer Player => _characterMenu.GetCurrentChar();
@@ -36,12 +35,11 @@ namespace ExNihilo.Sectors
             _divineMenu.OnResize(graphics, gameWindow);
             _multiplayerMenu.OnResize(graphics, gameWindow);
             _fishMenu.OnResize(graphics, gameWindow);
-            _voidMenu.OnResize(graphics, gameWindow);
         }
 
         public override void Enter(Point point, Coordinate gameWindow)
         {
-            _invRef.SetReference(Player);
+            InvRef.SetReference(Player);
             base.Enter(point, gameWindow);
         }
 
@@ -50,7 +48,7 @@ namespace ExNihilo.Sectors
             if (newSector == GameContainer.SectorID.Loading)
             {
                 //Assumed to be entering void
-                _world.Reset(Player, new Coordinate(10, 10), new Coordinate(3, 10));
+                World.Reset(Player, new Coordinate(10, 10), new Coordinate(3, 10));
                 AudioManager.PlaySong("Void", true);
             }
         }
@@ -59,16 +57,15 @@ namespace ExNihilo.Sectors
         {
             void CharChange()
             {
-                _invRef.SetReference(Player);
-                _menuPoint = null;
+                InvRef.SetReference(Player);
+                MenuPoint = null;
             }
 
             base.Initialize();
-            _characterMenu = new CharacterMenu(Container, CharChange, _world);
-            _divineMenu = new DivineMenu(Container, () => { _menuPoint = null;});
-            _multiplayerMenu = new MultiplayerMenu(Container, () => { _menuPoint = null; });
-            _fishMenu = new NoteMenu(Container, "No fishing allowed", x => { _menuPoint = null; }, true);
-            _voidMenu = new NoteMenu(Container, "Ready to Enter the Void?", TriggerVoid);
+            _characterMenu = new CharacterMenu(Container, CharChange, World);
+            _divineMenu = new DivineMenu(Container, () => { MenuPoint = null;});
+            _multiplayerMenu = new MultiplayerMenu(Container, () => { MenuPoint = null; });
+            _fishMenu = new NoteMenu(Container, "No fishing allowed", x => { MenuPoint = null; }, true);
         }
 
         public override void LoadContent(GraphicsDevice graphicsDevice, ContentManager content)
@@ -78,23 +75,22 @@ namespace ExNihilo.Sectors
             _divineMenu.LoadContent(graphicsDevice, content);
             _multiplayerMenu.LoadContent(graphicsDevice, content);
             _fishMenu.LoadContent(graphicsDevice, content);
-            _voidMenu.LoadContent(graphicsDevice, content);
 
-            _world.AddOverlay(content.Load<Texture2D>("World/tree"), 26, 5);
-            _world.AddInteractive(new MenuInteractive("Tree", _divineMenu), 27, 8, 2);
+            World.AddOverlay(content.Load<Texture2D>("World/tree"), 26, 5);
+            World.AddInteractive(new MenuInteractive("Tree", _divineMenu), 27, 8, 2);
             var river = new MenuInteractive("River", _fishMenu);
-            _world.AddInteractive(river, 12, 6, 2);
-            _world.AddInteractive(river, 15, 8, 1, 2);
-            _world.AddInteractive(new MenuInteractive("Void", _voidMenu), 22, 21, 2, 2);
-            _world.AddInteractive(new MenuInteractive("Pond", _characterMenu), 44, 3, 2, 2);
-            _world.AddInteractive(new MenuInteractive("Island", _multiplayerMenu), 13, 43);
+            World.AddInteractive(river, 12, 6, 2);
+            World.AddInteractive(river, 15, 8, 1, 2);
+            World.AddInteractive(new MenuInteractive("Void", StairMenu), 22, 21, 2, 2);
+            World.AddInteractive(new MenuInteractive("Pond", _characterMenu), 44, 3, 2, 2);
+            World.AddInteractive(new MenuInteractive("Island", _multiplayerMenu), 13, 43);
         }
 
         public override void Draw(SpriteBatch spriteBatch, bool drawDebugInfo)
         {
-            _world.Draw(spriteBatch);
-            _world.DrawOverlays(spriteBatch);
-            _menuPoint?.Draw(spriteBatch);
+            World.Draw(spriteBatch);
+            World.DrawOverlays(spriteBatch);
+            MenuPoint?.Draw(spriteBatch);
             if (drawDebugInfo) DrawDebugInfo(spriteBatch);
         }
 
@@ -102,22 +98,11 @@ namespace ExNihilo.Sectors
 ------->Game functions
 ********************************************************************/
 
-        public void CheckMultiplayer()
-        {
-            _voidMenu.UpdateConfirm(NetworkManager.Active && !NetworkManager.Hosting);
-        }
-
-        private void TriggerVoid(bool accepted)
-        {
-            _menuPoint = null;
-            if (accepted) Container.PushVoid(VoidSector.Seed, MathD.urand.Next(), 1);
-        }
-
         public override void OnLeftRelease(Point point)
         {
-            if (_menuActive)
+            if (MenuActive)
             {
-                _menuPoint.OnLeftRelease(point);
+                MenuPoint.OnLeftRelease(point);
             }
         }
 
@@ -127,7 +112,6 @@ namespace ExNihilo.Sectors
             _divineMenu.Pack(game);
             _multiplayerMenu.Pack(game);
             _fishMenu.Pack(game);
-            _voidMenu.Pack(game);
         }
 
         public override void Unpack(PackedGame game)
@@ -138,8 +122,7 @@ namespace ExNihilo.Sectors
             _divineMenu.Unpack(game);
             _multiplayerMenu.Unpack(game);
             _fishMenu.Unpack(game);
-            _voidMenu.Unpack(game);
-            _world.Reset(Player, new Coordinate(10, 10), new Coordinate(3, 10));
+            World.Reset(Player, new Coordinate(10, 10), new Coordinate(3, 10));
             
         }
     }

@@ -16,23 +16,25 @@ namespace ExNihilo.Sectors
 {
     public abstract class PlayerBasedSector : Sector, ISuperPlayer, IPlayer
     {
-        protected CommandHandler _playerHandler, _superPlayerHandler;
-        protected Coordinate _debugPosition;
-        protected Point _lastMousePosition;
-        protected readonly World _world;
-        protected bool _disableCollisions;
-        protected float _systemPushSpeed = 1.0f;
+        protected CommandHandler PlayerHandler, SuperPlayerHandler;
+        protected Coordinate DebugPosition;
+        protected Point LastMousePosition;
+        protected readonly World World;
+        protected bool DisableCollisions;
+        protected float SystemPushSpeed = 1.0f;
 
-        protected bool _menuActive => _menuPoint != null;
-        protected Menu _menuPoint;
+        protected bool MenuActive => MenuPoint != null;
+        protected Menu MenuPoint;
 
-        protected InventoryMenu _invRef;
+        protected InventoryMenu InvRef;
+        protected NoteMenu StairMenu;
 
-        public List<PlayerOverlay> OtherPlayers => _world.GetPlayers();
+        public List<PlayerOverlay> OtherPlayers => World.GetPlayers();
 
         protected PlayerBasedSector(GameContainer container, World world) : base(container)
         {
-            _world = world;
+            World = world;
+            StairMenu = new NoteMenu(container, "Would you like to descend?", OnDown);
         }
 
 /********************************************************************
@@ -40,10 +42,11 @@ namespace ExNihilo.Sectors
 ********************************************************************/
         public override void OnResize(GraphicsDevice graphicsDevice, Coordinate gameWindow)
         {
-            _world?.OnResize(graphicsDevice, gameWindow);
-            _debugPosition = new Coordinate(1, 1 + TextDrawer.AlphaHeight + TextDrawer.LineSpacer);
-            _menuPoint?.OnResize(graphicsDevice, gameWindow);
-            if (!(_menuPoint is InventoryMenu)) _invRef.OnResize(graphicsDevice, gameWindow);
+            World?.OnResize(graphicsDevice, gameWindow);
+            DebugPosition = new Coordinate(1, 1 + TextDrawer.AlphaHeight + TextDrawer.LineSpacer);
+            MenuPoint?.OnResize(graphicsDevice, gameWindow);
+            if (!(MenuPoint is InventoryMenu)) InvRef.OnResize(graphicsDevice, gameWindow);
+            if (!ReferenceEquals(MenuPoint, StairMenu)) StairMenu.OnResize(graphicsDevice, gameWindow);
         }
 
         public override void Enter(Point point, Coordinate gameWindow)
@@ -53,43 +56,44 @@ namespace ExNihilo.Sectors
 
         public override void Initialize()
         {
-            _invRef = new InventoryMenu(Container, () => { _menuPoint = null;});
-            _playerHandler = new CommandHandler();
-            _playerHandler.InitializePlayer(this);
-            _superPlayerHandler = new CommandHandler();
-            _superPlayerHandler.InitializeSuperPlayer(this);
-            _debugPosition = new Coordinate(1, 1 + TextDrawer.AlphaHeight + TextDrawer.LineSpacer);
-            _lastMousePosition = new Point();
+            InvRef = new InventoryMenu(Container, () => { MenuPoint = null;});
+            PlayerHandler = new CommandHandler();
+            PlayerHandler.InitializePlayer(this);
+            SuperPlayerHandler = new CommandHandler();
+            SuperPlayerHandler.InitializeSuperPlayer(this);
+            DebugPosition = new Coordinate(1, 1 + TextDrawer.AlphaHeight + TextDrawer.LineSpacer);
+            LastMousePosition = new Point();
         }
 
         public override void LoadContent(GraphicsDevice graphicsDevice, ContentManager content)
         {
-            _world.LoadContent(graphicsDevice, content);
-            _invRef.LoadContent(graphicsDevice, content);
+            World.LoadContent(graphicsDevice, content);
+            InvRef.LoadContent(graphicsDevice, content);
+            StairMenu.LoadContent(graphicsDevice, content);
         }
 
         public override void Update()
         {
             if (TypingKeyboard.Active) return;
-            _superPlayerHandler.UpdateInput();
-            if (!_menuActive)
+            SuperPlayerHandler.UpdateInput();
+            if (!MenuActive)
             {
-                _world.ApplyPush(CurrentPush, _systemPushSpeed*CurrentPushMult, _disableCollisions);
-                _playerHandler.UpdateInput();
+                World.ApplyPush(CurrentPush, SystemPushSpeed*CurrentPushMult, DisableCollisions);
+                PlayerHandler.UpdateInput();
             }
         }
 
         protected override void DrawDebugInfo(SpriteBatch spriteBatch)
         {
-            var text = _world + "\nPush Vec:  " + CurrentPush;
-            TextDrawer.DrawDumbText(spriteBatch, _debugPosition, text, 1, ColorScale.White);
+            var text = World + "\nPush Vec:  " + CurrentPush;
+            TextDrawer.DrawDumbText(spriteBatch, DebugPosition, text, 1, ColorScale.White);
         }
 
         public override void Draw(SpriteBatch spriteBatch, bool drawDebugInfo)
         {  
-            _world.Draw(spriteBatch);
-            _world.DrawOverlays(spriteBatch);
-            _menuPoint?.Draw(spriteBatch);
+            World.Draw(spriteBatch);
+            World.DrawOverlays(spriteBatch);
+            MenuPoint?.Draw(spriteBatch);
             if (drawDebugInfo) DrawDebugInfo(spriteBatch);
         }
 
@@ -98,63 +102,77 @@ namespace ExNihilo.Sectors
 ********************************************************************/
         public override void BackOut()
         {
-            if (_menuActive)
+            if (MenuActive)
             {
-                _menuPoint.BackOut();
+                MenuPoint.BackOut();
             }
             else base.BackOut();
         }
 
+        public void CheckNetwork()
+        {
+            StairMenu.UpdateConfirm(NetworkManager.Active && !NetworkManager.Hosting);
+        }
+
+        private void OnDown(bool accepted)
+        {
+            MenuPoint = null;
+            if (accepted)
+            {
+                Container.PushVoid(VoidSector.Seed, MathD.urand.Next(), 0);
+            }
+        }
+
         public override void ToggleTabMenu()
         {
-            if (!_menuActive)
+            if (!MenuActive)
             {
-                _menuPoint = _invRef;
-                _invRef.Enter(_lastMousePosition);
-                if (_menuActive) _world.Halt();
+                MenuPoint = InvRef;
+                InvRef.Enter(LastMousePosition);
+                if (MenuActive) World.Halt();
             }
-            else if (_menuPoint is InventoryMenu)
+            else if (MenuPoint is InventoryMenu)
             {
-                _menuPoint.BackOut();
+                MenuPoint.BackOut();
             }
         }
 
         public override bool OnMoveMouse(Point point)
         {
-            _menuPoint?.OnMoveMouse(point);
-            _lastMousePosition = point;
+            MenuPoint?.OnMoveMouse(point);
+            LastMousePosition = point;
             return false;
         }
 
         public override bool OnLeftClick(Point point)
         {
-            return _menuPoint?.OnLeftClick(point) ?? false;
+            return MenuPoint?.OnLeftClick(point) ?? false;
         }
 
         public override void OnLeftRelease(Point point)
         {
-            if (_menuActive)
+            if (MenuActive)
             {
-                _menuPoint.OnLeftRelease(point);
+                MenuPoint.OnLeftRelease(point);
             }
         }
 
         public override void Touch()
         {
-            var obj = _world.CheckForInteraction();
+            var obj = World.CheckForInteraction();
             if (obj != null)
             {
                 switch (obj)
                 {
                     case BoxInteractive box:
-                        _menuPoint = box.Access();
-                        BoxMenu.Menu.Enter(_lastMousePosition, box, box.Index, () => { _menuPoint = null;});
-                        if (_menuActive) _world.Halt();
+                        MenuPoint = box.Access();
+                        BoxMenu.Menu.Enter(LastMousePosition, box, box.Index, () => { MenuPoint = null;});
+                        if (MenuActive) World.Halt();
                         break;
                     case MenuInteractive menu:
-                        _menuPoint = menu.Access();
-                        _menuPoint?.Enter(_lastMousePosition);
-                        if (_menuActive) _world.Halt();
+                        MenuPoint = menu.Access();
+                        MenuPoint?.Enter(LastMousePosition);
+                        if (MenuActive) World.Halt();
                         break;
                     case ActionInteractive action:
                         action.Function?.Invoke();
@@ -163,26 +181,26 @@ namespace ExNihilo.Sectors
             }
         }
 
-        public virtual void ClearPlayers() { _world.ClearPlayers(); }
-        public virtual void ClearPlayers(long id) { _world.RemovePlayer(id); }
+        public virtual void ClearPlayers() { World.ClearPlayers(); }
+        public virtual void ClearPlayers(long id) { World.RemovePlayer(id); }
         public virtual void UpdatePlayers(long id, string name, int[] charSet)
         {
-            _world.AddPlayer(id, name, charSet);
+            World.AddPlayer(id, name, charSet);
         }
 
         public StandardUpdate GetStandardUpdate()
         {
-            return _world.GetStandardUpdate();
+            return World.GetStandardUpdate();
         }
 
         public void ToggleCollisions(bool collisionOn)
         {
-            _disableCollisions = !collisionOn;
+            DisableCollisions = !collisionOn;
         }
 
         public void SetSpeedMultiplier(float mult)
         {
-            _systemPushSpeed = mult;
+            SystemPushSpeed = mult;
         }
     }
 }
