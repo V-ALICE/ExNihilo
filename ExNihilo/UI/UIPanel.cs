@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.InteropServices;
 using ExNihilo.Util;
 using ExNihilo.Util.Graphics;
 using Microsoft.Xna.Framework;
@@ -202,7 +203,11 @@ namespace ExNihilo.UI
             var found = false;
             for (int i = Set.Count - 1; i >= 0; i--)
             {
-                if (Set[i] is UIClickable click)
+                if (Set[i] is UITogglable tog && tog.DeactivateOnExternalClick)
+                {
+                    tog.OnMoveMouse(point);
+                }
+                else if (Set[i] is UIClickable click)
                 {
                     if (found) click.ForceNotOver();
                     else if (click.OnMoveMouse(point)) found = true;
@@ -220,16 +225,21 @@ namespace ExNihilo.UI
 
         public override bool OnLeftClick(Point point)
         {
+            var did = false;
             for (int i = Set.Count - 1; i >= 0; i--)
             {
-                if (Set[i] is UIClickable click)
+                if (Set[i] is UITogglable tog && tog.DeactivateOnExternalClick)
                 {
-                    if (click.OnLeftClick(point)) return true;
+                    tog.OnLeftClick(point);
+                }
+                else if (!did && Set[i] is UIClickable click)
+                {
+                    if (click.OnLeftClick(point)) did = true;
                 }
             }
 
             Down = IsOver(point); //don't return this because the top level panel will steal it every time
-            return false;
+            return did;
         }
 
         public override void OnLeftRelease(Point point)

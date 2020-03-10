@@ -192,7 +192,6 @@ namespace ExNihilo.Systems.Backend
         {
             _console = new ConsoleBox(_maxLineCount, _maxCharacterCount);
             _handler.InitializeConsole(g);
-            ColorScale.AddToGlobal("__blinker", new ColorScale(0.5f, false, Color.White, Color.White, Color.Transparent));
         }
 
         public static void LoadContent(GraphicsDevice graphics, ContentManager content)

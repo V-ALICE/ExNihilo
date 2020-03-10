@@ -109,9 +109,9 @@ namespace ExNihilo.Sectors
             else base.BackOut();
         }
 
-        public void CheckNetwork()
+        public virtual void CheckNetwork(bool ending)
         {
-            StairMenu.UpdateConfirm(NetworkManager.Active && !NetworkManager.Hosting);
+            StairMenu.UpdateConfirm(NetworkManager.Active && !NetworkManager.Hosting && !ending);
         }
 
         private void OnDown(bool accepted)

@@ -176,13 +176,15 @@ namespace ExNihilo
             _frameTimeID = UniversalTime.NewTimer(true, 1.5);
             TextureLibrary.LoadRuleSets();
             UniversalTime.TurnOnTimer(SystemClockID, _frameTimeID);
-            NetworkManager.Initialize(3, 10, 10, 1, 0, UpdateNetwork, NetworkLinker.OnDisconnect);
+            NetworkManager.Initialize(3, 10, 10, 1, 0, UpdateNetwork, NetworkLinker.OnConnect, NetworkLinker.OnDisconnect);
             
             ColorScale.AddToGlobal("Random", new ColorScale(2f, 32, 222));
             var rainbow = new ColorScale(1.0f, false, ColorScale.Red, ColorScale.RedOrange, ColorScale.Orange, ColorScale.OrangeYellow, 
                                                     ColorScale.Yellow, ColorScale.YellowGreen, ColorScale.Green, ColorScale.GreenBlue, 
                                                     ColorScale.Blue, ColorScale.BlueViolet, ColorScale.Violet, ColorScale.VioletRed);
             ColorScale.AddToGlobal("Rainbow", rainbow);
+            ColorScale.AddToGlobal("__blinker", new ColorScale(0.35f, false, Color.White, Color.White, Color.Transparent));
+            ColorScale.AddToGlobal("__unblinker", new ColorScale(0.35f, false, Color.Black, Color.Black, Color.Transparent));
             ColorScale.LoadColors("COLOR.info");
 
             //IsMouseVisible = true;
@@ -430,36 +432,33 @@ namespace ExNihilo
             return new PlayerIntroduction(NetworkManager.MyUniqueID, Player.Name, NetworkLinker.MyMiniID, SystemConsole.MyColor.R, SystemConsole.MyColor.G, SystemConsole.MyColor.B, Player.TextureSet);
         }
 
-        public async void GLOBAL_DEBUG_COMMAND(string input)
+        public void StartNewHost(int port=14444)
         {
-            void DoHost()
+            if (!NetworkManager.StartNewHost("ExNihiloGame", port))
             {
-                SystemConsole.ForceMessage("<Asura>", "Starting host", Color.Purple, Color.White);
-                if (!NetworkManager.StartNewHost("test", 14444))
+                SystemConsole.ForceMessage("<error>", NetworkManager.GetErrorAndClear(), Color.DarkRed, Color.White);
+            }
+            SystemConsole.ForceMessage("<Asura>", "Now hosting a network game on port " + port, Color.Purple, Color.White);
+        }
+
+        public async void StartNewClient(string ip, int port=14444)
+        {
+            void AsyncClient()
+            {
+                SystemConsole.ForceMessage("<Asura>", "Attempting to connect to game at " + ip + " on port " + port, Color.Purple, Color.White);
+                if (!NetworkManager.ConnectToHost("ExNihiloGame", ip, port))
                 {
-                     SystemConsole.ForceMessage("<error>", NetworkManager.GetErrorAndClear(), Color.DarkRed, Color.White);
+                    SystemConsole.ForceMessage("<error>", NetworkManager.GetErrorAndClear(), Color.DarkRed, Color.White);
                 }
-                while (!NetworkManager.Connected) { Thread.Sleep(100); }
-                _outer.CheckNetwork();
-                _void.CheckNetwork();
+                while (NetworkManager.Active && !NetworkManager.Connected) { Thread.Sleep(100); }
+                if (NetworkManager.Connected) NetworkManager.SendMessage(GetCurrentIntroduction());
             }
 
-            void DoClient()
-            {
-                 SystemConsole.ForceMessage("<Asura>", "Starting client", Color.Purple, Color.White);
-                if (!NetworkManager.ConnectToHost("test", "127.0.0.1", 14444))
-                {
-                     SystemConsole.ForceMessage("<error>", NetworkManager.GetErrorAndClear(), Color.DarkRed, Color.White);
-                }
-                while (!NetworkManager.Connected) { Thread.Sleep(100); }
-                NetworkManager.SendMessage(GetCurrentIntroduction());
-                _outer.CheckNetwork();
-                _void.CheckNetwork();
-            }
+            await Task.Run(() => AsyncClient());
+        }
 
-            if (ActiveSectorID != SectorID.Outerworld) return;
-            if (input == "host") await Task.Run(() => DoHost());
-            else if (input == "client") await Task.Run(() => DoClient());
+        public void GLOBAL_DEBUG_COMMAND(string input)
+        {
         }
     }
 }

@@ -7,7 +7,8 @@ namespace ExNihilo.UI
 {
     public class UITogglable : UIClickable
     {
-        protected bool WasOver, DeactivateOnExternalClick;
+        protected bool WasOver;
+        public bool DeactivateOnExternalClick;
 
         public UITogglable(string name, string path, Vector2 relPos, ColorScale color, UIPanel superior,
             TextureUtilities.PositionType anchorPoint, bool down, bool deactivateOnExternalClick = false,

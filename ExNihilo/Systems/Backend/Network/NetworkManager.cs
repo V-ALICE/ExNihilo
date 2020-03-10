@@ -123,7 +123,7 @@ namespace ExNihilo.Systems.Backend.Network
         private static List<ClientInfoPackage> _link;
 
         private static Action _onUpdate;
-        private static Action<long> _onDisconnect;
+        private static Action<long> _onDisconnect, _onConnect;
 
         private static string _lastError, _lastNotice;
         public static string LastError
@@ -145,7 +145,7 @@ namespace ExNihilo.Systems.Backend.Network
             }
         }
 
-        public static void Initialize(int maxConnections, double connectionTimeout, double heartbeatTimeout, double heartbeatRate, double hostUpdateRate, Action onUpdate, Action<long> onDisconnect=null)
+        public static void Initialize(int maxConnections, double connectionTimeout, double heartbeatTimeout, double heartbeatRate, double hostUpdateRate, Action onUpdate, Action<long> onConnect=null, Action<long> onDisconnect=null)
         {
             _maxConnections = maxConnections;
             _connectionTimeout = connectionTimeout;
@@ -155,6 +155,7 @@ namespace ExNihilo.Systems.Backend.Network
 
             _link = new List<ClientInfoPackage>(_maxConnections);
             _onDisconnect = onDisconnect;
+            _onConnect = onConnect;
             _onUpdate = onUpdate;
         }
 
@@ -453,6 +454,7 @@ namespace ExNihilo.Systems.Backend.Network
                                     //Record new connection
                                     LastNotice = "New client with ID " + connectionId + " has connected";
                                     _link.Add(new ClientInfoPackage { UserID = connectionId });
+                                    _onConnect?.Invoke(connectionId);
                                 }
                                 else
                                 {
@@ -463,6 +465,7 @@ namespace ExNihilo.Systems.Backend.Network
                                     //Request UniqueID
                                     var data = new NewConnection(-1, _verNum);
                                     SendMessage(data);
+                                    _onConnect?.Invoke(connectionId);
                                 }
 
                                 break;

@@ -47,6 +47,15 @@ namespace ExNihilo.Systems.Backend.Network
             _outer = outer;
         }
 
+        public static void OnConnect(long id)
+        {
+            _outer.CheckNetwork(false);
+            _void.CheckNetwork(false);
+            if (NetworkManager.Hosting) SystemConsole.ForceMessage("<Asura>", "A new player has connected", Color.Purple, Color.White);
+            else SystemConsole.ForceMessage("<Asura>", "Successfully connected to host", Color.Purple, Color.White);
+            //if (!NetworkManager.Hosting) NetworkManager.SendMessage(_gameRef.GetCurrentIntroduction()); //init connection
+        }
+
         public static void OnDisconnect(long id)
         {
             if (id == -1 || id == NetworkManager.MyUniqueID)
@@ -55,6 +64,8 @@ namespace ExNihilo.Systems.Backend.Network
                 _lookup.Clear();
                 _void.ClearPlayers();
                 _outer.ClearPlayers();
+                _outer.CheckNetwork(true);
+                _void.CheckNetwork(true);
                 if (NetworkManager.Active)
                 {
                     SystemConsole.ForceMessage("<Asura>", "Multiplayer ended", Color.Purple, Color.White);
@@ -82,8 +93,7 @@ namespace ExNihilo.Systems.Backend.Network
                     }
                 }
             }
-            _outer.CheckNetwork();
-            _void.CheckNetwork();
+            
         }
 
         private static void ReconfigureMiniIDs()

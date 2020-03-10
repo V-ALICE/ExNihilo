@@ -549,6 +549,7 @@ namespace ExNihilo.Menus
             if (_newGameUI.GetElement("NewGameInputBoxText") is UIText text)
             {
                 if (text.Text.Length >= len) text.SetText(text.Text.Substring(0, text.Text.Length - len));
+                else text.SetText("");
             }
         }
 

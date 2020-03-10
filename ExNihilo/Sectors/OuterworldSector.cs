@@ -98,6 +98,12 @@ namespace ExNihilo.Sectors
 ------->Game functions
 ********************************************************************/
 
+        public override void CheckNetwork(bool ending)
+        {
+            base.CheckNetwork(ending);
+            _multiplayerMenu.UpdateDisplay(ending);
+        }
+
         public override void OnLeftRelease(Point point)
         {
             if (MenuActive)
