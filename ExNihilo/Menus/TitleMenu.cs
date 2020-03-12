@@ -240,6 +240,8 @@ namespace ExNihilo.Menus
                 {
                     _type = CurrentMenu.NewGame;
                     _slot = package.Caller;
+                    _fileNameInput = "New File";
+                    (_newGameUI.GetElement("NewGameInputBoxText") as UIText)?.SetText("New File");
                 }
             }
         }
@@ -299,15 +301,14 @@ namespace ExNihilo.Menus
 
         private void CreateNewGame(UICallbackPackage package)
         {
-            if (!(_newGameUI.GetElement("NewGameInputBoxText") is UIText text) || text.Text.Length == 0) return;
-            var newGame = new PackedGame(Container, text.Text);
+            if (_fileNameInput.Length == 0) return;
+            var newGame = new PackedGame(Container, _fileNameInput);
             SaveHandler.Save(_slot, newGame);
             UpdateLoadButtonText();
             _type = CurrentMenu.Play;
             _loadUI.OnMoveMouse(_lastMousePosition);
             _slot = "";
             _deleteMode = false;
-            (_newGameUI.GetElement("NewGameInputBoxText") as UIText)?.SetText("New File");
         }
 
 /********************************************************************
@@ -319,7 +320,7 @@ namespace ExNihilo.Menus
         }
 
         private CurrentMenu _type;
-        private string _slot, _deleteCaller;
+        private string _slot, _deleteCaller, _fileNameInput="";
         private bool _deleteMode, _textEntryMode;
         private readonly UIPanel _titleUI, _optionsUI, _loadUI, _newGameUI;
         private Point _lastMousePosition;
@@ -452,8 +453,8 @@ namespace ExNihilo.Menus
             var cancelButtonText = new UIText("BackButtonText", new Coordinate(), "Cancel", ColorScale.Black, cancelButton, PositionType.Center, PositionType.Center);
             var confirmButton = new UIClickable("ConfirmButton", "UI/button/SmallButton", new Coordinate(-10, -10), ColorScale.White, _newGameUI, PositionType.BottomRight, PositionType.BottomRight);
             var confirmButtonText = new UIText("ConfirmButtonText", new Coordinate(), "Confirm", ColorScale.Black, confirmButton, PositionType.Center, PositionType.Center);
-            var inputBox = new UITogglable("NewGameInputBox", "UI/field/SmallEntryBox", new Vector2(0.1f, 0.1f), ColorScale.Ghost, _newGameUI, PositionType.TopLeft, false, true);
-            var inputBoxText = new UIText("NewGameInputBoxText", new Coordinate(20, 20), "New File", ColorScale.Black, inputBox, PositionType.TopLeft, PositionType.TopLeft);
+            var inputBox = new UITogglable("NewGameInputBox", "UI/field/SmallEntryBox", new Vector2(0.1f, 0.1f), ColorScale.White, _newGameUI, PositionType.TopLeft, false, true);
+            var inputBoxText = new UIText("NewGameInputBoxText", new Coordinate(20, 20), "New File", new[] { ColorScale.Black, ColorScale.GetFromGlobal("__unblinker") }, inputBox, PositionType.TopLeft, PositionType.TopLeft);
 
             cancelButton.RegisterCallback(CancelNewGame);
             inputBox.RegisterCallback(PrepForTextEntry);
@@ -546,10 +547,15 @@ namespace ExNihilo.Menus
         {
             if (!_textEntryMode) return;
 
-            if (_newGameUI.GetElement("NewGameInputBoxText") is UIText text)
+            if (_textEntryMode && len > 0)
             {
-                if (text.Text.Length >= len) text.SetText(text.Text.Substring(0, text.Text.Length - len));
-                else text.SetText("");
+                if (_fileNameInput.Length <= len) _fileNameInput = "";
+                else _fileNameInput = _fileNameInput.Substring(0, _fileNameInput.Length - len);
+                if (_newGameUI.GetElement("NewGameInputBoxText") is UIText text)
+                {
+                    if (_fileNameInput.Length < MAX_NEWGAME_TEXT_SIZE) text.SetText(_fileNameInput + "@c1|");
+                    else text.SetText(_fileNameInput);
+                }
             }
         }
 
@@ -557,9 +563,14 @@ namespace ExNihilo.Menus
         {
             if (!_textEntryMode) return;
 
-            if (_newGameUI.GetElement("NewGameInputBoxText") is UIText text)
+            if (_textEntryMode && input.Length > 0)
             {
-                text.SetText(Utilities.Clamp(text.Text + input, MAX_NEWGAME_TEXT_SIZE));
+                if (_newGameUI.GetElement("NewGameInputBoxText") is UIText text)
+                {
+                    _fileNameInput = Utilities.Clamp(_fileNameInput + input, MAX_NEWGAME_TEXT_SIZE);
+                    if (_fileNameInput.Length < MAX_NEWGAME_TEXT_SIZE) text.SetText(_fileNameInput + "@c1|");
+                    else text.SetText(_fileNameInput);
+                }
             }
         }
     }

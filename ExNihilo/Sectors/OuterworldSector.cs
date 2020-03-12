@@ -101,7 +101,7 @@ namespace ExNihilo.Sectors
         public override void CheckNetwork(bool ending)
         {
             base.CheckNetwork(ending);
-            _multiplayerMenu.UpdateDisplay(ending);
+            if (ReferenceEquals(_multiplayerMenu, MenuPoint)) _multiplayerMenu.UpdateDisplay(ending);
         }
 
         public override void OnLeftRelease(Point point)

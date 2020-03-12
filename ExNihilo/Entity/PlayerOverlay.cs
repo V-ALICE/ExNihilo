@@ -65,6 +65,10 @@ namespace ExNihilo.Entity
         {
             return _entity.Entity.CurrentState;
         }
+        public AnimatableTexture GetStateTexture(EntityTexture.State state)
+        {
+            return _entity.Entity.GetTexture(state);
+        }
         public void Halt()
         {
             _entity.Push(new Coordinate());

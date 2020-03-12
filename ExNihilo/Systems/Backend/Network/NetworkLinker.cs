@@ -91,6 +91,8 @@ namespace ExNihilo.Systems.Backend.Network
                     {
                         ForwardMessage(new PlayerIntroduction(p.UniqueID, p.Name, p.MiniID, p.Color.R, p.Color.G, p.Color.B, p.charSet));
                     }
+                    _outer.CheckNetwork(false);
+                    _void.CheckNetwork(false);
                 }
             }
             
@@ -179,6 +181,7 @@ namespace ExNihilo.Systems.Backend.Network
             if (NetworkManager.Hosting) ReconfigureMiniIDs();
             //Use the incoming data to update/add the player in game
             _outer.UpdatePlayers(obj.UniqueID, obj.AssignedName, obj.charSet);
+            _outer.CheckNetwork(false);
 
             //If hosting, inform all clients of all players to keep everyone on the same page
             if (NetworkManager.Hosting)

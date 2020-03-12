@@ -87,6 +87,7 @@ namespace ExNihilo.Menus
         {
             _type = CurrentMenu.New;
             (_newCharUI.GetElement("NewCharInputBoxText") as UIText)?.SetText("New Char");
+            _charNameInput = "New Char";
             _newCharUI.OnMoveMouse(_lastMousePosition);
         }
 
@@ -216,9 +217,9 @@ namespace ExNihilo.Menus
 
         private void ConfirmNewChar(UICallbackPackage package)
         {
-            if (!(_newCharUI.GetElement("NewCharInputBoxText") is UIText text) || text.Text.Length == 0) return;
+            if (_charNameInput.Length == 0) return;
 
-            var newChar = new PlayerEntityContainer(Container.GraphicsDevice, text.Text, _body, _hair, _cloth, _color);
+            var newChar = new PlayerEntityContainer(Container.GraphicsDevice, _charNameInput, _body, _hair, _cloth, _color);
             var slot = GetFirstOpening();
             _chars[slot] = newChar;
 
@@ -274,6 +275,7 @@ namespace ExNihilo.Menus
         private int _body, _hair, _cloth, _color;
         private int _selectedChar, _charInJeopardy, _currentChar;
         private bool _textEntryMode;
+        private string _charNameInput="";
         private Point _lastMousePosition;
         private Coordinate _lastWindowSize;
         private readonly PlayerEntityContainer[] _chars = new PlayerEntityContainer[MAX_CHARACTERS];
@@ -393,8 +395,8 @@ namespace ExNihilo.Menus
             var cancelButtonText = new UIText("CancelButtonText", new Coordinate(), "Cancel", ColorScale.Black, cancelButton, Position.Center, Position.Center);
             var confirmButton = new UIClickable("ConfirmButton", "UI/button/SmallButton", new Coordinate(-10, -10), ColorScale.White, backdrop2, Position.BottomRight, Position.BottomRight);
             var confirmButtonText = new UIText("ConfirmButtonText", new Coordinate(), "Confirm", ColorScale.Black, confirmButton, Position.Center, Position.Center);
-            var inputBox = new UITogglable("NewCharInputBox", "UI/field/SmallEntryBox", new Coordinate(50, 50), Color.DarkGray, backdrop2, Position.TopLeft, Position.TopLeft, false, true);
-            var inputBoxText = new UIText("NewCharInputBoxText", new Coordinate(20, 20), "New Char", ColorScale.Black, inputBox, Position.TopLeft, Position.TopLeft);
+            var inputBox = new UITogglable("NewCharInputBox", "UI/field/SmallEntryBox", new Coordinate(50, 50), Color.White, backdrop2, Position.TopLeft, Position.TopLeft, false, true);
+            var inputBoxText = new UIText("NewCharInputBoxText", new Coordinate(20, 20), "New Char", new[] { ColorScale.Black, ColorScale.GetFromGlobal("__unblinker") }, inputBox, Position.TopLeft, Position.TopLeft);
 
             var charDesignPanel = new UIPanel("CharDesignPanel", new Coordinate(-50, 50), new Coordinate(200, 125), backdrop2, Position.TopRight, Position.TopRight);
             var charBodyDisplay = new UIElement("CharBodyDisplay", "null", new Coordinate(), ColorScale.White, charDesignPanel, Position.Center, Position.Center);
@@ -564,9 +566,15 @@ namespace ExNihilo.Menus
         {
             if (!_textEntryMode) return;
 
-            if (_newCharUI.GetElement("NewCharInputBoxText") is UIText text)
+            if (_textEntryMode && len > 0)
             {
-                if (text.Text.Length >= len) text.SetText(text.Text.Substring(0, text.Text.Length - len));
+                if (_charNameInput.Length <= len) _charNameInput = "";
+                else _charNameInput = _charNameInput.Substring(0, _charNameInput.Length - len);
+                if (_newCharUI.GetElement("NewCharInputBoxText") is UIText text)
+                {
+                    if (_charNameInput.Length < MAX_NEWCHAR_TEXT_SIZE) text.SetText(_charNameInput + "@c1|");
+                    else text.SetText(_charNameInput);
+                }
             }
         }
 
@@ -574,9 +582,14 @@ namespace ExNihilo.Menus
         {
             if(!_textEntryMode) return;
 
-            if (_newCharUI.GetElement("NewCharInputBoxText") is UIText text)
+            if (_textEntryMode && input.Length > 0)
             {
-                text.SetText(Utilities.Clamp(text.Text + input, MAX_NEWCHAR_TEXT_SIZE));
+                if (_newCharUI.GetElement("NewCharInputBoxText") is UIText text)
+                {
+                    _charNameInput = Utilities.Clamp(_charNameInput + input, MAX_NEWCHAR_TEXT_SIZE);
+                    if (_charNameInput.Length < MAX_NEWCHAR_TEXT_SIZE) text.SetText(_charNameInput + "@c1|");
+                    else text.SetText(_charNameInput);
+                }
             }
         }
 

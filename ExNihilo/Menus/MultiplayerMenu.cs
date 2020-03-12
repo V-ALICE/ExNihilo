@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Diagnostics.Eventing.Reader;
+using ExNihilo.Entity;
 using ExNihilo.Systems.Backend;
 using ExNihilo.Systems.Backend.Network;
 using ExNihilo.UI;
@@ -111,6 +112,9 @@ namespace ExNihilo.Menus
             var ipText = new UIText("IPText", new Coordinate(19, 20), "", new[] {ColorScale.Black, ColorScale.GetFromGlobal("__unblinker")}, ipBox, PositionType.TopLeft, PositionType.TopLeft);
             var disconnectButton = new UIClickable("DisconnectButton", "UI/button/SmallButton", new Coordinate(0, 18), ColorScale.White, ipBox, PositionType.CenterTop, PositionType.CenterBottom);
             var disconnectText = new UIText("DisconnectText", new Coordinate(), "Disconnect", ColorScale.Black, disconnectButton, PositionType.Center, PositionType.Center);
+            var charPortrait2 = new UIElement("CharPortrait2", "null", new Coordinate(0, 30), ColorScale.White, backdrop, PositionType.CenterTop, PositionType.CenterTop);
+            var charPortrait1 = new UIElement("CharPortrait1", "null", new Coordinate(-30, 0), ColorScale.White, charPortrait2, PositionType.TopRight, PositionType.TopLeft);
+            var charPortrait3 = new UIElement("CharPortrait3", "null", new Coordinate(30, 0), ColorScale.White, charPortrait2, PositionType.TopLeft, PositionType.TopRight);
 
             clientButton.Disable(ColorScale.Grey);
             disconnectButton.Disable(ColorScale.Grey);
@@ -123,13 +127,20 @@ namespace ExNihilo.Menus
             ipBox.SetExtraStates("", "", ColorScale.White);
             ipText.SetRules(TextureLibrary.DoubleScaleRuleSet);
             SetExtrasAll("UI/button/SmallButtonDown", "UI/button/SmallButtonOver", null, null, clientButton, hostButton, disconnectButton);
+            SetRulesAll(TextureLibrary.GiantScaleRuleSet, charPortrait1, charPortrait2, charPortrait3);
 
-            _panelUI.AddElements(backdrop, exitButton, exitButtonX, ipBox, ipText, clientButton, clientText, hostButton, hostText, disconnectButton, disconnectText);
+            _panelUI.AddElements(backdrop, exitButton, exitButtonX, ipBox, ipText, clientButton, clientText, hostButton, hostText, disconnectButton, disconnectText, charPortrait1, charPortrait2, charPortrait3);
             _note = new NoteMenu(container, "There's a familiar island off in\nthe distance. Call out?", NoteAction);
         }
 
         public void UpdateDisplay(bool ending)
         {
+            for (int i = 0; i < 3; i++)
+            {
+                var item = _panelUI.GetElement("CharPortrait" + (i + 1));
+                if (Container.OtherPlayers.Count > i) item?.ChangeTexture(Container.OtherPlayers[i].GetStateTexture(EntityTexture.State.Down));
+                else item?.ChangeTexture("null");
+            }
             if (NetworkManager.Active && !ending)
             {
                 (_panelUI.GetElement("ClientButton") as UIClickable)?.Disable(ColorScale.Grey);
