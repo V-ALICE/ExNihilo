@@ -12,7 +12,7 @@ namespace ExNihilo.Systems.Backend
 {
     public static class TextureLibrary
     {
-        public static ScaleRuleSet DefaultScaleRuleSet, ReducedScaleRuleSet, HalfScaleRuleSet, TinyScaleRuleSet, MediumScaleRuleSet, DoubleScaleRuleSet, GiantScaleRuleSet;
+        public static ScaleRuleSet DefaultScaleRuleSet, ReducedScaleRuleSet, HalfScaleRuleSet, QuarterScaleRuleSet, x1d25ScaleRuleSet, x1d5ScaleRuleSet, DoubleScaleRuleSet, QuadScaleRuleSet;
         private static Dictionary<string, Dictionary<string, Texture2D>> _UILookUp;
         private static Dictionary<string, Dictionary<string, Texture2D>> _textureLookUp;
         private static Dictionary<string, Dictionary<string, Texture2D>> _iconLookUp;
@@ -60,12 +60,20 @@ namespace ExNihilo.Systems.Backend
                 new ScaleRule(4, ScaleRule.MAX_X, ScaleRule.MAX_Y)
             );
 
-            MediumScaleRuleSet = new ScaleRuleSet
+            x1d25ScaleRuleSet = new ScaleRuleSet
             (
                 new ScaleRule(1.25f, 1400, 1000),
                 new ScaleRule(2.5f, 2100, 1500),
                 new ScaleRule(3.75f, 2800, 2000),
                 new ScaleRule(5f, ScaleRule.MAX_X, ScaleRule.MAX_Y)
+            );
+
+            x1d5ScaleRuleSet = new ScaleRuleSet
+            (
+                new ScaleRule(1.5f, 1400, 1000),
+                new ScaleRule(3f, 2100, 1500),
+                new ScaleRule(4.5f, 2800, 2000),
+                new ScaleRule(6f, ScaleRule.MAX_X, ScaleRule.MAX_Y)
             );
 
             ReducedScaleRuleSet = new ScaleRuleSet
@@ -82,7 +90,7 @@ namespace ExNihilo.Systems.Backend
                 new ScaleRule(2, ScaleRule.MAX_X, ScaleRule.MAX_Y)
             );
 
-            TinyScaleRuleSet = new ScaleRuleSet
+            QuarterScaleRuleSet = new ScaleRuleSet
             (
                 new ScaleRule(0.25f, 1400, 1000),
                 new ScaleRule(0.5f, 2100, 1500),
@@ -98,7 +106,7 @@ namespace ExNihilo.Systems.Backend
                 new ScaleRule(8, ScaleRule.MAX_X, ScaleRule.MAX_Y)
             );
 
-            GiantScaleRuleSet = new ScaleRuleSet
+            QuadScaleRuleSet = new ScaleRuleSet
             (
                 new ScaleRule(4, 1400, 1000),
                 new ScaleRule(8, 2100, 1500),

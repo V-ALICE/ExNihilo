@@ -190,5 +190,19 @@ namespace ExNihilo.Util.Graphics
             var clothSheet = TextureLibrary.Lookup("Char/cloth/" + (charSet[2] + 1));
             return CombineTextures(graphics, bodySheet, clothSheet, hairSheet);
         }
+
+        public static Texture2D GetSilhouette(GraphicsDevice graphics, Texture2D original, Color color)
+        {
+            var newTex = new Texture2D(graphics, original.Width, original.Height);
+            var oldData = new Color[original.Width * original.Height];
+            original.GetData(oldData);
+            var newData = new Color[oldData.Length];
+            for (var i = 0; i < newData.Length; i++)
+            {
+                if (oldData[i].A != 0) newData[i] = color;
+            }
+            newTex.SetData(newData);
+            return newTex;
+        }
     }
 }

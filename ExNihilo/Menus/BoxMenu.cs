@@ -125,7 +125,7 @@ namespace ExNihilo.Menus
             var exitButton = new UIClickable("ExitButton", "UI/button/RedBulb", new Coordinate(-8, 8), ColorScale.White, backdrop, Position.Center, Position.TopRight);
             var exitButtonX = new UIElement("ExitButtonX", "UI/icon/No", new Coordinate(), ColorScale.White, exitButton, Position.Center, Position.Center);
             exitButton.RegisterCallback(CloseMenu);
-            SetRulesAll(TextureLibrary.MediumScaleRuleSet, exitButton, exitButtonX);
+            SetRulesAll(TextureLibrary.x1d25ScaleRuleSet, exitButton, exitButtonX);
             exitButton.SetExtraStates("UI/button/RedBulbDown", "UI/button/RedBulbOver");
 
             var inventorySet = new UIElement("InventorySet", "UI/field/ThreeRowElementSet", new Coordinate(0, -39), ColorScale.White, backdrop, Position.CenterBottom, Position.CenterBottom);

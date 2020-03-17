@@ -215,7 +215,7 @@ namespace ExNihilo.Util.Graphics
             var result = new StringBuilder(smartText);
             for (int i = 0; i < result.Length; i++)
             {
-                if (result[i] != '@' && !_charTextures.ContainsKey(result[i]))
+                if (result[i] != '@' && result[i] != '\n' && !_charTextures.ContainsKey(result[i]))
                 {
                     result[i] = ' ';
                 }

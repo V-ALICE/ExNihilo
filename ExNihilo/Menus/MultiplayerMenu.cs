@@ -89,6 +89,7 @@ namespace ExNihilo.Menus
 ********************************************************************/
         private readonly UIPanel _panelUI;
         private readonly NoteMenu _note;
+        private Texture2D _defaultCharacterModel;
         private Point _lastMousePosition;
         private bool _showingNote, _enteringIp;
         private string _ipInput="";
@@ -101,7 +102,7 @@ namespace ExNihilo.Menus
             var exitButton = new UIClickable("ExitButton", "UI/button/RedBulb", new Coordinate(-8, 8), ColorScale.White, backdrop, PositionType.Center, PositionType.TopRight);
             var exitButtonX = new UIElement("ExitButtonX", "UI/icon/No", new Coordinate(), ColorScale.White, exitButton, PositionType.Center, PositionType.Center);
             exitButton.RegisterCallback(CloseMenu);
-            SetRulesAll(TextureLibrary.MediumScaleRuleSet, exitButton, exitButtonX);
+            SetRulesAll(TextureLibrary.x1d25ScaleRuleSet, exitButton, exitButtonX);
             exitButton.SetExtraStates("UI/button/RedBulbDown", "UI/button/RedBulbOver");
 
             var hostButton = new UIClickable("HostButton", "UI/button/SmallButton", new Coordinate(-20, -20), ColorScale.White, backdrop, PositionType.BottomRight, PositionType.BottomRight);
@@ -110,11 +111,15 @@ namespace ExNihilo.Menus
             var clientText = new UIText("ClientText", new Coordinate(), "Connect", ColorScale.Black, clientButton, PositionType.Center, PositionType.Center);
             var ipBox = new UITogglable("IPBox", "UI/field/SmallEntryBox", new Coordinate(-20, 0), ColorScale.White, clientButton, PositionType.CenterRight, PositionType.CenterLeft, false, true);
             var ipText = new UIText("IPText", new Coordinate(19, 20), "", new[] {ColorScale.Black, ColorScale.GetFromGlobal("__unblinker")}, ipBox, PositionType.TopLeft, PositionType.TopLeft);
+            var ipLabel = new UIText("IPLabel", new Coordinate(12, -2), "IP Address", ColorScale.Black, ipBox, PositionType.BottomLeft, PositionType.TopLeft);
             var disconnectButton = new UIClickable("DisconnectButton", "UI/button/SmallButton", new Coordinate(0, 18), ColorScale.White, ipBox, PositionType.CenterTop, PositionType.CenterBottom);
             var disconnectText = new UIText("DisconnectText", new Coordinate(), "Disconnect", ColorScale.Black, disconnectButton, PositionType.Center, PositionType.Center);
             var charPortrait2 = new UIElement("CharPortrait2", "null", new Coordinate(0, 30), ColorScale.White, backdrop, PositionType.CenterTop, PositionType.CenterTop);
-            var charPortrait1 = new UIElement("CharPortrait1", "null", new Coordinate(-30, 0), ColorScale.White, charPortrait2, PositionType.TopRight, PositionType.TopLeft);
-            var charPortrait3 = new UIElement("CharPortrait3", "null", new Coordinate(30, 0), ColorScale.White, charPortrait2, PositionType.TopLeft, PositionType.TopRight);
+            var charPortrait1 = new UIElement("CharPortrait1", "null", new Coordinate(-20, 15), ColorScale.White, charPortrait2, PositionType.TopRight, PositionType.TopLeft);
+            var charPortrait3 = new UIElement("CharPortrait3", "null", new Coordinate(20, 15), ColorScale.White, charPortrait2, PositionType.TopLeft, PositionType.TopRight);
+            var charName1 = new UIText("CharName1", new Coordinate(), "Open Slot", ColorScale.Black, charPortrait1, PositionType.CenterTop, PositionType.CenterBottom);
+            var charName2 = new UIText("CharName2", new Coordinate(), "Open Slot", ColorScale.Black, charPortrait2, PositionType.CenterTop, PositionType.CenterBottom);
+            var charName3 = new UIText("CharName3", new Coordinate(), "Open Slot", ColorScale.Black, charPortrait3, PositionType.CenterTop, PositionType.CenterBottom);
 
             clientButton.Disable(ColorScale.Grey);
             disconnectButton.Disable(ColorScale.Grey);
@@ -127,9 +132,9 @@ namespace ExNihilo.Menus
             ipBox.SetExtraStates("", "", ColorScale.White);
             ipText.SetRules(TextureLibrary.DoubleScaleRuleSet);
             SetExtrasAll("UI/button/SmallButtonDown", "UI/button/SmallButtonOver", null, null, clientButton, hostButton, disconnectButton);
-            SetRulesAll(TextureLibrary.GiantScaleRuleSet, charPortrait1, charPortrait2, charPortrait3);
+            SetRulesAll(TextureLibrary.QuadScaleRuleSet, charPortrait1, charPortrait2, charPortrait3);
 
-            _panelUI.AddElements(backdrop, exitButton, exitButtonX, ipBox, ipText, clientButton, clientText, hostButton, hostText, disconnectButton, disconnectText, charPortrait1, charPortrait2, charPortrait3);
+            _panelUI.AddElements(backdrop, exitButton, exitButtonX, ipBox, ipText, ipLabel, clientButton, clientText, hostButton, hostText, disconnectButton, disconnectText, charPortrait1, charPortrait2, charPortrait3, charName1, charName2, charName3);
             _note = new NoteMenu(container, "There's a familiar island off in\nthe distance. Call out?", NoteAction);
         }
 
@@ -138,8 +143,17 @@ namespace ExNihilo.Menus
             for (int i = 0; i < 3; i++)
             {
                 var item = _panelUI.GetElement("CharPortrait" + (i + 1));
-                if (Container.OtherPlayers.Count > i) item?.ChangeTexture(Container.OtherPlayers[i].GetStateTexture(EntityTexture.State.Down));
-                else item?.ChangeTexture("null");
+                var text = _panelUI.GetElement("CharName" + (i + 1)) as UIText;
+                if (Container.OtherPlayers.Count > i)
+                {
+                    item?.ChangeTexture(Container.OtherPlayers[i].GetStateTexture(EntityTexture.State.Down));
+                    text?.SetText(Container.OtherPlayers[i].Name);
+                }
+                else
+                {
+                    item?.ChangeTexture(_defaultCharacterModel);
+                    text?.SetText("Open Slot");
+                }
             }
             if (NetworkManager.Active && !ending)
             {
@@ -192,6 +206,11 @@ namespace ExNihilo.Menus
         {
             _panelUI.LoadContent(graphics, content);
             _note.LoadContent(graphics, content);
+            var tex = new EntityTexture(graphics, TextureUtilities.GetPlayerTexture(graphics, new[] {0, 0, 0, 0}), 1);
+            _defaultCharacterModel = TextureUtilities.GetSilhouette(graphics, tex.GetTexture(EntityTexture.State.Down), Color.Black);
+            _panelUI.GetElement("CharPortrait1")?.ChangeTexture(_defaultCharacterModel);
+            _panelUI.GetElement("CharPortrait2")?.ChangeTexture(_defaultCharacterModel);
+            _panelUI.GetElement("CharPortrait3")?.ChangeTexture(_defaultCharacterModel);
         }
 
         public override void OnResize(GraphicsDevice graphics, Coordinate gameWindow)

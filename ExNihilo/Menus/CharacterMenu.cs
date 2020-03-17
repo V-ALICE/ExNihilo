@@ -86,9 +86,10 @@ namespace ExNihilo.Menus
         private void MakeNewChar(UICallbackPackage package)
         {
             _type = CurrentMenu.New;
-            (_newCharUI.GetElement("NewCharInputBoxText") as UIText)?.SetText("New Char");
-            _charNameInput = "New Char";
+            (_newCharUI.GetElement("NewCharInputBoxText") as UIText)?.SetText("");
+            _charNameInput = "";
             _newCharUI.OnMoveMouse(_lastMousePosition);
+            //_body = _hair = _cloth = _color = 0;
         }
 
         private void ChangeChar(UICallbackPackage package)
@@ -163,9 +164,10 @@ namespace ExNihilo.Menus
         {
             _type = CurrentMenu.Main;
             _panelUI.OnMoveMouse(_lastMousePosition);
+            ResetNewChar(Container.GraphicsDevice);
         }
 
-        private void ChangeCharacter(UICallbackPackage package)
+        private void ChangeCharacterTex(UICallbackPackage package)
         {
             var left = package.Caller.EndsWith("Left");
             
@@ -251,10 +253,15 @@ namespace ExNihilo.Menus
             _textEntryMode = package.Value[0] > 0;
             if (_textEntryMode && TypingKeyboard.Lock(this))
             {
-
+                if (_newCharUI.GetElement("NewCharInputBoxText") is UIText text)
+                {
+                    if (_charNameInput.Length < 15) text.SetText(_charNameInput + "@c1|");
+                    else text.SetText(_charNameInput);
+                }
             }
             else
             {
+                (_newCharUI.GetElement("NewCharInputBoxText") as UIText)?.SetText(_charNameInput);
                 _textEntryMode = false;
                 TypingKeyboard.Unlock(this);
             }
@@ -302,7 +309,7 @@ namespace ExNihilo.Menus
             var exitButton = new UIClickable("ExitButton", "UI/button/RedBulb", new Coordinate(-8, 8), ColorScale.White, backdrop, Position.Center, Position.TopRight);
             var exitButtonX = new UIElement("ExitButtonX", "UI/icon/No", new Coordinate(), ColorScale.White, exitButton, Position.Center, Position.Center);
             exitButton.RegisterCallback(CloseMenu);
-            SetRulesAll(TextureLibrary.MediumScaleRuleSet, exitButton, exitButtonX);
+            SetRulesAll(TextureLibrary.x1d25ScaleRuleSet, exitButton, exitButtonX);
             exitButton.SetExtraStates("UI/button/RedBulbDown", "UI/button/RedBulbOver");
 
             var currentCharacterSet = new UIElement("CharacterSet", "UI/field/SevenElementSet", new Coordinate(18, -100), ColorScale.White, backdrop, Position.BottomLeft, Position.BottomLeft);
@@ -375,7 +382,7 @@ namespace ExNihilo.Menus
             RegisterAll(SelectChar, charPanel1, charPanel2, charPanel3, charPanel4, charPanel5, charPanel6, charPanel7);
             SetExtrasAll("UI/button/SmallButtonDown", "UI/button/SmallButtonOver", null, null, newCharButton, changeCharButton);
             SetExtrasAll("UI/button/RedBulbDown", "UI/button/RedBulbOver", null, null, deleteButton1, deleteButton2, deleteButton3, deleteButton4, deleteButton5, deleteButton6, deleteButton7);
-            charDisplay.SetRules(TextureLibrary.GiantScaleRuleSet);
+            charDisplay.SetRules(TextureLibrary.QuadScaleRuleSet);
             SetRulesAll(rules, portrait1, portrait2, portrait3, portrait4, portrait5, portrait6, portrait7);
             DisableAll(ColorScale.Grey, charPanel1, charPanel2, charPanel3, charPanel4, charPanel5, charPanel6, charPanel7);
 
@@ -396,7 +403,8 @@ namespace ExNihilo.Menus
             var confirmButton = new UIClickable("ConfirmButton", "UI/button/SmallButton", new Coordinate(-10, -10), ColorScale.White, backdrop2, Position.BottomRight, Position.BottomRight);
             var confirmButtonText = new UIText("ConfirmButtonText", new Coordinate(), "Confirm", ColorScale.Black, confirmButton, Position.Center, Position.Center);
             var inputBox = new UITogglable("NewCharInputBox", "UI/field/SmallEntryBox", new Coordinate(50, 50), Color.White, backdrop2, Position.TopLeft, Position.TopLeft, false, true);
-            var inputBoxText = new UIText("NewCharInputBoxText", new Coordinate(20, 20), "New Char", new[] { ColorScale.Black, ColorScale.GetFromGlobal("__unblinker") }, inputBox, Position.TopLeft, Position.TopLeft);
+            var inputBoxText = new UIText("NewCharInputBoxText", new Coordinate(20, 20), "", new[] { ColorScale.Black, ColorScale.GetFromGlobal("__unblinker") }, inputBox, Position.TopLeft, Position.TopLeft);
+            var inputBoxLabel = new UIText("InputBoxLabel", new Coordinate(12, -2), "Name", ColorScale.Black, inputBox, Position.BottomLeft, Position.TopLeft);
 
             var charDesignPanel = new UIPanel("CharDesignPanel", new Coordinate(-50, 50), new Coordinate(200, 125), backdrop2, Position.TopRight, Position.TopRight);
             var charBodyDisplay = new UIElement("CharBodyDisplay", "null", new Coordinate(), ColorScale.White, charDesignPanel, Position.Center, Position.Center);
@@ -422,11 +430,11 @@ namespace ExNihilo.Menus
             var rightArrow2 = new UIElement("Right2", "UI/icon/Right", new Coordinate(), ColorScale.Ghost, rightBody, Position.Center, Position.Center);
             var rightArrow3 = new UIElement("Right3", "UI/icon/Right", new Coordinate(), ColorScale.Ghost, rightCloth, Position.Center, Position.Center);
             var rightArrow4 = new UIElement("Right4", "UI/icon/Right", new Coordinate(), ColorScale.Ghost, rightColor, Position.Center, Position.Center);
-
+            
             cancelButton.RegisterCallback(CancelNewChar);
             confirmButton.RegisterCallback(ConfirmNewChar);
             inputBox.RegisterCallback(PrepForTextEntry);
-            RegisterAll(ChangeCharacter, leftHair, leftBody, leftCloth, leftColor, rightBody, rightCloth, rightColor, rightHair);
+            RegisterAll(ChangeCharacterTex, leftHair, leftBody, leftCloth, leftColor, rightBody, rightCloth, rightColor, rightHair);
             SetExtrasAll("UI/button/SmallButtonDown", "UI/button/SmallButtonOver", null, null, confirmButton, cancelButton);
             SetExtrasAll("UI/button/RedBulbDown", "UI/button/RedBulbOver", null, null, leftHair, rightHair);
             SetExtrasAll("UI/button/GreenBulbDown", "UI/button/GreenBulbOver", null, null, leftBody, rightBody);
@@ -434,11 +442,11 @@ namespace ExNihilo.Menus
             SetExtrasAll("UI/button/BlackBulbDown", "UI/button/BlackBulbOver", null, null, leftColor, rightColor);
             inputBox.SetExtraStates("", "", ColorScale.White);
             inputBoxText.SetRules(TextureLibrary.DoubleScaleRuleSet);
-            SetRulesAll(TextureLibrary.GiantScaleRuleSet, charBodyDisplay, charHairDisplay, charClothDisplay);
+            SetRulesAll(TextureLibrary.QuadScaleRuleSet, charBodyDisplay, charHairDisplay, charClothDisplay);
 
             charDesignPanel.AddElements(charBodyDisplay, charClothDisplay, charHairDisplay, leftBody, leftCloth, leftColor, leftHair, rightColor, rightBody, rightCloth, rightHair,
                 leftArrow1, leftArrow2, leftArrow3, leftArrow4, rightArrow1, rightArrow2, rightArrow3, rightArrow4);
-            _newCharUI.AddElements(backdrop2, cancelButton, cancelButtonText, confirmButton, confirmButtonText, charDesignPanel, inputBox, inputBoxText);
+            _newCharUI.AddElements(backdrop2, cancelButton, cancelButtonText, confirmButton, confirmButtonText, charDesignPanel, inputBox, inputBoxText, inputBoxLabel);
         }
 
         public override void Enter(Point point)

@@ -91,7 +91,7 @@ namespace ExNihilo.Systems.Backend
     {
         private const int _memoryMax = 25;      //Lines to keep in memory
         private const float _lineLiveTime = 10; //Time to display a message (in seconds)
-        private int _maxLines, _maxLineLength; //Lines to display and characters per line
+        private int _maxLines, _maxLineLength;  //Lines to display and characters per line
         private readonly int _timerID;
         private readonly List<Message> _messages;
 
@@ -166,7 +166,7 @@ namespace ExNihilo.Systems.Backend
         private static readonly ConsoleReceiver _receiver = new ConsoleReceiver();
         private static ConsoleBox _console;
         private static readonly CommandHandler _handler = new CommandHandler();
-        private static Texture2D _backdrop;
+        private static Texture2D _backdrop, _linedrop;
         private static Vector2 _backdropPos;
         private static Coordinate _activeMessagePosition, _oldMessagePosition;
         private static int _maxCharacterCount, _maxLineCount;
@@ -211,8 +211,10 @@ namespace ExNihilo.Systems.Backend
 
             //UI elements
             _backdrop?.Dispose();
+            _linedrop?.Dispose();
             var border = 2 * TextDrawer.AlphaSpacer;
             _backdrop = TextureUtilities.CreateSingleColorTexture(graphics, width + border, height + border, new Color(0, 0, 0, 0.75f));
+            _linedrop = TextureUtilities.CreateSingleColorTexture(graphics, width + border, TextDrawer.AlphaHeight + TextDrawer.LineSpacer, new Color(0, 0, 0, 0.75f));
 
             //UI positions
             _backdropPos = new Vector2(0, gameWindow.Y - _backdrop.Height);
@@ -251,10 +253,19 @@ namespace ExNihilo.Systems.Backend
             var pos = _oldMessagePosition.Copy();
             foreach (var message in pile)
             {
-                if (!Active && message.Dead)
+                if (!Active)
                 {
-                    pos.Y += message.LineCount*(TextDrawer.AlphaHeight + TextDrawer.LineSpacer);
-                    continue;
+                    if (message.Dead)
+                    {
+                        pos.Y += message.LineCount * (TextDrawer.AlphaHeight + TextDrawer.LineSpacer);
+                        continue;
+                    }
+
+                    for (int i = 0; i < message.LineCount; i++)
+                    {
+                        var linePos = new Vector2(0, pos.Y + i * (TextDrawer.AlphaHeight + TextDrawer.LineSpacer) - TextDrawer.LineSpacer/2);
+                        spriteBatch.Draw(_linedrop, linePos, Color.White);
+                    }
                 }
 
                 pos = TextDrawer.DrawSmartText(spriteBatch, pos, message.SplitMessage, _currentScale, null, message.StarterColor, message.MessageColor);

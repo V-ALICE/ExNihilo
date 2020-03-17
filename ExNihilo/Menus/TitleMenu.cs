@@ -240,8 +240,8 @@ namespace ExNihilo.Menus
                 {
                     _type = CurrentMenu.NewGame;
                     _slot = package.Caller;
-                    _fileNameInput = "New File";
-                    (_newGameUI.GetElement("NewGameInputBoxText") as UIText)?.SetText("New File");
+                    _fileNameInput = "";
+                    (_newGameUI.GetElement("NewGameInputBoxText") as UIText)?.SetText("");
                 }
             }
         }
@@ -280,10 +280,15 @@ namespace ExNihilo.Menus
             _textEntryMode = package.Value[0] > 0;
             if (_textEntryMode && TypingKeyboard.Lock(this))
             {
-                
+                if (_newGameUI.GetElement("NewGameInputBoxText") is UIText text)
+                {
+                    if (_fileNameInput.Length < 15) text.SetText(_fileNameInput + "@c1|");
+                    else text.SetText(_fileNameInput);
+                }
             }
             else
             {
+                (_newGameUI.GetElement("NewGameInputBoxText") as UIText)?.SetText(_fileNameInput);
                 _textEntryMode = false;
                 TypingKeyboard.Unlock(this);
             }
@@ -410,7 +415,7 @@ namespace ExNihilo.Menus
             var colorText = new UIText("ColorText", new Coordinate(0, 0), "<Name Color>", ColorScale.GreenBlue, _colorWheel, PositionType.Center, PositionType.Center);
 
             _colorWheel.RegisterCallback(ChangeNameColor);
-            _colorWheel.SetRules(TextureLibrary.TinyScaleRuleSet);
+            _colorWheel.SetRules(TextureLibrary.QuarterScaleRuleSet);
             backButton.RegisterCallback(SwapToTitleFromOptions);
             effectVolumeBarFill.RegisterCallback(ApplyEffectVolume);
             musicVolumeBarFill.RegisterCallback(ApplyMusicVolume);
@@ -454,7 +459,8 @@ namespace ExNihilo.Menus
             var confirmButton = new UIClickable("ConfirmButton", "UI/button/SmallButton", new Coordinate(-10, -10), ColorScale.White, _newGameUI, PositionType.BottomRight, PositionType.BottomRight);
             var confirmButtonText = new UIText("ConfirmButtonText", new Coordinate(), "Confirm", ColorScale.Black, confirmButton, PositionType.Center, PositionType.Center);
             var inputBox = new UITogglable("NewGameInputBox", "UI/field/SmallEntryBox", new Vector2(0.1f, 0.1f), ColorScale.White, _newGameUI, PositionType.TopLeft, false, true);
-            var inputBoxText = new UIText("NewGameInputBoxText", new Coordinate(20, 20), "New File", new[] { ColorScale.Black, ColorScale.GetFromGlobal("__unblinker") }, inputBox, PositionType.TopLeft, PositionType.TopLeft);
+            var inputBoxText = new UIText("NewGameInputBoxText", new Coordinate(20, 20), "", new[] { ColorScale.Black, ColorScale.GetFromGlobal("__unblinker") }, inputBox, PositionType.TopLeft, PositionType.TopLeft);
+            var inputBoxLabel = new UIText("InputBoxLabel", new Coordinate(12, -2), "File Name", ColorScale.White, inputBox, PositionType.BottomLeft, PositionType.TopLeft);
 
             cancelButton.RegisterCallback(CancelNewGame);
             inputBox.RegisterCallback(PrepForTextEntry);
@@ -463,7 +469,7 @@ namespace ExNihilo.Menus
             inputBox.SetExtraStates("", "", ColorScale.White);
             SetExtrasAll("UI/button/SmallButtonDown", "UI/button/SmallButtonOver", null, null, cancelButton, confirmButton);
 
-            _newGameUI.AddElements(cancelButton, cancelButtonText, inputBox, inputBoxText, confirmButton, confirmButtonText);
+            _newGameUI.AddElements(cancelButton, cancelButtonText, inputBox, inputBoxText, inputBoxLabel, confirmButton, confirmButtonText);
         }
 
         public override void Enter(Point point)
@@ -471,7 +477,7 @@ namespace ExNihilo.Menus
             _lastMousePosition = point;
             _titleUI.OnMoveMouse(point);
             _type = CurrentMenu.Title;
-            (_newGameUI.GetElement("NewGameInputBoxText") as UIText)?.SetText("New File");
+            (_newGameUI.GetElement("NewGameInputBoxText") as UIText)?.SetText("");
             UpdateLoadButtonText();
         }
 

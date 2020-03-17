@@ -269,11 +269,11 @@ namespace ExNihilo.Systems
                 "\nrandomseed -> Sets the current seed randomly");
 
             _helpInfo.Add("give", 
-                "\n/give [type] [level] [quality] -> Give the current player an item of the given type, level, and quality" +
+                "/give [type] [level] [quality] -> Give the current player an item of the given type, level, and quality" +
                 "\n/give [type] [level]           -> Give the current player an item of the given type and level" +
                 "\n/give gold [amount]            -> Give current player the given amount of gold" +
                 "\n/give exp [amount]             -> Give current player the given amount of exp" +
-                "\nTypes are: weap, head, chest, hands, legs, feet, acc, potion" + 
+                "\nTypes are: weap, head, chest, hands, legs, feet, acc, potion" +
                 "\nQuality is 0 - 10");
 
             //Set-related help section
