@@ -75,6 +75,11 @@ namespace ExNihilo.Entity
 
         }
 
+        public Coordinate GetCurrentPixelSize()
+        {
+            return new Coordinate(Scale * _entity.Texture.Width, Scale * _entity.Texture.Height);
+        }
+
         public void ForceEntityRef(EntityContainer entity)
         {
             _entity = entity;

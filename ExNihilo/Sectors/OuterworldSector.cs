@@ -15,9 +15,8 @@ namespace ExNihilo.Sectors
     {
         //Preset Menus (since they never change)
         private CharacterMenu _characterMenu;
-        private DivineMenu _divineMenu;
+        private StorageMenu _storageMenu;
         private MultiplayerMenu _multiplayerMenu;
-        private NoteMenu _fishMenu;
 
         public PlayerEntityContainer Player => _characterMenu.GetCurrentChar();
 
@@ -32,9 +31,8 @@ namespace ExNihilo.Sectors
         {
             base.OnResize(graphics, gameWindow);
             _characterMenu.OnResize(graphics, gameWindow);
-            _divineMenu.OnResize(graphics, gameWindow);
+            _storageMenu.OnResize(graphics, gameWindow);
             _multiplayerMenu.OnResize(graphics, gameWindow);
-            _fishMenu.OnResize(graphics, gameWindow);
         }
 
         public override void Enter(Point point, Coordinate gameWindow)
@@ -63,27 +61,23 @@ namespace ExNihilo.Sectors
 
             base.Initialize();
             _characterMenu = new CharacterMenu(Container, CharChange, World);
-            _divineMenu = new DivineMenu(Container, () => { MenuPoint = null;});
+            _storageMenu = new StorageMenu(Container, () => { MenuPoint = null;});
             _multiplayerMenu = new MultiplayerMenu(Container, () => { MenuPoint = null; });
-            _fishMenu = new NoteMenu(Container, "No fishing allowed", x => { MenuPoint = null; }, true);
         }
 
         public override void LoadContent(GraphicsDevice graphicsDevice, ContentManager content)
         {
             base.LoadContent(graphicsDevice, content);
             _characterMenu.LoadContent(graphicsDevice, content);
-            _divineMenu.LoadContent(graphicsDevice, content);
+            _storageMenu.LoadContent(graphicsDevice, content);
             _multiplayerMenu.LoadContent(graphicsDevice, content);
-            _fishMenu.LoadContent(graphicsDevice, content);
 
-            World.AddOverlay(content.Load<Texture2D>("World/tree"), 26, 5);
-            World.AddInteractive(new MenuInteractive("Tree", _divineMenu), 27, 8, 2);
-            var river = new MenuInteractive("River", _fishMenu);
-            World.AddInteractive(river, 12, 6, 2);
-            World.AddInteractive(river, 15, 8, 1, 2);
-            World.AddInteractive(new MenuInteractive("Void", StairMenu), 22, 21, 2, 2);
-            World.AddInteractive(new MenuInteractive("Pond", _characterMenu), 44, 3, 2, 2);
-            World.AddInteractive(new MenuInteractive("Island", _multiplayerMenu), 13, 43);
+            World.AddOverlay(content.Load<Texture2D>("World/ship_overlay"), 0, 0);
+            //World.AddOverlay(content.Load<Texture2D>("World/ship_overlay_alt"), 0, 0);
+            World.AddInteractive(new MenuInteractive("Storage", _storageMenu), 6, 6, 2, 2);
+            World.AddInteractive(new MenuInteractive("Void", StairMenu), 6, 22, 2, 2);
+            World.AddInteractive(new MenuInteractive("Cabin", _characterMenu), 9, 19);
+            World.AddInteractive(new MenuInteractive("Wheel", _multiplayerMenu), 8, 13, 2, 1);
         }
 
         public override void Draw(SpriteBatch spriteBatch, bool drawDebugInfo)
@@ -115,9 +109,8 @@ namespace ExNihilo.Sectors
         public override void Pack(PackedGame game)
         {
             _characterMenu.Pack(game);
-            _divineMenu.Pack(game);
+            _storageMenu.Pack(game);
             _multiplayerMenu.Pack(game);
-            _fishMenu.Pack(game);
         }
 
         public override void Unpack(PackedGame game)
@@ -125,9 +118,8 @@ namespace ExNihilo.Sectors
             //LoadContent(Container.GraphicsDevice, Container.Content);
             
             _characterMenu.Unpack(game);
-            _divineMenu.Unpack(game);
+            _storageMenu.Unpack(game);
             _multiplayerMenu.Unpack(game);
-            _fishMenu.Unpack(game);
             World.Reset(Player, new Coordinate(10, 10), new Coordinate(3, 10));
             
         }

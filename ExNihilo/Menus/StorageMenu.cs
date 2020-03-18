@@ -9,7 +9,7 @@ using Microsoft.Xna.Framework.Graphics;
 
 namespace ExNihilo.Menus
 {
-    public class DivineMenu : Menu
+    public class StorageMenu : Menu
     {
 /********************************************************************
 ------->Menu Callbacks
@@ -24,7 +24,7 @@ namespace ExNihilo.Menus
 ********************************************************************/
         private readonly UIPanel _panelUI;
 
-        public DivineMenu(GameContainer container, Action onExit) : base(container, onExit)
+        public StorageMenu(GameContainer container, Action onExit) : base(container, onExit)
         {
             _panelUI = new UIPanel("this.MenuKing", new Vector2(0.5f, 0.5f), Vector2.One, TextureUtilities.PositionType.Center);
 

@@ -16,6 +16,37 @@ namespace ExNihilo.Systems.Game
 {
     public class World : IUI
     {
+        private string[] _shipMap = {
+            "XXXXXXXXXXXXXX",
+            "XXXXXXXXXXXXXX",
+            "XXXXXXXXXXXXXX",
+            "XXXXXXXXXXXXXX",
+            "XXXXXXXXXXXXXX",
+            "XXXXXXXXXXXXXX",
+            "XXXXXXOOXXXXXX",
+            "XXXXXOOOOXXXXX",
+            "XXXOOOOOOOOXXX",
+            "XXXOOOOOOOOXXX",
+            "XXXOOOOOOOOXXX",
+            "XXXOOOOOOOOXXX",
+            "XXXXXOOXXXXXXX",
+            "XXXXXOOXXXXXXX",
+            "XXXOOOOOOOXXXX",
+            "XXXOOOOOOOOXXX",
+            "XXXOOOOOOOOXXX",
+            "XXXXXOOXOOOXXX",
+            "XXXXXOOXXXXXXX",
+            "XXXXXOOXXXXXXX",
+            "XXXOOOOOOOOXXX",
+            "XXXOOOOOOOOXXX",
+            "XXXOOOXXOOOXXX",
+            "XXXXOOXXOOXXXX",
+            "XXXXXXXXXXXXXX",
+            "XXXXXXXXXXXXXX",
+            "XXXXXXXXXXXXXX",
+            "XXXXXXXXXXXXXX"
+        };
+
         protected readonly List<Tuple<AnimatableTexture, Coordinate>> Overlays;
         protected readonly ScaleRuleSet WorldRules = TextureLibrary.DefaultScaleRuleSet;
         protected readonly int TimerID;
@@ -71,8 +102,8 @@ namespace ExNihilo.Systems.Game
 
         public virtual void LoadContent(GraphicsDevice graphics, ContentManager content)
         {
-            WorldTexture = content.Load<Texture2D>("World/world");
-            Map = new InteractionMap("WORLD.info");
+            WorldTexture = content.Load<Texture2D>("World/ship_base");
+            Map = new InteractionMap(_shipMap);
         }
 
         public virtual void OnResize(GraphicsDevice graphics, Coordinate gameWindow)
@@ -87,7 +118,7 @@ namespace ExNihilo.Systems.Game
                 {
                     ResetWorldPos = false;
                     PlayerOverlay.OnResize(graphics, gameWindow);
-                    CurrentWorldPosition = PlayerOverlay.PlayerCenterScreen - new Vector2(CurrentWorldScale*400, CurrentWorldScale*200);
+                    CurrentWorldPosition = PlayerOverlay.PlayerCenterScreen - new Vector2(CurrentWorldScale*112, CurrentWorldScale*240);
                 }
                 else
                 {
@@ -173,8 +204,8 @@ namespace ExNihilo.Systems.Game
 
         public Interactive CheckForInteraction()
         {
-            var offset = PlayerOverlay.PlayerCenterScreen + TextureUtilities.GetOffset(TextureUtilities.PositionType.Center, PlayerCustomHitBox) - CurrentWorldPosition;
-            return Map.GetInteractive((int) (CurrentWorldScale * TileSize), offset, 1);
+            var offset = PlayerOverlay.PlayerCenterScreen + TextureUtilities.GetOffset(TextureUtilities.PositionType.Center, PlayerOverlay.GetCurrentPixelSize()) - CurrentWorldPosition;
+            return Map.GetInteractive((int) (CurrentWorldScale * TileSize), offset, 0.5f, 1f, 0.5f, 0.5f);
         }
 
         public void ClearPlayers()

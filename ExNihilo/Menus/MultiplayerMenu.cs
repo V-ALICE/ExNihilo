@@ -135,7 +135,7 @@ namespace ExNihilo.Menus
             SetRulesAll(TextureLibrary.QuadScaleRuleSet, charPortrait1, charPortrait2, charPortrait3);
 
             _panelUI.AddElements(backdrop, exitButton, exitButtonX, ipBox, ipText, ipLabel, clientButton, clientText, hostButton, hostText, disconnectButton, disconnectText, charPortrait1, charPortrait2, charPortrait3, charName1, charName2, charName3);
-            _note = new NoteMenu(container, "There's a familiar island off in\nthe distance. Call out?", NoteAction);
+            _note = new NoteMenu(container, "The void teems with adventurers.\nWould you like to set sail?", NoteAction);
         }
 
         public void UpdateDisplay(bool ending)

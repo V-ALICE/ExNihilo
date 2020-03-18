@@ -25,9 +25,8 @@ namespace ExNihilo.Systems.Backend
             Map = set;
         }
 
-        public TypeMatrix(string fileName)
+        public TypeMatrix(string[] map)
         {
-            var map = File.ReadAllLines("Content/Resources/" + fileName);
             if (map.Length == 0) return;
             X = map[0].Length;
             Y = map.Length;
@@ -39,10 +38,10 @@ namespace ExNihilo.Systems.Backend
                 {
                     switch (map[i][j])
                     {
-                        case 'G':
+                        case 'O':
                             Map[i][j] = Type.Ground;
                             break;
-                        case 'W':
+                        case 'X':
                             Map[i][j] = Type.Wall;
                             break;
                         default:
@@ -104,9 +103,9 @@ namespace ExNihilo.Systems.Backend
             }
         }
 
-        public InteractionMap(string fileName)
+        public InteractionMap(string[] map)
         {
-            Map = new TypeMatrix(fileName);
+            Map = new TypeMatrix(map);
             _interactive = new Interactive[Y][];
             for (int i = 0; i < Y; i++)
             {
@@ -217,18 +216,18 @@ namespace ExNihilo.Systems.Backend
             return false;
         }
 
-        public Interactive GetInteractive(int scaledTileSize, Vector2 offsetFromWorld, int radius)
+        public Interactive GetInteractive(int scaledTileSize, Vector2 centerOffset, float upRad=0, float downRad=0, float leftRad=0, float rightRad=0)
         {
-            var x = MathD.RoundDown(offsetFromWorld.X / scaledTileSize);
-            var y = MathD.RoundDown(offsetFromWorld.Y / scaledTileSize);
-            //TODO: this might not work correctly
-            for (int i = y - radius; i <= y + radius; i++)
+            var x = centerOffset.X / scaledTileSize;
+            var y = centerOffset.Y / scaledTileSize;
+            for (var i = x - leftRad; i <= x + rightRad; i+=0.25f)
             {
-                if (i >= Y || i < 0) continue;
-                for (int j = x - radius; j <= x + radius && j < X && j >= 0; j++)
+                if (i < 0 || i >= X) continue;
+                for (var j = y - upRad; j <= y + downRad; j+=0.25f)
                 {
-                    if (j >= X || j < 0) continue;
-                    if (_interactive[i][j] != null) return _interactive[i][j];
+                    if (j < 0 || j >= Y) continue;
+                    var obj = _interactive[MathD.RoundDown(j)][MathD.RoundDown(i)];
+                    if (obj != null) return obj;
                 }
             }
 

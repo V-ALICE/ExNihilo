@@ -74,7 +74,7 @@
     <Compile Include="Input\Controllers\MouseController.cs" />
     <Compile Include="Menus\BoxMenu.cs" />
     <Compile Include="Menus\CharacterMenu.cs" />
-    <Compile Include="Menus\DivineMenu.cs" />
+    <Compile Include="Menus\StorageMenu.cs" />
     <Compile Include="Menus\InventoryMenu.cs" />
     <Compile Include="Menus\Menu.cs" />
     <Compile Include="Menus\MultiplayerMenu.cs" />
@@ -182,9 +182,6 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Include="Content\Resources\UI.info">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Content\Resources\WORLD.info">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Include="Content\Resources\CHAR.info">
