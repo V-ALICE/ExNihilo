@@ -4,16 +4,11 @@ using Microsoft.Xna.Framework;
 namespace ExNihilo.Util
 {
     //Basically an integral Vector2
-    public class Coordinate
+    public struct Coordinate
     {
         public int X { get; set; }
         public int Y { get; set; }
 
-        public Coordinate()
-        {
-            X = 0;
-            Y = 0;
-        }
         public Coordinate(int x, int y)
         {
             X = x;
@@ -30,9 +25,13 @@ namespace ExNihilo.Util
             Y = MathD.RoundDown(v.Y);
         }
 
-        public static implicit operator Coordinate(Vector2 v)
+        public static explicit operator Coordinate(Vector2 v)
         {
             return new Coordinate(v);
+        }
+        public static explicit operator Vector2(Coordinate cv)
+        {
+            return new Vector2(cv.X, cv.Y);
         }
 
         public bool Equals(Coordinate check)
@@ -50,9 +49,14 @@ namespace ExNihilo.Util
             return new Coordinate(X, Y);
         }
 
-        public Vector2 AsVector2()
+        public static Coordinate operator +(Coordinate a, Coordinate b)
         {
-            return new Vector2(X,Y);
+            return new Coordinate(a.X + b.X, a.Y + b.Y);
+        }
+
+        public static Coordinate operator -(Coordinate a, Coordinate b)
+        {
+            return new Coordinate(a.X - b.X, a.Y - b.Y);
         }
 
         public static Vector2 operator +(Coordinate a, Vector2 b)
@@ -71,21 +75,14 @@ namespace ExNihilo.Util
         {
             return new Vector2(a.X * b.X, a.Y * b.Y);
         }
+        public static Vector2 operator *(Vector2 a, Coordinate b)
+        {
+            return new Vector2(a.X * b.X, a.Y * b.Y);
+        }
 
         public static Vector2 operator *(float a, Coordinate b)
         {
             return new Vector2(a*b.X, a*b.Y);
-        }
-
-        public bool IsRadial(Coordinate coord, int radius)
-        {
-            return Math.Abs(coord.X - X) <= radius && Math.Abs(coord.Y - Y) <= radius;
-        }
-
-        public bool IsDirectNeighbor(Coordinate coord)
-        {
-            return (Math.Abs(coord.X - X) <= 1 && coord.Y == Y) ||
-                   (Math.Abs(coord.Y - Y) <= 1 && coord.X == X);
         }
 
         public override string ToString()

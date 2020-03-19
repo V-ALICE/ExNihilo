@@ -1,5 +1,6 @@
 ﻿using System;
 using ExNihilo.Systems;
+using ExNihilo.Systems.Backend;
 using ExNihilo.UI.Bases;
 using ExNihilo.Util;
 using ExNihilo.Util.Graphics;
@@ -16,12 +17,12 @@ namespace ExNihilo.UI
         public Point ScreenPos;
         public Coordinate ElementPos;
 
-        public UICallbackPackage(string name, Point screen, Vector2 origin, params float[] values)
+        public UICallbackPackage(string name, Point screen, Coordinate origin, params float[] values)
         {
             Caller = name;
             Value = values;
             ScreenPos = screen;
-            ElementPos = new Coordinate((int) Math.Round(screen.X-origin.X), (int) Math.Round(screen.Y-origin.Y));
+            ElementPos = new Coordinate(screen.X-origin.X, screen.Y-origin.Y);
         }
     }
 
@@ -87,7 +88,7 @@ namespace ExNihilo.UI
 
         public override void Draw(SpriteBatch spriteBatch)
         {
-            if (!Loaded) return;
+            if (!Loaded || DontDrawThis) return;
             if (Disabled)
             {
                 Texture.Draw(spriteBatch, OriginPosition, DisabledColor?.Get() ?? ColorScale.Get(), CurrentScale);
@@ -112,21 +113,31 @@ namespace ExNihilo.UI
         {
             if (Disabled) return false;
             if (TexturePath == "null") return false;
-            int buttonX = (int) (Math.Round(mousePos.X - OriginPosition.X)/CurrentScale);
-            int buttonY = (int) (Math.Round(mousePos.Y - OriginPosition.Y)/CurrentScale);
+            int buttonX = (int) ((mousePos.X - OriginPosition.X)/CurrentScale);
+            int buttonY = (int) ((mousePos.Y - OriginPosition.Y)/CurrentScale);
             if (buttonX < 0 || buttonY < 0 || buttonX >= Texture.Width || buttonY >= Texture.Height) return false;
             return Alpha[buttonY * Texture.Width + buttonX] != 0;
         }
 
-        public virtual void OnMoveMouse(Point point)
+        public void ForceNotOver()
         {
-            if (Disabled) return;
-            if ((AllowMulligan && Down) || (!Down && OverTexture != null))
+            Over = false;
+        }
+        public virtual bool OnMoveMouse(Point point)
+        {
+            if (Disabled) return false;
+            if (AllowMulligan && Down)
             {
-                var isOver = IsOver(point);
-                if (Down && AllowMulligan) Down = isOver;
-                if (!Down && OverTexture != null) Over = isOver;
+                Down = IsOver(point);
+                return Down;
             }
+            if ((OverTexture != null || OverColor != null))
+            {
+                Over = IsOver(point);
+                return Over;
+            }
+
+            return false;
         }
 
         public virtual bool OnLeftClick(Point point)
@@ -140,9 +151,12 @@ namespace ExNihilo.UI
         public virtual void OnLeftRelease(Point point)
         {
             if (Disabled) return;
-            if (Down) Function?.Invoke(new UICallbackPackage(GivenName, point, OriginPosition));
+            if (Down)
+            {
+                Function?.Invoke(new UICallbackPackage(GivenName, point, OriginPosition));
+                Over = IsOver(point);
+            }
             Down = false;
-            Over = IsOver(point);
         }
 
         public virtual void Disable(ColorScale c)
@@ -158,5 +172,16 @@ namespace ExNihilo.UI
             Disabled = false;
         }
 
+        public override void ChangeTexture(AnimatableTexture texture)
+        {
+            base.ChangeTexture(texture);
+            Alpha = Texture.GetAlphaMask();
+        }
+
+        public override void ChangeTexture(string path)
+        {
+            base.ChangeTexture(path);
+            Alpha = Texture.GetAlphaMask();
+        }
     }
 }

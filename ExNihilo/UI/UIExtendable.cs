@@ -59,7 +59,7 @@ namespace ExNihilo.UI
 
         public override void Draw(SpriteBatch spriteBatch)
         {
-            if (!Loaded) return;
+            if (!Loaded || DontDrawThis) return;
             if (Disabled)
             {
                 Texture.Draw(spriteBatch, OriginPosition, DisabledColor?.Get() ?? ColorScale.Get(), CurrentScale * RelativeScalar * MaxiumScalar);
@@ -92,14 +92,15 @@ namespace ExNihilo.UI
         public override bool IsOver(Point mousePos)
         {
             if (TexturePath == "null") return false;
-            int buttonX = (int)(Math.Round(mousePos.X - OriginPosition.X) / CurrentScale);
-            int buttonY = (int)(Math.Round(mousePos.Y - OriginPosition.Y) / CurrentScale);
+            int buttonX = (int)((mousePos.X - OriginPosition.X) / CurrentScale);
+            int buttonY = (int)((mousePos.Y - OriginPosition.Y) / CurrentScale);
             return buttonX >= 0 && buttonY >= 0 && buttonX < MaximumSize.X && buttonY < MaximumSize.Y;
         }
 
-        public override void OnMoveMouse(Point point)
+        public override bool OnMoveMouse(Point point)
         {
             if (Down) ReinterpretScalar(point);
+            return false;
         }
 
         public override bool OnLeftClick(Point point)

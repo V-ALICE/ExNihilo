@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+<Project ToolsVersion="12.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="..\packages\Costura.Fody.3.3.3\build\Costura.Fody.props" Condition="Exists('..\packages\Costura.Fody.3.3.3\build\Costura.Fody.props')" />
   <Import Project="..\packages\Costura.Fody.4.0.0\build\Costura.Fody.props" Condition="Exists('..\packages\Costura.Fody.4.0.0\build\Costura.Fody.props')" />
   <Import Project="$(MSBuildExtensionsPath)\MonoGame\v3.0\MonoGame.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\MonoGame\v3.0\MonoGame.Common.props')" />
@@ -15,7 +15,7 @@
     <AssemblyName>ExNihilo</AssemblyName>
     <FileAlignment>512</FileAlignment>
     <MonoGamePlatform>Windows</MonoGamePlatform>
-    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
     <NuGetPackageImportStamp>
     </NuGetPackageImportStamp>
     <PublishUrl>publish\</PublishUrl>
@@ -33,6 +33,7 @@
     <IsWebBootstrapper>false</IsWebBootstrapper>
     <UseApplicationTrust>false</UseApplicationTrust>
     <BootstrapperEnabled>true</BootstrapperEnabled>
+    <TargetFrameworkProfile />
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|x86' ">
     <PlatformTarget>x86</PlatformTarget>
@@ -70,17 +71,19 @@
     <Compile Include="Entity\EntityTexture.cs" />
     <Compile Include="Input\Commands\Types\ConsoleCommands.cs" />
     <Compile Include="Input\Commands\Types\SuperCommands.cs" />
-    <Compile Include="Input\Commands\Types\MenuCommands.cs" />
     <Compile Include="Input\Controllers\MouseController.cs" />
+    <Compile Include="Menus\BoxMenu.cs" />
     <Compile Include="Menus\CharacterMenu.cs" />
-    <Compile Include="Menus\DivineMenu.cs" />
+    <Compile Include="Menus\StorageMenu.cs" />
+    <Compile Include="Menus\InventoryMenu.cs" />
     <Compile Include="Menus\Menu.cs" />
     <Compile Include="Menus\MultiplayerMenu.cs" />
     <Compile Include="Menus\NoteMenu.cs" />
     <Compile Include="Menus\TitleMenu.cs" />
     <Compile Include="Sectors\LoadingSector.cs" />
     <Compile Include="Sectors\Sector.cs" />
-    <Compile Include="Sectors\UnderworldSector.cs" />
+    <Compile Include="Sectors\PlayerBasedSector.cs" />
+    <Compile Include="Sectors\VoidSector.cs" />
     <Compile Include="Sectors\OuterworldSector.cs" />
     <Compile Include="Sectors\TitleSector.cs" />
     <Compile Include="GameContainer.cs" />
@@ -94,20 +97,33 @@
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Systems\Asura.cs" />
+    <Compile Include="Systems\Backend\Network\NetworkLinker.cs" />
+    <Compile Include="Systems\Backend\Network\NetworkManager.cs" />
+    <Compile Include="Systems\Backend\Network\NetworkMessages.cs" />
     <Compile Include="Systems\Bases\Interactable.cs" />
     <Compile Include="Systems\Bases\IPlayer.cs" />
-    <Compile Include="Systems\Console.cs" />
+    <Compile Include="Systems\Backend\SystemConsole.cs" />
     <Compile Include="Systems\Bases\ISavable.cs" />
+    <Compile Include="Systems\Bases\ISuperPlayer.cs" />
+    <Compile Include="Systems\Bases\Item.cs" />
     <Compile Include="Systems\Bases\ITypable.cs" />
-    <Compile Include="Systems\InteractionMap.cs" />
-    <Compile Include="Systems\ParticleBackdrop.cs" />
-    <Compile Include="Systems\PlayerOverlay.cs" />
-    <Compile Include="Systems\SaveHandler.cs" />
-    <Compile Include="Systems\World.cs" />
+    <Compile Include="Systems\Backend\InteractionMap.cs" />
+    <Compile Include="Systems\Game\Inventory.cs" />
+    <Compile Include="Systems\Game\Items\EquipItem.cs" />
+    <Compile Include="Systems\Game\Items\InstantItem.cs" />
+    <Compile Include="Systems\Game\Items\ItemLoader.cs" />
+    <Compile Include="Systems\Game\Items\UseItem.cs" />
+    <Compile Include="Systems\Game\Level.cs" />
+    <Compile Include="Systems\Game\MapGenerator.cs" />
+    <Compile Include="Systems\Game\MapStitcher.cs" />
+    <Compile Include="Systems\Game\ParticleBackdrop.cs" />
+    <Compile Include="Entity\PlayerOverlay.cs" />
+    <Compile Include="Systems\Backend\SaveHandler.cs" />
+    <Compile Include="Systems\Game\Stats.cs" />
+    <Compile Include="Systems\Game\World.cs" />
     <Compile Include="UI\Bases\IClickable.cs" />
     <Compile Include="UI\Bases\IScalable.cs" />
     <Compile Include="UI\UIClickable.cs" />
-    <Compile Include="UI\UIDynamicElement.cs" />
     <Compile Include="UI\UIElement.cs" />
     <Compile Include="UI\UIExtendable.cs" />
     <Compile Include="UI\UIMovable.cs" />
@@ -117,12 +133,12 @@
     <Compile Include="UI\UIText.cs" />
     <Compile Include="UI\UITogglable.cs" />
     <Compile Include="Util\Graphics\AnimatableTexture.cs" />
-    <Compile Include="Util\AudioManager.cs" />
+    <Compile Include="Systems\Backend\AudioManager.cs" />
     <Compile Include="Util\Graphics\ColorScale.cs" />
     <Compile Include="Util\Coordinate.cs" />
     <Compile Include="Util\EncryptedSerializer.cs" />
     <Compile Include="Util\ScaleRule.cs" />
-    <Compile Include="Systems\TextureLibrary.cs" />
+    <Compile Include="Systems\Backend\TextureLibrary.cs" />
     <Compile Include="Util\MathD.cs" />
     <Compile Include="UI\Bases\IUI.cs" />
     <Compile Include="Util\TypingKeyboard.cs" />
@@ -136,16 +152,28 @@
     <Reference Include="Costura, Version=3.3.3.0, Culture=neutral, PublicKeyToken=9919ef960d84173d, processorArchitecture=MSIL">
       <HintPath>..\packages\Costura.Fody.3.3.3\lib\net40\Costura.dll</HintPath>
     </Reference>
+    <Reference Include="Lidgren.Network, Version=3.7.1.189, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>.\Lidgren.Network.dll</HintPath>
+    </Reference>
     <Reference Include="MonoGame.Framework">
       <HintPath>$(MonoGameInstallDirectory)\MonoGame\v3.0\Assemblies\Windows\MonoGame.Framework.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Drawing" />
+    <Reference Include="System.IO.Compression" />
     <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="Content\TexturePacks\DawnLikeComplete.tmf">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Content\TexturePacks\GrassyComplete.tmf">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
     <MonoGameContentReference Include="Content\Content.mgcb" />
+    <None Include="app.config" />
     <None Include="app.manifest" />
     <Content Include="Content\Resources\ICON.info">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
@@ -156,10 +184,19 @@
     <Content Include="Content\Resources\UI.info">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="Content\Resources\WORLD.info">
+    <Content Include="Content\Resources\CHAR.info">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="Content\Resources\CHAR.info">
+    <Content Include="Content\Items\EquipmentBase.imf">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Content\Resources\MAT.info">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Content\Resources\COLOR.info">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Content\Items\BasicItems.imf">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <None Include="packages.config" />

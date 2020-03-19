@@ -1,34 +1,26 @@
-﻿using System.Collections.Generic;
-using ExNihilo.Input.Commands;
+﻿using ExNihilo.Entity;
 using ExNihilo.Menus;
-using ExNihilo.Systems;
+using ExNihilo.Systems.Backend;
+using ExNihilo.Systems.Backend.Network;
 using ExNihilo.Systems.Bases;
+using ExNihilo.Systems.Game;
 using ExNihilo.Util;
-using ExNihilo.Util.Graphics;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
 
 namespace ExNihilo.Sectors
 {
-    public class OuterworldSector : Sector
+    public class OuterworldSector : PlayerBasedSector
     {
-        private CommandHandler _playerHandler;
-        private Vector2 _debugPosition;
-        private Point _lastMousePosition;
-        private World _world;
-
-        //Present Menus (since they never change)
+        //Preset Menus (since they never change)
         private CharacterMenu _characterMenu;
-        private DivineMenu _divineMenu;
+        private StorageMenu _storageMenu;
         private MultiplayerMenu _multiplayerMenu;
-        private NoteMenu _voidMenu;
-        private NoteMenu _fishMenu;
 
-        private bool _menuActive => _menuPoint != null;
-        private Menu _menuPoint;
-        
-        public OuterworldSector(GameContainer container) : base(container)
+        public PlayerEntityContainer Player => _characterMenu.GetCurrentChar();
+
+        public OuterworldSector(GameContainer container) : base(container, new World(16))
         {
         }
 
@@ -37,121 +29,88 @@ namespace ExNihilo.Sectors
 ********************************************************************/
         public override void OnResize(GraphicsDevice graphics, Coordinate gameWindow)
         {
-            _world?.OnResize(graphics, gameWindow);
-            _debugPosition = new Vector2(1, 1 + TextDrawer.AlphaHeight + TextDrawer.LineSpacer);
-
+            base.OnResize(graphics, gameWindow);
             _characterMenu.OnResize(graphics, gameWindow);
-            _divineMenu.OnResize(graphics, gameWindow);
+            _storageMenu.OnResize(graphics, gameWindow);
             _multiplayerMenu.OnResize(graphics, gameWindow);
-            _fishMenu.OnResize(graphics, gameWindow);
-            _voidMenu.OnResize(graphics, gameWindow);
         }
 
         public override void Enter(Point point, Coordinate gameWindow)
         {
-            OnResize(Container.GraphicsDevice, gameWindow);
+            InvRef.SetReference(Player);
+            base.Enter(point, gameWindow);
+        }
+
+        public override void Leave(GameContainer.SectorID newSector)
+        {
+            if (newSector == GameContainer.SectorID.Loading)
+            {
+                //Assumed to be entering void
+                World.Reset(Player, new Coordinate(10, 10), new Coordinate(3, 10));
+                AudioManager.PlaySong("Void", true);
+            }
         }
 
         public override void Initialize()
         {
-            MenuHandler = new CommandHandler();
-            MenuHandler.Initialize(this, true);
-            _playerHandler = new CommandHandler();
-            _playerHandler.Initialize(this, false);
-            _debugPosition = new Vector2(1, 1 + TextDrawer.AlphaHeight + TextDrawer.LineSpacer);
-            _lastMousePosition = new Point();
+            void CharChange()
+            {
+                InvRef.SetReference(Player);
+                MenuPoint = null;
+            }
 
-            _world = new World(16);
-            _characterMenu = new CharacterMenu(Container, _world);
-            _divineMenu = new DivineMenu(Container);
-            _multiplayerMenu = new MultiplayerMenu(Container);
-            _fishMenu = new NoteMenu(Container, "No fishing allowed", true);
-            _voidMenu = new NoteMenu(Container, "Void off limits", true);
+            base.Initialize();
+            _characterMenu = new CharacterMenu(Container, CharChange, World);
+            _storageMenu = new StorageMenu(Container, () => { MenuPoint = null;});
+            _multiplayerMenu = new MultiplayerMenu(Container, () => { MenuPoint = null; });
         }
 
         public override void LoadContent(GraphicsDevice graphicsDevice, ContentManager content)
         {
+            base.LoadContent(graphicsDevice, content);
             _characterMenu.LoadContent(graphicsDevice, content);
-            _divineMenu.LoadContent(graphicsDevice, content);
+            _storageMenu.LoadContent(graphicsDevice, content);
             _multiplayerMenu.LoadContent(graphicsDevice, content);
-            _fishMenu.LoadContent(graphicsDevice, content);
-            _voidMenu.LoadContent(graphicsDevice, content);
 
-            _world.LoadContent(graphicsDevice, content);
-            _world.AddOverlay(content.Load<Texture2D>("World/tree"), 26, 5);
-            _world.AddInteractive(new MenuInteractive("Tree", _divineMenu), 27, 8, 2);
-            var river = new MenuInteractive("River", _fishMenu);
-            _world.AddInteractive(river, 12, 6, 2);
-            _world.AddInteractive(river, 15, 8, 1, 2);
-            _world.AddInteractive(new MenuInteractive("Void", _voidMenu), 23, 22);
-            _world.AddInteractive(new MenuInteractive("Pond", _characterMenu), 44, 3, 2, 2);
-            _world.AddInteractive(new MenuInteractive("Island", _multiplayerMenu), 13, 43);
-        }
-
-        public override void Update()
-        {
-            if (_menuActive) MenuHandler.UpdateInput();
-            else
-            {
-                _world.ApplyPush(CurrentPush, CurrentPushMult);
-                _playerHandler.UpdateInput();
-            }
-        }
-
-        protected override void DrawDebugInfo(SpriteBatch spriteBatch)
-        {
-            var text = _world + "\nPush Vec:  " + CurrentPush;
-            TextDrawer.DrawDumbText(spriteBatch, _debugPosition, text, 1, ColorScale.White);
+            World.AddOverlay(content.Load<Texture2D>("World/ship_overlay"), 0, 0);
+            //World.AddOverlay(content.Load<Texture2D>("World/ship_overlay_alt"), 0, 0);
+            World.AddInteractive(new MenuInteractive("Storage", _storageMenu), 6, 6, 2, 2);
+            World.AddInteractive(new MenuInteractive("Void", StairMenu), 6, 22, 2, 2);
+            World.AddInteractive(new MenuInteractive("Cabin", _characterMenu), 9, 19);
+            World.AddInteractive(new MenuInteractive("Wheel", _multiplayerMenu), 8, 13, 2, 1);
         }
 
         public override void Draw(SpriteBatch spriteBatch, bool drawDebugInfo)
         {
-            _world.Draw(spriteBatch);
-            _world.DrawOverlays(spriteBatch);
-            _menuPoint?.Draw(spriteBatch);
+            World.Draw(spriteBatch);
+            World.DrawOverlays(spriteBatch);
+            MenuPoint?.Draw(spriteBatch);
             if (drawDebugInfo) DrawDebugInfo(spriteBatch);
         }
 
 /********************************************************************
 ------->Game functions
 ********************************************************************/
-        public override void BackOut()
-        {
-            if (_menuActive)
-            {
-                _menuPoint.BackOut();
-                if (_menuPoint.Dead) _menuPoint = null;
-            }
-            else base.BackOut();
-        }
 
-        public override void OnMoveMouse(Point point)
+        public override void CheckNetwork(bool ending)
         {
-            _menuPoint?.OnMoveMouse(point);
-            _lastMousePosition = point;
-        }
-
-        public override bool OnLeftClick(Point point)
-        {
-            return _menuPoint?.OnLeftClick(point) ?? false;
+            base.CheckNetwork(ending);
+            if (ReferenceEquals(_multiplayerMenu, MenuPoint)) _multiplayerMenu.UpdateDisplay(ending);
         }
 
         public override void OnLeftRelease(Point point)
         {
-            if (_menuActive)
+            if (MenuActive)
             {
-                _menuPoint.OnLeftRelease(point);
-                if (_menuPoint.Dead) _menuPoint = null;
+                MenuPoint.OnLeftRelease(point);
             }
         }
 
         public override void Pack(PackedGame game)
         {
             _characterMenu.Pack(game);
-            _divineMenu.Pack(game);
+            _storageMenu.Pack(game);
             _multiplayerMenu.Pack(game);
-            _fishMenu.Pack(game);
-            _voidMenu.Pack(game);
         }
 
         public override void Unpack(PackedGame game)
@@ -159,31 +118,10 @@ namespace ExNihilo.Sectors
             //LoadContent(Container.GraphicsDevice, Container.Content);
             
             _characterMenu.Unpack(game);
-            _divineMenu.Unpack(game);
+            _storageMenu.Unpack(game);
             _multiplayerMenu.Unpack(game);
-            _fishMenu.Unpack(game);
-            _voidMenu.Unpack(game);
-            _world.Reset(_characterMenu.GetCurrentChar(), new Coordinate(10, 10), new Coordinate(3, 10));
+            World.Reset(Player, new Coordinate(10, 10), new Coordinate(3, 10));
             
-        }
-
-        public override void Touch()
-        {
-            var obj = _world.CheckForInteraction();
-            if (obj != null)
-            {
-                switch (obj)
-                {
-                    case MenuInteractive menu:
-                        _menuPoint = menu.InteractionMenu;
-                        _menuPoint?.Enter(_lastMousePosition);
-                        if (_menuActive) _world.Halt();
-                        break;
-                    case ActionInteractive action:
-                        action.Function?.Invoke();
-                        break;
-                }
-            }
         }
     }
 }

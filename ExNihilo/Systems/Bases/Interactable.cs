@@ -1,5 +1,9 @@
 ﻿using System;
+using System.Linq;
 using ExNihilo.Menus;
+using ExNihilo.Systems.Game.Items;
+using ExNihilo.Util;
+using Microsoft.Xna.Framework.Graphics;
 
 namespace ExNihilo.Systems.Bases
 {
@@ -16,13 +20,75 @@ namespace ExNihilo.Systems.Bases
 
     public class MenuInteractive : Interactive
     {
-        public readonly Menu InteractionMenu;
+        private readonly Menu _interactionMenu;
 
         public MenuInteractive(string name, Menu menu) : base(name)
         {
-            InteractionMenu = menu;
+            _interactionMenu = menu;
         }
 
+        public virtual Menu Access()
+        {
+            return _interactionMenu;
+        }
+    }
+
+    public class BoxInteractive : MenuInteractive
+    {
+        public bool Dirty { get; private set; }
+        public int Index;
+        public const int ContainerSize = 6;
+        private const int _slotFillChance = 40;
+        private readonly Texture2D _closed, _open;
+        public readonly ItemInstance[] Contents = new ItemInstance[ContainerSize];
+        private bool _opened;
+
+        public BoxInteractive(string name, Texture2D open, Texture2D closed, Random rand, int floor) : base(name, BoxMenu.Menu)
+        {
+            _closed = closed;
+            _open = open;
+            var guaranteed = rand.Next(Contents.Length);
+            for (int i = 0; i < Contents.Length; i++)
+            {
+                if (i==guaranteed || MathD.Chance(rand, _slotFillChance))
+                {
+                    Contents[i] = ItemLoader.GetItem(rand, floor);
+                }
+                else
+                {
+                    Contents[i] = null;
+                }
+            }
+        }
+
+        public Texture2D GetTexture()
+        {
+            return _opened ? _open : _closed;
+        }
+
+        public override Menu Access()
+        {
+            _opened = true;
+            return base.Access();
+        }
+
+        public void Remove(int id)
+        {
+            for (int i = 0; i < Contents.Length; i++)
+            {
+                if (Contents[i]?.UID == id)
+                {
+                    Contents[i] = null;
+                    Dirty = true;
+                    return;
+                }
+            }
+        }
+
+        public void Clean()
+        {
+            Dirty = false;
+        }
     }
 
     public class ActionInteractive : Interactive

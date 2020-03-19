@@ -1,5 +1,6 @@
 ﻿using System;
 using ExNihilo.Systems;
+using ExNihilo.Systems.Backend;
 using ExNihilo.Systems.Bases;
 using ExNihilo.UI;
 using ExNihilo.UI.Bases;
@@ -19,21 +20,22 @@ namespace ExNihilo.Menus
         }
 
         protected GameContainer Container;
-        public bool Dead { get; protected set; }
 
-        protected Menu(GameContainer container)
+        protected Action OnExit;
+
+        protected Menu(GameContainer container, Action onExit)
         {
             Container = container;
+            OnExit = onExit;
         }
 
         public virtual void Enter(Point point)
         {
-            Dead = false;
         }
 
         public virtual void BackOut()
         {
-            Dead = true;
+            OnExit?.Invoke();
         }
 
         protected virtual void MenuDown()
@@ -82,6 +84,11 @@ namespace ExNihilo.Menus
         {
             foreach (var element in elements) element.RegisterCallback(action);
         }
+        protected void RegisterAll(Action<UICallbackPackage> action, params UIElement[] elements)
+        {
+            //Elements must actually be clickables or else this will just fail
+            foreach (var element in elements) ((UIClickable)element).RegisterCallback(action);
+        }
 
         protected void DisableAll(ColorScale color, params UIClickable[] elements)
         {
@@ -108,7 +115,7 @@ namespace ExNihilo.Menus
 
         public abstract void Draw(SpriteBatch spriteBatch);
 
-        public abstract void OnMoveMouse(Point point);
+        public abstract bool OnMoveMouse(Point point);
 
         public abstract bool OnLeftClick(Point point);
 

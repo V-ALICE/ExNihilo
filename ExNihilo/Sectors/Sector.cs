@@ -1,6 +1,7 @@
 ﻿using ExNihilo.Input.Commands;
 using ExNihilo.Menus;
 using ExNihilo.Systems;
+using ExNihilo.Systems.Backend;
 using ExNihilo.Systems.Bases;
 using ExNihilo.UI.Bases;
 using ExNihilo.Util;
@@ -10,10 +11,9 @@ using Microsoft.Xna.Framework.Graphics;
 
 namespace ExNihilo.Sectors
 {
-    public abstract class Sector : IUI, IClickable, ISavable, IPlayer
+    public abstract class Sector : IUI, IClickable, ISavable
     {
         protected GameContainer Container;
-        protected CommandHandler MenuHandler;
 
         protected Coordinate CurrentPush;
         protected int CurrentPushMult;
@@ -30,6 +30,11 @@ namespace ExNihilo.Sectors
         public virtual void Enter(Point point, Coordinate gameWindow)
         {
         }
+        public virtual void Leave(GameContainer.SectorID newSector)
+        {
+
+        }
+
         public abstract void Initialize();
         public abstract void LoadContent(GraphicsDevice graphicsDevice, ContentManager content);
         public abstract void Update();
@@ -57,7 +62,7 @@ namespace ExNihilo.Sectors
             Container.RequestSectorChange(sector);
         }
 
-        public abstract void OnMoveMouse(Point point);
+        public abstract bool OnMoveMouse(Point point);
         public abstract bool OnLeftClick(Point point);
         public abstract void OnLeftRelease(Point point);
 
@@ -81,6 +86,11 @@ namespace ExNihilo.Sectors
 
         public virtual void Touch()
         {
+        }
+
+        public virtual void ToggleTabMenu()
+        {
+
         }
     }
 }

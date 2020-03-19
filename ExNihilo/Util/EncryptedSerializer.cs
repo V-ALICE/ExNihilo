@@ -1,6 +1,5 @@
 ﻿using System;
 using System.IO;
-using System.Runtime.Serialization;
 using System.Runtime.Serialization.Formatters.Binary;
 using System.Security.Cryptography;
 using System.Text;
@@ -9,12 +8,12 @@ namespace ExNihilo.Util
 {
     public static class EncryptedSerializer
     {
-        private static readonly byte[] _key = Encoding.Default.GetBytes("B9obFB76n8fg8PAq");
-        private static readonly byte[] _iv  = Encoding.Default.GetBytes("6jHJf87ss3b0IJ9e");
+        private static readonly byte[] Key = Encoding.Default.GetBytes("B9obFB76n8fg8PAq");
+        private static readonly byte[] Iv  = Encoding.Default.GetBytes("6jHJf87ss3b0IJ9e");
 
         private static void EncryptFile(string fileName, byte[] data)
         {
-            using (ICryptoTransform iCrypto = new TripleDESCryptoServiceProvider().CreateEncryptor(_key, _iv))
+            using (var iCrypto = new TripleDESCryptoServiceProvider().CreateEncryptor(Key, Iv))
             {
                 var encryptedData = iCrypto.TransformFinalBlock(data, 0, data.Length);
                 File.WriteAllBytes(fileName, encryptedData);
@@ -22,7 +21,7 @@ namespace ExNihilo.Util
         }
         private static byte[] DecryptFile(string fileName)
         {
-            using (ICryptoTransform iCrypto = new TripleDESCryptoServiceProvider().CreateDecryptor(_key, _iv))
+            using (var iCrypto = new TripleDESCryptoServiceProvider().CreateDecryptor(Key, Iv))
             {
                 var byteData = File.ReadAllBytes(fileName);
                 return iCrypto.TransformFinalBlock(byteData, 0, byteData.Length);
@@ -34,34 +33,19 @@ namespace ExNihilo.Util
             if (File.Exists(fileName)) File.Delete(fileName);
 
             var formatter = new BinaryFormatter();
-            try
-            {
-                var test = new MemoryStream();
-                formatter.Serialize(test, o);
-                EncryptFile(fileName, test.ToArray());
-                test.Close();
-            }
-            catch (SerializationException e)
-            {
-                Console.WriteLine(@"Failed to serialize. Reason: " + e.Message);
-            }
+            var test = new MemoryStream();
+            formatter.Serialize(test, o);
+            EncryptFile(fileName, test.ToArray());
+            test.Close();
         }
 
         public static object DeserializeIn(string fileName)
         {
             if (!File.Exists(fileName)) return null;
 
-            object o = null;
-            try
-            {
-                var test = new MemoryStream(DecryptFile(fileName));
-                o = new BinaryFormatter().Deserialize(test);
-                test.Close();
-            }
-            catch (SerializationException e)
-            {
-                Console.WriteLine(@"Failed to deserialize. Reason: " + e.Message);
-            }
+            var test = new MemoryStream(DecryptFile(fileName));
+            var o = new BinaryFormatter().Deserialize(test);
+            test.Close();
             return o;
         }
     }

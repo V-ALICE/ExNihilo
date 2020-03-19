@@ -1,40 +1,56 @@
 ﻿using ExNihilo.Systems;
+using ExNihilo.Systems.Backend;
+using ExNihilo.Systems.Backend.Network;
 
 namespace ExNihilo.Input.Commands.Types
 {
-    public class PushConsole : ConsoleCommand
+    public class PushConsole : SuperCommand
     {
-        public PushConsole(ConsoleHandler game) : base(game)
+        public PushConsole(GameContainer game) : base(game)
         {
         }
 
         public override void Activate()
         {
-            Receiver.PushConsole();
+            var name = "Console";
+            if (Receiver.Player != null) name = Receiver.Player.Name + (NetworkLinker.MyMiniID > 0 ? "-" + NetworkLinker.MyMiniID : "");
+            SystemConsole.PushConsole(name, GameContainer.ActiveSectorID == GameContainer.SectorID.Loading);
         }
     }
 
-    public class RememberLastMessage : ConsoleCommand
+    public class RememberLastMessage : SuperCommand
     {
-        public RememberLastMessage(ConsoleHandler game) : base(game)
+        public RememberLastMessage(GameContainer game) : base(game)
         {
         }
 
         public override void Activate()
         {
-            Receiver.GetLastMessage();
+            SystemConsole.GetLastMessage();
         }
     }
 
-    public class ForgetCurrentMessage : ConsoleCommand
+    public class ForgetCurrentMessage : SuperCommand
     {
-        public ForgetCurrentMessage(ConsoleHandler game) : base(game)
+        public ForgetCurrentMessage(GameContainer game) : base(game)
         {
         }
 
         public override void Activate()
         {
-            Receiver.ClearOutMessage();
+            SystemConsole.ClearOutMessage();
+        }
+    }
+
+    public class SuggestCompletion : SuperCommand
+    {
+        public SuggestCompletion(GameContainer game) : base(game)
+        {
+        }
+
+        public override void Activate()
+        {
+            SystemConsole.RequestSuggestion();
         }
     }
 

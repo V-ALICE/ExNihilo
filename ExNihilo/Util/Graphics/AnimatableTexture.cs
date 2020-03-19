@@ -77,12 +77,12 @@ namespace ExNihilo.Util.Graphics
             return _alphaMask;
         }
 
-        public virtual void Draw(SpriteBatch batch, Vector2 screenPos, ColorScale color, float scale, float rotation = 0,
+        public void Draw(SpriteBatch batch, Vector2 screenPos, ColorScale color, float scale, float rotation = 0,
             TextureUtilities.PositionType origin = TextureUtilities.PositionType.TopLeft, SpriteEffects effect = SpriteEffects.None)
         {
             var originVec = Vector2.Zero;
             if (origin != TextureUtilities.PositionType.TopLeft)
-                originVec = TextureUtilities.GetOffset(origin, new Coordinate(Width, Height));
+                originVec = (Vector2)TextureUtilities.GetOffset(origin, new Coordinate(Width, Height));
 
             if (_animated)
             {
@@ -97,12 +97,18 @@ namespace ExNihilo.Util.Graphics
             }
         }
 
-        public virtual void Draw(SpriteBatch batch, Vector2 screenPos, ColorScale color, Vector2 scale, float rotation = 0,
+        public void Draw(SpriteBatch batch, Coordinate screenPos, ColorScale color, float scale, float rotation = 0,
+            TextureUtilities.PositionType origin = TextureUtilities.PositionType.TopLeft, SpriteEffects effect = SpriteEffects.None)
+        {
+            Draw(batch, (Vector2)screenPos, color, scale, rotation, origin, effect);
+        }
+
+        public void Draw(SpriteBatch batch, Vector2 screenPos, ColorScale color, Vector2 scale, float rotation = 0,
             TextureUtilities.PositionType origin = TextureUtilities.PositionType.TopLeft, SpriteEffects effect = SpriteEffects.None)
         {
             var originVec = Vector2.Zero;
             if (origin != TextureUtilities.PositionType.TopLeft)
-                originVec = TextureUtilities.GetOffset(origin, new Coordinate(Width, Height));
+                originVec = (Vector2)TextureUtilities.GetOffset(origin, new Coordinate(Width, Height));
 
             if (_animated)
             {
@@ -115,6 +121,12 @@ namespace ExNihilo.Util.Graphics
             {
                 batch.Draw(TextureStrip, screenPos, null, color, rotation, originVec, scale, effect, 0);
             }
+        }
+
+        public void Draw(SpriteBatch batch, Coordinate screenPos, ColorScale color, Vector2 scale, float rotation = 0,
+            TextureUtilities.PositionType origin = TextureUtilities.PositionType.TopLeft, SpriteEffects effect = SpriteEffects.None)
+        {
+            Draw(batch, (Vector2)screenPos, color, scale, rotation, origin, effect);
         }
     }
 }

@@ -2,8 +2,9 @@
 using System.Drawing;
 using System.Drawing.Imaging;
 using System.IO;
-using System.Linq;
-using Microsoft.Xna.Framework;
+using System.Threading;
+using ExNihilo.Entity;
+using ExNihilo.Systems.Backend;
 using Microsoft.Xna.Framework.Graphics;
 using Rectangle = Microsoft.Xna.Framework.Rectangle; 
 using FormRectangle = System.Drawing.Rectangle; 
@@ -22,49 +23,36 @@ namespace ExNihilo.Util.Graphics
             Center
         }
 
-        public static Vector2 GetOffset(PositionType anchorType, AnimatableTexture texture)
+        public static Coordinate GetOffset(PositionType anchorType, AnimatableTexture texture)
         {
             return GetOffset(anchorType, new Coordinate(texture.Width, texture.Height));
         }
 
-        public static Vector2 GetOffset(PositionType anchorType, Coordinate pixelSize)
+        public static Coordinate GetOffset(PositionType anchorType, Coordinate pixelSize)
         {
-            Vector2 textureOffsetToOrigin;
             switch (anchorType)
             {
                 case PositionType.TopLeft:
-                    textureOffsetToOrigin = new Vector2(0, 0);
-                    break;
+                    return new Coordinate(0, 0);
                 case PositionType.TopRight:
-                    textureOffsetToOrigin = new Vector2(pixelSize.X, 0);
-                    break;
+                    return new Coordinate(pixelSize.X, 0);
                 case PositionType.BottomLeft:
-                    textureOffsetToOrigin = new Vector2(0, pixelSize.Y);
-                    break;
+                    return new Coordinate(0, pixelSize.Y);
                 case PositionType.BottomRight:
-                    textureOffsetToOrigin = new Vector2(pixelSize.X, pixelSize.Y);
-                    break;
+                    return new Coordinate(pixelSize.X, pixelSize.Y);
                 case PositionType.CenterTop:
-                    textureOffsetToOrigin = new Vector2(pixelSize.X / 2f, 0);
-                    break;
+                    return new Coordinate(pixelSize.X / 2, 0);
                 case PositionType.CenterBottom:
-                    textureOffsetToOrigin = new Vector2(pixelSize.X / 2f, pixelSize.Y);
-                    break;
+                    return new Coordinate(pixelSize.X / 2, pixelSize.Y);
                 case PositionType.CenterLeft:
-                    textureOffsetToOrigin = new Vector2(0, pixelSize.Y / 2f);
-                    break;
+                    return new Coordinate(0, pixelSize.Y / 2);
                 case PositionType.CenterRight:
-                    textureOffsetToOrigin = new Vector2(pixelSize.X, pixelSize.Y / 2f);
-                    break;
+                    return new Coordinate(pixelSize.X, pixelSize.Y / 2);
                 case PositionType.Center:
-                    textureOffsetToOrigin = new Vector2(pixelSize.X / 2f, pixelSize.Y / 2f);
-                    break;
+                    return new Coordinate(pixelSize.X / 2, pixelSize.Y / 2);
                 default:
-                    textureOffsetToOrigin = new Vector2();
-                    break;
+                    return new Coordinate();
             }
-
-            return textureOffsetToOrigin;
         }
 
         public static Texture2D Extend3FramesTo4(GraphicsDevice graphics, Texture2D a)
@@ -113,17 +101,17 @@ namespace ExNihilo.Util.Graphics
 
         public static Texture2D GetSubTexture(GraphicsDevice device, Texture2D sheet, Rectangle rect)
         {
-            //while (GAME.FormTouched) { Thread.Sleep(100); }
+            while (GameContainer.FormTouched) { Thread.Sleep(10); }
             if (device == null) return null;
+            if (rect.Width == 0 || rect.Height == 0) return null;
             var texture = new Texture2D(device, rect.Width, rect.Height);
-            if (rect.Width == 0 || rect.Height == 0) return texture;
             texture.SetData(GetColorData(sheet, rect));
             return texture;
         }
 
         private static Color[] GetColorData(Texture2D sheet, Rectangle rect)
         {
-            //while (GAME.FormTouched) { Thread.Sleep(100); }
+            while (GameContainer.FormTouched) { Thread.Sleep(10); }
             try
             {
                 var data = new Color[rect.Width * rect.Height];
@@ -134,6 +122,23 @@ namespace ExNihilo.Util.Graphics
             {
             }
             return new Color[0];
+        }
+
+        public static void SetSubTexture(Texture2D main, Texture2D sub, int x, int y)
+        {
+            if (main is null || sub is null) return;
+            if (x < 0 || y < 0 || x + sub.Width > main.Width || y + sub.Height > main.Height) return;
+            while (GameContainer.FormTouched) { Thread.Sleep(10); }
+            //try
+            {
+                Color[] subData = new Color[sub.Width * sub.Height];
+                sub.GetData(subData);
+                main.SetData(0, new Rectangle(x, y, sub.Width, sub.Height), subData, 0, subData.Length);
+            }
+            //catch (Exception)
+            {
+            }
+
         }
 
         public static Texture2D CreateSingleColorTexture(GraphicsDevice device, int width, int height, Color color)
@@ -150,6 +155,8 @@ namespace ExNihilo.Util.Graphics
 
         public static void WriteTextureToPNG(Texture2D texture, string filename, string directory = "")
         {
+            if (texture is null) return;
+
             if (directory.Length > 0)
             {
                 if (!Directory.Exists(directory)) Directory.CreateDirectory(directory);
@@ -174,6 +181,28 @@ namespace ExNihilo.Util.Graphics
             bmp.UnlockBits(bitmapData);
 
             bmp.Save(filename, ImageFormat.Png);
+        }
+
+        public static Texture2D GetPlayerTexture(GraphicsDevice graphics, int[] charSet)
+        {
+            var bodySheet = TextureLibrary.Lookup("Char/base/" + (charSet[0] + 1));
+            var hairSheet = TextureLibrary.Lookup("Char/hair/" + (charSet[1] + 1) + "-" + (charSet[3] + 1));
+            var clothSheet = TextureLibrary.Lookup("Char/cloth/" + (charSet[2] + 1));
+            return CombineTextures(graphics, bodySheet, clothSheet, hairSheet);
+        }
+
+        public static Texture2D GetSilhouette(GraphicsDevice graphics, Texture2D original, Color color)
+        {
+            var newTex = new Texture2D(graphics, original.Width, original.Height);
+            var oldData = new Color[original.Width * original.Height];
+            original.GetData(oldData);
+            var newData = new Color[oldData.Length];
+            for (var i = 0; i < newData.Length; i++)
+            {
+                if (oldData[i].A != 0) newData[i] = color;
+            }
+            newTex.SetData(newData);
+            return newTex;
         }
     }
 }

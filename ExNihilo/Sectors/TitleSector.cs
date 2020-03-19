@@ -1,6 +1,7 @@
 ﻿using ExNihilo.Input.Commands;
 using ExNihilo.Menus;
 using ExNihilo.Systems;
+using ExNihilo.Systems.Backend;
 using ExNihilo.Util;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content;
@@ -32,9 +33,12 @@ namespace ExNihilo.Sectors
 
         public override void Initialize()
         {
-            MenuHandler = new CommandHandler();
-            MenuHandler.Initialize(this, true);
-            _title = new TitleMenu(Container);
+            void GoBack()
+            {
+                RequestSectorChange(Container.PreviousSectorID);
+            }
+
+            _title = new TitleMenu(Container, GoBack);
         }
 
         public override void LoadContent(GraphicsDevice graphicsDevice, ContentManager content)
@@ -44,7 +48,6 @@ namespace ExNihilo.Sectors
 
         public override void Update()
         {
-            if (!TypingKeyboard.Active) MenuHandler.UpdateInput();
         }
 
         protected override void DrawDebugInfo(SpriteBatch spriteBatch)
@@ -67,16 +70,16 @@ namespace ExNihilo.Sectors
         public override void BackOut()
         {
             _title.BackOut();
-            if (_title.Dead) RequestSectorChange(Container.PreviousSectorID);
         }
         public override void ReceiveCommand(Menu.MenuCommand command)
         {
             _title.ReceiveCommand(command);
         }
 
-        public override void OnMoveMouse(Point point)
+        public override bool OnMoveMouse(Point point)
         {
             _title.OnMoveMouse(point);
+            return false;
         }
 
         public override bool OnLeftClick(Point point)

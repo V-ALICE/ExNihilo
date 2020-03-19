@@ -8,7 +8,7 @@ namespace ExNihilo.Entity
 {
     public class EntityTexture
     {
-        public enum State
+        public enum State: sbyte
         {
             Up = 1, Down = 2, Left = 3, Right = 4,
             UpMoving = -1, DownMoving = -2, LeftMoving = -3, RightMoving = -4

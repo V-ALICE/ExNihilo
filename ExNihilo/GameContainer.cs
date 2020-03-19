@@ -2,11 +2,18 @@
 using System.Collections.Generic;
 using System.Drawing;
 using System.Threading;
+using System.Threading.Tasks;
 using System.Windows.Forms;
+using ExNihilo.Entity;
 using ExNihilo.Input.Commands;
 using ExNihilo.Input.Controllers;
+using ExNihilo.Menus;
 using ExNihilo.Sectors;
 using ExNihilo.Systems;
+using ExNihilo.Systems.Backend;
+using ExNihilo.Systems.Backend.Network;
+using ExNihilo.Systems.Game;
+using ExNihilo.Systems.Game.Items;
 using ExNihilo.Util;
 using ExNihilo.Util.Graphics;
 using Microsoft.Xna.Framework;
@@ -16,21 +23,22 @@ using Point = Microsoft.Xna.Framework.Point;
 
 namespace ExNihilo
 {
+    public static class D
+    {
+        public static bool Bug = false;
+    }
     public class GameContainer : Game
     {
-        public const bool GLOBAL_DEBUG = false;
-
         public enum SectorID
         {
-            MainMenu, Outerworld, Underworld, Loading
+            MainMenu, Outerworld, Void, Loading
         }
 
-        private SectorID _activeSectorID;
-        private Sector ActiveSector => _sectorDirectory[_activeSectorID];
+        private Sector ActiveSector => _sectorDirectory[ActiveSectorID];
         private FormWindowState _currentForm;
         private float _mouseScale;
         private int _frameTimeID;
-        private int _currentFrameCount, _currentFrameRate;
+        private int _currentFrameCount, _currentFrameRate, _currentPing=-1;
         private readonly GraphicsDeviceManager _graphics;
         private Coordinate _windowSize;
         private Vector2 _mouseDrawPos;
@@ -40,12 +48,21 @@ namespace ExNihilo
         private MouseController _mouse;
         private CommandHandler _handler, _superHandler;
         private Point _lastMousePosition;
-       
-        public ConsoleHandler Console { get; private set; }
-        public SectorID PreviousSectorID;
 
-        protected bool ShowDebugInfo, FormTouched;
-        protected bool ConsoleActive => Console.Active;
+        private VoidSector _void => (VoidSector) _sectorDirectory[SectorID.Void];
+        private OuterworldSector _outer => (OuterworldSector) _sectorDirectory[SectorID.Outerworld];
+
+        public PlayerEntityContainer Player => _outer.Player;
+        public List<PlayerOverlay> OtherPlayers => _outer.OtherPlayers;
+        public bool VoidIsActive => _void.VoidIsActive;
+
+        public static GraphicsDevice Graphics { get; private set; }
+        public static SectorID ActiveSectorID;
+
+        public SectorID PreviousSectorID;
+        protected bool ShowDebugInfo;
+        public static bool FormTouched;
+        protected bool ConsoleActive => SystemConsole.Active;
         protected int SystemClockID;
         protected SpriteBatch SpriteBatch;
 
@@ -62,7 +79,7 @@ namespace ExNihilo
         private void OnResize()
         {
             ParticleBackdrop.OnResize(_windowSize);
-            Console.OnResize(GraphicsDevice, _windowSize);
+            SystemConsole.OnResize(GraphicsDevice, _windowSize);
             _mouseScale = TextureLibrary.DefaultScaleRuleSet.GetScale(_windowSize);
             foreach (var sector in _sectorDirectory.Values) sector?.OnResize(GraphicsDevice, _windowSize);
         }
@@ -78,19 +95,20 @@ namespace ExNihilo
         }
         private void CheckForWindowUpdate()
         {
+            //if (ActiveSectorID == SectorID.Loading) return;
             if (Window.ClientBounds.Width != _windowSize.X || Window.ClientBounds.Height != _windowSize.Y)
             {
                 _graphics.PreferredBackBufferWidth = MathHelper.Clamp(Window.ClientBounds.Width, ScaleRule.MIN_X, ScaleRule.MAX_X);
                 _graphics.PreferredBackBufferHeight = MathHelper.Clamp(Window.ClientBounds.Height, ScaleRule.MIN_Y, ScaleRule.MAX_Y);
                 _graphics.ApplyChanges();
                 _windowSize = new Coordinate(Window.ClientBounds.Width, Window.ClientBounds.Height);
-                System.Console.WriteLine(_windowSize.X + " " + _windowSize.Y);
+
                 OnResize();
             }
         }
         public void ToggleFullScreen()
         {
-            //if (Loading) return;
+            if (ActiveSectorID==SectorID.Loading) return;
             if (Window.IsBorderless)
             {
                 Window.IsBorderless = false;
@@ -107,6 +125,7 @@ namespace ExNihilo
         {
             e.Cancel = true;
             //if (MessageBox.Show(@"Are you sure you want to quit?", @"Confirm Quit", MessageBoxButtons.YesNo) == DialogResult.Yes)
+            NetworkManager.CloseConnections();
             ExitGame();
         }
         private void f_ResizeBegin(object sender, EventArgs e)
@@ -129,36 +148,44 @@ namespace ExNihilo
         private void f_Activate(object sender, EventArgs e)
         {
             IsMouseVisible = false;
+            AudioManager.Pause(false);
         }
         private void f_Deactivate(object sender, EventArgs e)
         {
             IsMouseVisible = true;
+            AudioManager.Pause(true);
         }
 
 /********************************************************************
-        ------->Game loop
-        ********************************************************************/
+------->Game loop
+********************************************************************/
         protected override void Initialize()
         {
-            _activeSectorID = SectorID.MainMenu;
+            Graphics = GraphicsDevice;
+            ActiveSectorID = SectorID.MainMenu;
             PreviousSectorID = SectorID.MainMenu;
             _mouseScale = 1;
             _lastMousePosition = new Point();
             _mouse = new MouseController();
-            Console = new ConsoleHandler();
+            SystemConsole.Initialize(this);
             _handler = new CommandHandler();
             _superHandler = new CommandHandler();
-            _handler.Initialize(this, false);
-            _superHandler.Initialize(this, true);
+            _handler.InitializeBase(this);
+            _superHandler.InitializeSuper(this);
             SystemClockID = UniversalTime.NewTimer(true);
             _frameTimeID = UniversalTime.NewTimer(true, 1.5);
             TextureLibrary.LoadRuleSets();
             UniversalTime.TurnOnTimer(SystemClockID, _frameTimeID);
-
+            NetworkManager.Initialize(3, 10, 10, 1, 0, UpdateNetwork, NetworkLinker.OnConnect, NetworkLinker.OnDisconnect);
+            
             ColorScale.AddToGlobal("Random", new ColorScale(2f, 32, 222));
-            ColorScale.AddToGlobal("Pulse", new ColorScale(0.5f, false, Color.White, Color.Black, Color.White));
-            ColorScale.AddToGlobal("Ember", new ColorScale(0.75f, false, Color.Red, Color.Red, Color.OrangeRed, Color.Orange, Color.OrangeRed));
-            ColorScale.AddToGlobal("Rainbow", new ColorScale(1.0f, false, Color.Red, Color.Yellow, Color.Lime, Color.Cyan, Color.Blue, Color.Magenta));
+            var rainbow = new ColorScale(1.0f, false, ColorScale.Red, ColorScale.RedOrange, ColorScale.Orange, ColorScale.OrangeYellow, 
+                                                    ColorScale.Yellow, ColorScale.YellowGreen, ColorScale.Green, ColorScale.GreenBlue, 
+                                                    ColorScale.Blue, ColorScale.BlueViolet, ColorScale.Violet, ColorScale.VioletRed);
+            ColorScale.AddToGlobal("Rainbow", rainbow);
+            ColorScale.AddToGlobal("__blinker", new ColorScale(0.35f, false, Color.White, Color.White, Color.Transparent));
+            ColorScale.AddToGlobal("__unblinker", new ColorScale(0.35f, false, Color.Black, Color.Black, Color.Transparent));
+            ColorScale.LoadColors("COLOR.info");
 
             //IsMouseVisible = true;
             Window.AllowUserResizing = true;
@@ -170,22 +197,28 @@ namespace ExNihilo
 
             SaveHandler.LoadParameters();
             PushParameters(SaveHandler.Parameters);
-            SaveHandler.LoadAllSaves(SaveHandler.FILE_1, SaveHandler.FILE_2, SaveHandler.FILE_3);
             ParticleBackdrop.AddDefault(GraphicsDevice);
 
             _sectorDirectory = new Dictionary<SectorID, Sector>
             {
                 {SectorID.MainMenu, new TitleSector(this)},
                 {SectorID.Outerworld, new OuterworldSector(this) },
-                {SectorID.Underworld, new UnderworldSector(this) },
+                {SectorID.Void, new VoidSector(this) },
                 {SectorID.Loading, new LoadingSector(this) }
             };
             foreach (var sector in _sectorDirectory.Values) sector?.Initialize();
+            BoxMenu.CreateMenu(this);
+            Asura.Ascend(this, _sectorDirectory[SectorID.Void] as VoidSector, _sectorDirectory[SectorID.Outerworld] as OuterworldSector);
+            NetworkLinker.Initialize(this, _sectorDirectory[SectorID.Void] as VoidSector, _sectorDirectory[SectorID.Outerworld] as OuterworldSector);
 
             base.Initialize();
             //ForceWindowUpdate(1920, 1080);
             CheckForWindowUpdate();
+            SaveHandler.LoadAllSaves(SaveHandler.FILE_1, SaveHandler.FILE_2, SaveHandler.FILE_3);
             ActiveSector?.Enter(_lastMousePosition, _windowSize);
+
+            //AudioManager.Pause(true);
+            AudioManager.PlaySong("Title", true);
         }
 
         protected override void LoadContent()
@@ -209,23 +242,28 @@ namespace ExNihilo
             TextureLibrary.LoadIconLibrary(GraphicsDevice, Content, "ICON.info");
             TextureLibrary.LoadCharacterLibrary(GraphicsDevice, Content, "CHAR.info");
             TextureLibrary.LoadTextureLibrary(GraphicsDevice, Content, "BACK.info");
+            ItemLoader.LoadItems(GraphicsDevice, "MAT.info");
 
             TextDrawer.Initialize(GraphicsDevice, Content.Load<Texture2D>("UI/FONT"));
             foreach (var sector in _sectorDirectory.Values) sector?.LoadContent(GraphicsDevice, Content);
-            Console.LoadContent(GraphicsDevice, Content);
+            SystemConsole.LoadContent(GraphicsDevice, Content);
 
             _mouseTexture = Content.Load<Texture2D>("UI/CURSOR");
+            BoxMenu.Menu.LoadContent(GraphicsDevice, Content);
+
+            AudioManager.Initialize(Content);
 
             base.LoadContent();
         }
 
-        private void UpdateFPS()
+        private void UpdateFrameRateAndPing()
         {
             _currentFrameCount++;
             if (UniversalTime.GetNumberOfFires(_frameTimeID, false) > 0) //update display every 1.5 seconds
             {
                 _currentFrameRate = (int)(Math.Round(_currentFrameCount / UniversalTime.GetCurrentTime(_frameTimeID)) + double.Epsilon);
                 _currentFrameCount = 0;
+                _currentPing = (int) (1000 * NetworkManager.GetLatestPing());
                 UniversalTime.ResetTimer(_frameTimeID);
             }
         }
@@ -241,33 +279,52 @@ namespace ExNihilo
             }
 
             if (!tmp.StateChange) return;
-            if (ConsoleActive) Console.CloseConsole();
+            if (ConsoleActive) SystemConsole.CloseConsole();
             if (tmp.LeftDown) ActiveSector?.OnLeftClick(tmp.MousePosition);
             else if (tmp.LeftUp) ActiveSector?.OnLeftRelease(tmp.MousePosition);
         }
 
+        private void UpdateNetwork()
+        {
+            if (ActiveSectorID == SectorID.Loading) return;
+            NetworkManager.SendMessage(VoidIsActive ? _void.GetStandardUpdate() : _outer.GetStandardUpdate());
+
+            if (NetworkManager.Hosting)
+            { 
+                foreach (var player in OtherPlayers)
+                {
+                    var data = player.GetStandardUpdate(NetworkLinker.GetUniqueIDByName(player.Name));
+                    NetworkManager.SendMessage(data);
+                }
+            }
+        }
+
         protected override void Update(GameTime gameTime)
         {
-            UniversalTime.Update(gameTime);
-            ColorScale.UpdateGlobalScales();
-            ParticleBackdrop.Update();
-            Console.Update();
+            UniversalTime.Update(gameTime);  //Update game timers
+            ColorScale.UpdateGlobalScales(); //Update dynamic colors
+            ParticleBackdrop.Update();       //Update dynamic particles
+            SystemConsole.Update();                //Update console window (for message timeouts etc.)
+            NetworkManager.Update(gameTime.ElapsedGameTime.TotalSeconds, NetworkLinker.InterpretIncomingMessage);
+
             if (IsActive)
             {
-                //Don't listen to the keyboard/mouse if the game isn't focused
-                UpdateMouse();
-                _superHandler.UpdateInput();
-                TypingKeyboard.GetText();
-                if (!TypingKeyboard.Active) _handler.UpdateInput();
+                //Only listen to the keyboard/mouse if the game is focused
+                UpdateMouse();               //Update mouse position/state
+                _superHandler.UpdateInput(); //Check for baseline game keypress (like F1)
+                TypingKeyboard.GetText();    //Check what keys are being pressed
+                if (!TypingKeyboard.Active) _handler.UpdateInput(); //Check for main game keypress if user isn't typing something
             }
-            ActiveSector?.Update();
 
-            base.Update(gameTime);
+            ActiveSector?.Update(); //Call update on whatever sector is currently running
+            base.Update(gameTime);  //Call baseline update last
         }
 
         protected void DrawDebugInfo(SpriteBatch spriteBatch)
         {
-            TextDrawer.DrawDumbText(spriteBatch, Vector2.One, _currentFrameRate + " FPS", 1, Color.White);
+            var text = _currentFrameRate + " FPS (" + GraphicsDevice.Adapter.Description + ")";
+            if (_currentPing >= 0) text += "  " + _currentPing + "ms Ping";
+            TextDrawer.DrawDumbText(spriteBatch, new Coordinate(1, 1), text, 1, Color.White);
         }
 
         protected override void Draw(GameTime gameTime)
@@ -278,8 +335,8 @@ namespace ExNihilo
             ParticleBackdrop.Draw(SpriteBatch);
             ActiveSector?.Draw(SpriteBatch, ShowDebugInfo);
 
-            UpdateFPS(); //FPS numbers are calculated based on drawn frames
-            Console.Draw(SpriteBatch); //Console will handle when it should draw
+            UpdateFrameRateAndPing(); //FPS numbers are calculated based on drawn frames
+            SystemConsole.Draw(SpriteBatch); //Console will handle when it should draw
             if (!IsMouseVisible) _mouseTexture.Draw(SpriteBatch, _mouseDrawPos, ColorScale.White, _mouseScale);
             if (ShowDebugInfo) DrawDebugInfo(SpriteBatch);
 
@@ -290,20 +347,21 @@ namespace ExNihilo
 /********************************************************************
 ------->Game functions
 ********************************************************************/
-        public int RequestSectorChange(SectorID newSector)
+        public void RequestSectorChange(SectorID newSector)
         {
             if (newSector == SectorID.Loading) //Transitioning to loading
             {
-                if (_activeSectorID == SectorID.Loading)
-                {
-                    return -1; //already loading; wait
-                }
+                
+            }
+            else if (ActiveSectorID == SectorID.Loading) //Transitioning from loading
+            {
+                CheckForWindowUpdate();
             }
 
-            PreviousSectorID = _activeSectorID;
-            _activeSectorID = newSector;
+            PreviousSectorID = ActiveSectorID;
+            ActiveSector?.Leave(newSector);
+            ActiveSectorID = newSector;
             ActiveSector?.Enter(_lastMousePosition, _windowSize);
-            return 0; //no issue
         }
 
         public void ToggleShowDebugInfo()
@@ -313,7 +371,8 @@ namespace ExNihilo
 
         public void OpenConsole(string initMessage="")
         {
-            Console.OpenConsole(initMessage);
+            if (IsMouseVisible) return;
+            SystemConsole.OpenConsole(initMessage);
         }
 
         public void ExitGame()
@@ -325,21 +384,22 @@ namespace ExNihilo
 
         public void BackOut()
         {
-            if (ConsoleActive) Console.CloseConsole();
+            if (ConsoleActive) SystemConsole.CloseConsole();
             else ActiveSector?.BackOut();
         }
 
         public void Pack()
         {
-            PackedGame game = new PackedGame(this, SaveHandler.GetLastID());
+            var game = new PackedGame(this, SaveHandler.GetLastID());
             foreach (var sector in _sectorDirectory.Values) sector?.Pack(game);
             SaveHandler.Save(SaveHandler.LastLoadedFile, game);
+            SystemConsole.ForceMessage("<Asura>", "Game has been saved", Color.Purple, Color.White);
         }
 
         public bool Unpack(PackedGame game)
         {
             if (game is null) return false;
-
+            NetworkManager.CloseConnections();
             foreach (var sector in _sectorDirectory.Values) sector?.Unpack(game);
             return true;
         }
@@ -348,6 +408,57 @@ namespace ExNihilo
         {
             AudioManager.MusicVolume = param.MusicVolume;
             AudioManager.EffectVolume = param.EffectVolume;
+            SystemConsole.MyColor = new Color(param.R, param.G, param.B);
+        }
+
+        public void ExitVoid()
+        {
+            if (!VoidIsActive) return;
+            if (ActiveSectorID == SectorID.MainMenu) RequestSectorChange(SectorID.Void); //Does this matter?
+            _void.Return();
+            RequestSectorChange(SectorID.Outerworld);
+            NetworkManager.SendMessage(new NetworkManager.MessageStruct((short)NetworkMessageType.OuterworldPrompt, NetworkManager.MyUniqueID));
+        }
+
+        public void PushVoid(int seed, int itemSeed, int floor)
+        {
+            if (NetworkManager.Hosting) NetworkManager.SendMessage(new VoidPrompt(NetworkManager.MyUniqueID, seed, itemSeed, floor));
+            _void.Descend(seed, itemSeed, floor, OtherPlayers);
+        }
+
+        public PlayerIntroduction GetCurrentIntroduction()
+        {
+            if (Player is null) return null;
+            return new PlayerIntroduction(NetworkManager.MyUniqueID, Player.Name, NetworkLinker.MyMiniID, SystemConsole.MyColor.R, SystemConsole.MyColor.G, SystemConsole.MyColor.B, Player.TextureSet);
+        }
+
+        public void StartNewHost(int port=14444)
+        {
+            if (!NetworkManager.StartNewHost("ExNihiloGame", port))
+            {
+                SystemConsole.ForceMessage("<error>", NetworkManager.GetErrorAndClear(), Color.DarkRed, Color.White);
+            }
+            SystemConsole.ForceMessage("<Asura>", "Now hosting a network game on port " + port, Color.Purple, Color.White);
+        }
+
+        public async void StartNewClient(string ip, int port=14444)
+        {
+            void AsyncClient()
+            {
+                SystemConsole.ForceMessage("<Asura>", "Attempting to connect to game at " + ip + " on port " + port, Color.Purple, Color.White);
+                if (!NetworkManager.ConnectToHost("ExNihiloGame", ip, port))
+                {
+                    SystemConsole.ForceMessage("<error>", NetworkManager.GetErrorAndClear(), Color.DarkRed, Color.White);
+                }
+                while (NetworkManager.Active && !NetworkManager.Connected) { Thread.Sleep(100); }
+                if (NetworkManager.Connected) NetworkManager.SendMessage(GetCurrentIntroduction());
+            }
+
+            await Task.Run(() => AsyncClient());
+        }
+
+        public void GLOBAL_DEBUG_COMMAND(string input)
+        {
         }
     }
 }

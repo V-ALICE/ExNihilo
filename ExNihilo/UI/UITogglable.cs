@@ -7,7 +7,8 @@ namespace ExNihilo.UI
 {
     public class UITogglable : UIClickable
     {
-        protected bool WasOver, DeactivateOnExternalClick;
+        protected bool WasOver;
+        public bool DeactivateOnExternalClick;
 
         public UITogglable(string name, string path, Vector2 relPos, ColorScale color, UIPanel superior,
             TextureUtilities.PositionType anchorPoint, bool down, bool deactivateOnExternalClick = false,
@@ -39,15 +40,23 @@ namespace ExNihilo.UI
             if (Down) Function?.Invoke(new UICallbackPackage(GivenName, new Point(), OriginPosition, Down ? 1 : -1));
         }
 
-        public override void OnMoveMouse(Point point)
+        public override bool OnMoveMouse(Point point)
         {
-            if (Disabled) return;
-            if ((AllowMulligan && WasOver) || (!Down && OverTexture != null))
+            if (Disabled) return false;
+            if (AllowMulligan && WasOver)
             {
                 var isOver = IsOver(point);
                 if (WasOver && AllowMulligan) WasOver = isOver;
-                if (!Down && OverTexture != null) Over = isOver;
+                return isOver;
             }
+            if ((OverTexture != null || OverColor != null))
+            {
+                Over = IsOver(point);
+                if (WasOver && AllowMulligan) WasOver = Over;
+                return Over;
+            }
+
+            return false;
         }
 
         public override bool OnLeftClick(Point point)

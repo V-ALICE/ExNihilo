@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.InteropServices;
 using ExNihilo.Util;
 using ExNihilo.Util.Graphics;
 using Microsoft.Xna.Framework;
@@ -105,12 +106,13 @@ namespace ExNihilo.UI
             foreach (var item in Set) item.LoadContent(graphics, content);
         }
 
-        public override void Draw(SpriteBatch spriteBatch, Vector2 rightDownOffset)
+        public override void Draw(SpriteBatch spriteBatch, Coordinate rightDownOffset)
         {
-            if (!Loaded) return;
+            if (!Loaded || DontDrawThis) return;
             foreach (var item in Set) item.Draw(spriteBatch, rightDownOffset);
+            if (King) DrawFinal(spriteBatch);
 
-            if (GameContainer.GLOBAL_DEBUG) LineDrawer.DrawSquare(spriteBatch, OriginPosition+ rightDownOffset, CurrentPixelSize.X, CurrentPixelSize.Y, Color.White, 5);
+            if (D.Bug) LineDrawer.DrawSquare(spriteBatch, (Vector2)(OriginPosition + rightDownOffset), CurrentPixelSize.X, CurrentPixelSize.Y, Color.White, 5);
         }
 
         public override void Draw(SpriteBatch spriteBatch)
@@ -119,13 +121,17 @@ namespace ExNihilo.UI
             foreach (var item in Set) item.Draw(spriteBatch);
             if (King) DrawFinal(spriteBatch);
 
-            if (GameContainer.GLOBAL_DEBUG) LineDrawer.DrawSquare(spriteBatch, OriginPosition, CurrentPixelSize.X, CurrentPixelSize.Y, Color.White, 5);
+            if (D.Bug) LineDrawer.DrawSquare(spriteBatch, (Vector2)OriginPosition, CurrentPixelSize.X, CurrentPixelSize.Y, Color.White, 5);
         }
 
         public void DrawFinal(SpriteBatch spriteBatch)
         {
-            foreach (var item in Set) (item as UIPanel)?.DrawFinal(spriteBatch);
-            if (Over) Tooltip?.Draw(spriteBatch, CurrentScale * TooltipOffset + new Vector2(LastMousePos.X - OriginPosition.X, LastMousePos.Y - OriginPosition.Y));
+            foreach (var item in Set)
+            {
+                if (item is UIPanel p) p.DrawFinal(spriteBatch);
+                else if (item is UIMovable m) m.DrawFinal(spriteBatch);
+            }
+            if (Over) Tooltip?.Draw(spriteBatch, new Coordinate(LastMousePos.X - OriginPosition.X, LastMousePos.Y - OriginPosition.Y) + (Coordinate)(CurrentScale * TooltipOffset));
         }
 
         public override void OnResize(GraphicsDevice graphics, Coordinate gameWindow)
@@ -150,7 +156,7 @@ namespace ExNihilo.UI
                 else
                 {
                     //Position of king is relative to the space of the screen
-                    OriginPosition = gameWindow * PositionRelativeToBase - TextureOffsetToOrigin;
+                    OriginPosition = (Coordinate)(gameWindow * PositionRelativeToBase) - TextureOffsetToOrigin;
                 }
             }
             else if (IsRelativeToSuperior)
@@ -175,7 +181,7 @@ namespace ExNihilo.UI
                 else
                 {
                     //Position of this element is relative to the space of its base panel
-                    OriginPosition = BaseElement.OriginPosition + BaseElement.CurrentPixelSize * PositionRelativeToBase - TextureOffsetToOrigin;
+                    OriginPosition = (Coordinate)(BaseElement.CurrentPixelSize * PositionRelativeToBase) + BaseElement.OriginPosition - TextureOffsetToOrigin;
                 }
             }
             else base.OnResize(graphics, gameWindow);
@@ -187,36 +193,53 @@ namespace ExNihilo.UI
         public override bool IsOver(Point mousePos)
         {
             if (Disabled) return false;
-            int buttonX = (int)(Math.Round(mousePos.X - OriginPosition.X) / CurrentScale);
-            int buttonY = (int)(Math.Round(mousePos.Y - OriginPosition.Y) / CurrentScale);
+            int buttonX = (int)((mousePos.X - OriginPosition.X) / CurrentScale);
+            int buttonY = (int)((mousePos.Y - OriginPosition.Y) / CurrentScale);
             return buttonX >= 0 && buttonY >= 0 && buttonX < CurrentPixelSize.X / CurrentScale && buttonY < CurrentPixelSize.Y / CurrentScale;
         }
 
-        public override void OnMoveMouse(Point point)
+        public override bool OnMoveMouse(Point point)
         {
+            var found = false;
+            for (int i = Set.Count - 1; i >= 0; i--)
+            {
+                if (Set[i] is UITogglable tog && tog.DeactivateOnExternalClick)
+                {
+                    tog.OnMoveMouse(point);
+                }
+                else if (Set[i] is UIClickable click)
+                {
+                    if (found) click.ForceNotOver();
+                    else if (click.OnMoveMouse(point)) found = true;
+                }
+            }
             if (!Disabled && Tooltip != null)
             {
                 LastMousePos = point;
                 Over = IsOver(point);
+                return Over;
             }
-            foreach (var item in Set)
-            {
-                if (item is UIClickable click) click.OnMoveMouse(point);
-            }
+
+            return false;
         }
 
         public override bool OnLeftClick(Point point)
         {
+            var did = false;
             for (int i = Set.Count - 1; i >= 0; i--)
             {
-                if (Set[i] is UIClickable click)
+                if (Set[i] is UITogglable tog && tog.DeactivateOnExternalClick)
                 {
-                    if (click.OnLeftClick(point)) return true;
+                    tog.OnLeftClick(point);
+                }
+                else if (!did && Set[i] is UIClickable click)
+                {
+                    if (click.OnLeftClick(point)) did = true;
                 }
             }
 
             Down = IsOver(point); //don't return this because the top level panel will steal it every time
-            return false;
+            return did;
         }
 
         public override void OnLeftRelease(Point point)
@@ -235,6 +258,7 @@ namespace ExNihilo.UI
                 if (item is UIClickable click) click.Enable();
             }
             Tooltip?.Enable();
+            Disabled = false;
         }
 
         public override void Disable(ColorScale c)
@@ -244,6 +268,7 @@ namespace ExNihilo.UI
                 if (item is UIClickable click) click.Disable(c);
             }
             Tooltip?.Disable(c);
+            Disabled = true;
         }
 
         public virtual UIElement GetElement(string title)

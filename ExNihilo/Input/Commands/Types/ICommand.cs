@@ -1,5 +1,5 @@
 ﻿using ExNihilo.Sectors;
-using ExNihilo.Systems;
+using ExNihilo.Systems.Backend;
 using ExNihilo.Systems.Bases;
 
 namespace ExNihilo.Input.Commands.Types
@@ -13,16 +13,6 @@ namespace ExNihilo.Input.Commands.Types
     {
         protected readonly GameContainer Receiver;
         protected SuperCommand(GameContainer receiver)
-        {
-            Receiver = receiver;
-        }
-        public abstract void Activate();
-    }
-
-    public abstract class ConsoleCommand : ICommand
-    {
-        protected readonly ConsoleHandler Receiver;
-        protected ConsoleCommand(ConsoleHandler receiver)
         {
             Receiver = receiver;
         }
@@ -49,15 +39,15 @@ namespace ExNihilo.Input.Commands.Types
         public abstract void Activate();
     }
 
-    /*public abstract class PlayerCommand : ICommand
+    public abstract class SuperGameplayCommand : ICommand
     {
-        protected PlayerEntity Receiver { get; private set; }
-        protected PlayerCommand(PlayerEntity receiver)
+        protected readonly ISuperPlayer Receiver;
+        protected SuperGameplayCommand(ISuperPlayer receiver)
         {
             Receiver = receiver;
         }
         public abstract void Activate();
-    }*/
+    }
 
     public class Uncommand : ICommand
     {
