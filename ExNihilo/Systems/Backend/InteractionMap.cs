@@ -193,7 +193,7 @@ namespace ExNihilo.Systems.Backend
             {
                 var box = _interactive[b.Y][b.X] as BoxInteractive;
                 if (box is null) continue;
-                spriteBatch.Draw(box.GetTexture(), scale*tileSize * b + offset, null, Color.White, 0, Vector2.Zero, scale, SpriteEffects.None, 0);
+                spriteBatch.Draw(box.GetTexture(), scale*tileSize * b + offset, null, Color.Gray, 0, Vector2.Zero, scale, SpriteEffects.None, 0);
             }
         }
 

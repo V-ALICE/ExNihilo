@@ -43,7 +43,7 @@ namespace ExNihilo.Entity
 
         public void Draw(SpriteBatch spriteBatch)
         {
-            if (!_useCustomPos) _entity.Texture.Draw(spriteBatch, PlayerCenterScreen, ColorScale.White, Scale);
+            if (!_useCustomPos) _entity.Texture.Draw(spriteBatch, PlayerCenterScreen, ColorScale.Grey, Scale);
         }
 
         public void Draw(SpriteBatch spriteBatch, Vector2 pos, float drawScale)
@@ -51,9 +51,9 @@ namespace ExNihilo.Entity
             if (_useCustomPos)
             {
                 //customPos will be the worldPos of the world that makes this overlay centered
-                _entity.Texture.Draw(spriteBatch, pos, ColorScale.White, drawScale);
+                _entity.Texture.Draw(spriteBatch, pos, ColorScale.Grey, drawScale);
             }
-            else _entity.Texture.Draw(spriteBatch, PlayerCenterScreen, ColorScale.White, Scale);
+            else _entity.Texture.Draw(spriteBatch, PlayerCenterScreen, ColorScale.Grey, Scale);
         }
 
         public void Push(Coordinate push)

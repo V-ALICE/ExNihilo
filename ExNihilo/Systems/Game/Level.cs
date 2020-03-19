@@ -169,17 +169,24 @@ namespace ExNihilo.Systems.Game
 
         public override void Draw(SpriteBatch spriteBatch)
         {
-            for (int i=_subLevelTextures.Count-1; i>=0; i--)
+            for (int i = _subLevelTextures.Count - 1; i >= 0; i--)
             {
                 //Parallax -> offset from center of main map applied to sub maps with reduction
                 var thing = CurrentWorldPosition - PlayerOverlay.PlayerCenterScreen;
                 var value = 2.0f / (i + 3); //Reduction multiplier
-                var pos = PlayerOverlay.PlayerCenterScreen + new Coordinate(value*thing.X, value*thing.Y);
-                var color = new Color(value, value, value);
-                var scale = value*CurrentWorldScale;
-                spriteBatch.Draw(_subLevelTextures[i], (Vector2)pos, null, color, 0, Vector2.Zero, scale, SpriteEffects.None, 0);
-                if (D.Bug) LineDrawer.DrawSquare(spriteBatch, (Vector2)pos, scale*_subLevelTextures[i].Width, scale*_subLevelTextures[i].Height, ColorScale.White);
+                var pos = PlayerOverlay.PlayerCenterScreen + new Vector2(value * thing.X, value * thing.Y);
+                var color = new Color(value / 2, value / 2, value / 2);
+                var scale = value * CurrentWorldScale;
+                var floor = _curLevel + 1 + i;
+                var offsetStrength = CurrentWorldScale * 20 * TileSize * (floor % 4 + 1);
+                var xOffset = Math.Sign(floor % 2 - 2 + floor % 3);
+                var yOffset = -Math.Sign(floor % 5 - 3 + floor % 2);
+                var offset = new Vector2(scale * xOffset * offsetStrength, scale * yOffset * offsetStrength);
+
+                spriteBatch.Draw(_subLevelTextures[i], pos + offset, null, color, 0, Vector2.Zero, scale, SpriteEffects.None, 0);
+                if (D.Bug) LineDrawer.DrawSquare(spriteBatch, pos + offset, scale * _subLevelTextures[i].Width, scale * _subLevelTextures[i].Height, ColorScale.White);
             }
+
             base.Draw(spriteBatch);
             if (D.Bug) LineDrawer.DrawSquare(spriteBatch, CurrentWorldPosition, CurrentWorldScale * WorldTexture.Width, CurrentWorldScale * WorldTexture.Height, ColorScale.White);
         }

@@ -137,7 +137,7 @@ namespace ExNihilo.Systems.Game
 
         public virtual void Draw(SpriteBatch spriteBatch)
         {
-            spriteBatch.Draw(WorldTexture, MathD.Flatten(CurrentWorldPosition), null, Color.White, 0, Vector2.Zero, CurrentWorldScale, SpriteEffects.None, 0);
+            spriteBatch.Draw(WorldTexture, MathD.Flatten(CurrentWorldPosition), null, Color.Gray, 0, Vector2.Zero, CurrentWorldScale, SpriteEffects.None, 0);
         }
 
         private void DrawPlayersInOrder(SpriteBatch spriteBatch)
@@ -177,7 +177,7 @@ namespace ExNihilo.Systems.Game
 
             foreach (var (tex, pos) in Overlays)
             {
-                tex.Draw(spriteBatch, MathD.Flatten(CurrentWorldPosition) + CurrentWorldScale * pos, ColorScale.White, CurrentWorldScale);
+                tex.Draw(spriteBatch, MathD.Flatten(CurrentWorldPosition) + CurrentWorldScale * pos, ColorScale.Grey, CurrentWorldScale);
             }
 
             if (D.Bug && PlayerOverlay != null)
