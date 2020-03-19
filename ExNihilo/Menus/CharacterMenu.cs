@@ -169,59 +169,35 @@ namespace ExNihilo.Menus
 
         private void ChangeCharacterTex(UICallbackPackage package)
         {
-            var left = package.Caller.EndsWith("Left");
-            
-            if (package.Caller.StartsWith("Cloth"))
-            {
-                if (left) _cloth = (_cloth - 1 + _clothCount) % _clothCount;
-                else _cloth = (_cloth + 1) % _clothCount;
-                var sheet = TextureLibrary.Lookup("Char/cloth/" + (_cloth+1));
-                var rect = new Rectangle(0, sheet.Height / 2, sheet.Width, sheet.Height / 4);
-                var cloth = new AnimatableTexture(TextureUtilities.GetSubTexture(Container.GraphicsDevice, sheet, rect), 4, 4);
-                _newCharUI.GetElement("CharClothDisplay")?.ChangeTexture(cloth);
-                _newCharUI.GetElement("CharBodyDisplay")?.ResetTextureFrame();
-                _newCharUI.GetElement("CharHairDisplay")?.ResetTextureFrame();
-            }
-            else if (package.Caller.StartsWith("Hair"))
-            {
-                if (left) _hair = (_hair - 1 + _hairCount) % _hairCount;
-                else _hair = (_hair + 1) % _hairCount;
-                var sheet = TextureLibrary.Lookup("Char/hair/" + (_hair+1) + "-" + (_color+1));
-                var rect = new Rectangle(0, sheet.Height / 2, sheet.Width, sheet.Height / 4);
-                var hair = new AnimatableTexture(TextureUtilities.GetSubTexture(Container.GraphicsDevice, sheet, rect), 4, 4);
-                _newCharUI.GetElement("CharHairDisplay")?.ChangeTexture(hair);
-                _newCharUI.GetElement("CharBodyDisplay")?.ResetTextureFrame();
-                _newCharUI.GetElement("CharClothDisplay")?.ResetTextureFrame();
-            }
-            else if (package.Caller.StartsWith("Color"))
-            {
-                if (left) _color = (_color - 1 + _colorCount) % _colorCount;
-                else _color = (_color + 1) % _colorCount;
-                var sheet = TextureLibrary.Lookup("Char/hair/" + (_hair+1) + "-" + (_color+1));
-                var rect = new Rectangle(0, sheet.Height / 2, sheet.Width, sheet.Height / 4);
-                var hair = new AnimatableTexture(TextureUtilities.GetSubTexture(Container.GraphicsDevice, sheet, rect), 4, 4);
-                _newCharUI.GetElement("CharHairDisplay")?.ChangeTexture(hair);
-                _newCharUI.GetElement("CharBodyDisplay")?.ResetTextureFrame();
-                _newCharUI.GetElement("CharClothDisplay")?.ResetTextureFrame();
-            }
-            else if (package.Caller.StartsWith("Body"))
-            {
-                if (left) _body = (_body - 1 + _bodyCount) % _bodyCount;
-                else _body = (_body + 1) % _bodyCount;
-                var sheet = TextureLibrary.Lookup("Char/base/" + (_body+1));
-                var rect = new Rectangle(0, sheet.Height / 2, sheet.Width, sheet.Height / 4);
-                var body = new AnimatableTexture(TextureUtilities.GetSubTexture(Container.GraphicsDevice, sheet, rect), 4, 4);
-                _newCharUI.GetElement("CharBodyDisplay")?.ChangeTexture(body);
-                _newCharUI.GetElement("CharClothDisplay")?.ResetTextureFrame();
-                _newCharUI.GetElement("CharHairDisplay")?.ResetTextureFrame();
-            }
+            var left = package.Caller.StartsWith("Left");
+
+            _currentCharIndex += left ? -1 : 1;
+            TextureLibrary.CorrectCharIndicies(ref _currentSetIndex, ref _currentCharIndex);
+            var c = new EntityTexture(Container.GraphicsDevice, TextureLibrary.CharLookup(_currentSetIndex, _currentCharIndex));
+            _newCharUI.GetElement("CharBodyDisplay")?.ChangeTexture(c.GetTexture(EntityTexture.State.DownMoving));
+            (_newCharUI.GetElement("CharIndex") as UIText)?.SetText((_currentCharIndex+1).ToString(), ColorScale.Black);
+        }
+
+        private void ChangeCharacterSet(UICallbackPackage package)
+        {
+            var left = package.Caller.StartsWith("Left");
+
+            _currentSetIndex += left ? -1 : 1;
+            _currentCharIndex = 0;
+            TextureLibrary.CorrectCharIndicies(ref _currentSetIndex, ref _currentCharIndex);
+            var c = new EntityTexture(Container.GraphicsDevice, TextureLibrary.CharLookup(_currentSetIndex, _currentCharIndex));
+            _newCharUI.GetElement("CharBodyDisplay")?.ChangeTexture(c.GetTexture(EntityTexture.State.DownMoving));
+            var set = TextureLibrary.GetCharSetByIndex(_currentSetIndex);
+            (_newCharUI.GetElement("SetName") as UIText)?.SetText(set, ColorScale.Black);
+            (_newCharUI.GetElement("CharIndex") as UIText)?.SetText("1", ColorScale.Black);
         }
 
         private void ConfirmNewChar(UICallbackPackage package)
         {
             if (_charNameInput.Length == 0) return;
 
-            var newChar = new PlayerEntityContainer(Container.GraphicsDevice, _charNameInput, _body, _hair, _cloth, _color);
+            var setName = TextureLibrary.GetCharSetByIndex(_currentSetIndex);
+            var newChar = new PlayerEntityContainer(Container.GraphicsDevice, _charNameInput, setName, _currentCharIndex);
             var slot = GetFirstOpening();
             _chars[slot] = newChar;
 
@@ -279,8 +255,7 @@ namespace ExNihilo.Menus
         private readonly World _world;
         private NoteMenu _warningMessage;
         private readonly UIPanel _panelUI, _newCharUI;
-        private int _body, _hair, _cloth, _color;
-        private int _selectedChar, _charInJeopardy, _currentChar;
+        private int _selectedChar, _charInJeopardy, _currentChar, _currentSetIndex, _currentCharIndex;
         private bool _textEntryMode;
         private string _charNameInput="";
         private Point _lastMousePosition;
@@ -288,19 +263,10 @@ namespace ExNihilo.Menus
         private readonly PlayerEntityContainer[] _chars = new PlayerEntityContainer[MAX_CHARACTERS];
 
         public const int MAX_NEWCHAR_TEXT_SIZE = 15, MAX_CHARACTERS = 7;
-        private const int _bodyCount = 3, _hairCount = 42, _clothCount = 43, _colorCount = 10;
 
         public CharacterMenu(GameContainer container, Action onExit, World world) : base(container, onExit)
         {
             _world = world;
-            var rules = new ScaleRuleSet
-            (
-                new ScaleRule(1.5f, 1400, 1000),
-                new ScaleRule(3, 2100, 1500),
-                new ScaleRule(4.5f, 2800, 2000),
-                new ScaleRule(6, ScaleRule.MAX_X, ScaleRule.MAX_Y)
-            );
-
             _panelUI = new UIPanel("this.MenuKing", new Vector2(0.5f, 0.5f), Vector2.One, Position.Center);
             _newCharUI = new UIPanel("this.MenuKing", new Vector2(0.5f, 0.5f), Vector2.One, Position.Center);
 
@@ -328,21 +294,21 @@ namespace ExNihilo.Menus
             var charPanel6 = new UIPanel("CharPanel6", new Coordinate(28, 0), new Coordinate(60, 60), charPanel5, Position.TopLeft, Position.TopRight);
             var charPanel7 = new UIPanel("CharPanel7", new Coordinate(28, 0), new Coordinate(60, 60), charPanel6, Position.TopLeft, Position.TopRight);
 
-            var portrait1 = new UIElement("Portrait1", "null", new Coordinate(), ColorScale.GetFromGlobal("Random"), charPanel1, Position.Center, Position.Center);
-            var portrait2 = new UIElement("Portrait2", "null", new Coordinate(), ColorScale.GetFromGlobal("Random"), charPanel2, Position.Center, Position.Center);
-            var portrait3 = new UIElement("Portrait3", "null", new Coordinate(), ColorScale.GetFromGlobal("Random"), charPanel3, Position.Center, Position.Center);
-            var portrait4 = new UIElement("Portrait4", "null", new Coordinate(), ColorScale.GetFromGlobal("Random"), charPanel4, Position.Center, Position.Center);
-            var portrait5 = new UIElement("Portrait5", "null", new Coordinate(), ColorScale.GetFromGlobal("Random"), charPanel5, Position.Center, Position.Center);
-            var portrait6 = new UIElement("Portrait6", "null", new Coordinate(), ColorScale.GetFromGlobal("Random"), charPanel6, Position.Center, Position.Center);
-            var portrait7 = new UIElement("Portrait7", "null", new Coordinate(), ColorScale.GetFromGlobal("Random"), charPanel7, Position.Center, Position.Center);
+            var portrait1 = new UIElement("Portrait1", "null", new Coordinate(0, -1), ColorScale.GetFromGlobal("Random"), charPanel1, Position.Center, Position.Center);
+            var portrait2 = new UIElement("Portrait2", "null", new Coordinate(0, -1), ColorScale.GetFromGlobal("Random"), charPanel2, Position.Center, Position.Center);
+            var portrait3 = new UIElement("Portrait3", "null", new Coordinate(0, -1), ColorScale.GetFromGlobal("Random"), charPanel3, Position.Center, Position.Center);
+            var portrait4 = new UIElement("Portrait4", "null", new Coordinate(0, -1), ColorScale.GetFromGlobal("Random"), charPanel4, Position.Center, Position.Center);
+            var portrait5 = new UIElement("Portrait5", "null", new Coordinate(0, -1), ColorScale.GetFromGlobal("Random"), charPanel5, Position.Center, Position.Center);
+            var portrait6 = new UIElement("Portrait6", "null", new Coordinate(0, -1), ColorScale.GetFromGlobal("Random"), charPanel6, Position.Center, Position.Center);
+            var portrait7 = new UIElement("Portrait7", "null", new Coordinate(0, -1), ColorScale.GetFromGlobal("Random"), charPanel7, Position.Center, Position.Center);
 
-            var deleteButton1 = new UIClickable("Delete1", "UI/button/RedBulb", new Coordinate(), ColorScale.White, charPanel1, Position.Center, Position.TopRight);
-            var deleteButton2 = new UIClickable("Delete2", "UI/button/RedBulb", new Coordinate(), ColorScale.White, charPanel2, Position.Center, Position.TopRight);
-            var deleteButton3 = new UIClickable("Delete3", "UI/button/RedBulb", new Coordinate(), ColorScale.White, charPanel3, Position.Center, Position.TopRight);
-            var deleteButton4 = new UIClickable("Delete4", "UI/button/RedBulb", new Coordinate(), ColorScale.White, charPanel4, Position.Center, Position.TopRight);
-            var deleteButton5 = new UIClickable("Delete5", "UI/button/RedBulb", new Coordinate(), ColorScale.White, charPanel5, Position.Center, Position.TopRight);
-            var deleteButton6 = new UIClickable("Delete6", "UI/button/RedBulb", new Coordinate(), ColorScale.White, charPanel6, Position.Center, Position.TopRight);
-            var deleteButton7 = new UIClickable("Delete7", "UI/button/RedBulb", new Coordinate(), ColorScale.White, charPanel7, Position.Center, Position.TopRight);
+            var deleteButton1 = new UIClickable("Delete1", "UI/button/RedBulb", new Coordinate(0, -4), ColorScale.White, charPanel1, Position.Center, Position.TopRight);
+            var deleteButton2 = new UIClickable("Delete2", "UI/button/RedBulb", new Coordinate(0, -4), ColorScale.White, charPanel2, Position.Center, Position.TopRight);
+            var deleteButton3 = new UIClickable("Delete3", "UI/button/RedBulb", new Coordinate(0, -4), ColorScale.White, charPanel3, Position.Center, Position.TopRight);
+            var deleteButton4 = new UIClickable("Delete4", "UI/button/RedBulb", new Coordinate(0, -4), ColorScale.White, charPanel4, Position.Center, Position.TopRight);
+            var deleteButton5 = new UIClickable("Delete5", "UI/button/RedBulb", new Coordinate(0, -4), ColorScale.White, charPanel5, Position.Center, Position.TopRight);
+            var deleteButton6 = new UIClickable("Delete6", "UI/button/RedBulb", new Coordinate(0, -4), ColorScale.White, charPanel6, Position.Center, Position.TopRight);
+            var deleteButton7 = new UIClickable("Delete7", "UI/button/RedBulb", new Coordinate(0, -4), ColorScale.White, charPanel7, Position.Center, Position.TopRight);
 
             var deleteButton1Icon = new UIElement("Delete1Icon", "UI/icon/No", new Coordinate(), ColorScale.Ghost, deleteButton1, Position.Center, Position.Center);
             var deleteButton2Icon = new UIElement("Delete2Icon", "UI/icon/No", new Coordinate(), ColorScale.Ghost, deleteButton2, Position.Center, Position.Center);
@@ -382,8 +348,8 @@ namespace ExNihilo.Menus
             RegisterAll(SelectChar, charPanel1, charPanel2, charPanel3, charPanel4, charPanel5, charPanel6, charPanel7);
             SetExtrasAll("UI/button/SmallButtonDown", "UI/button/SmallButtonOver", null, null, newCharButton, changeCharButton);
             SetExtrasAll("UI/button/RedBulbDown", "UI/button/RedBulbOver", null, null, deleteButton1, deleteButton2, deleteButton3, deleteButton4, deleteButton5, deleteButton6, deleteButton7);
-            charDisplay.SetRules(TextureLibrary.QuadScaleRuleSet);
-            SetRulesAll(rules, portrait1, portrait2, portrait3, portrait4, portrait5, portrait6, portrait7);
+            charDisplay.SetRules(TextureLibrary.x5ScaleRuleSet);
+            SetRulesAll(TextureLibrary.x1d5ScaleRuleSet, portrait1, portrait2, portrait3, portrait4, portrait5, portrait6, portrait7);
             DisableAll(ColorScale.Grey, charPanel1, charPanel2, charPanel3, charPanel4, charPanel5, charPanel6, charPanel7);
 
             charPanel1.AddElements(portrait1, deleteButton1, deleteButton1Icon);
@@ -398,55 +364,41 @@ namespace ExNihilo.Menus
 
             //New Character Panel
             var backdrop2 = new UIElement("Backdrop2", "UI/decor/Backdrop", new Vector2(0.5f, 0.5f), Color.White, _newCharUI, Position.Center);
-            var cancelButton = new UIClickable("CancelButton", "UI/button/SmallButton", new Coordinate(10, -10), ColorScale.White, backdrop2, Position.BottomLeft, Position.BottomLeft);
+            var cancelButton = new UIClickable("CancelButton", "UI/button/SmallButton", new Coordinate(20, -20), ColorScale.White, backdrop2, Position.BottomLeft, Position.BottomLeft);
             var cancelButtonText = new UIText("CancelButtonText", new Coordinate(), "Cancel", ColorScale.Black, cancelButton, Position.Center, Position.Center);
-            var confirmButton = new UIClickable("ConfirmButton", "UI/button/SmallButton", new Coordinate(-10, -10), ColorScale.White, backdrop2, Position.BottomRight, Position.BottomRight);
+            var confirmButton = new UIClickable("ConfirmButton", "UI/button/SmallButton", new Coordinate(-20, -20), ColorScale.White, backdrop2, Position.BottomRight, Position.BottomRight);
             var confirmButtonText = new UIText("ConfirmButtonText", new Coordinate(), "Confirm", ColorScale.Black, confirmButton, Position.Center, Position.Center);
             var inputBox = new UITogglable("NewCharInputBox", "UI/field/SmallEntryBox", new Coordinate(50, 50), Color.White, backdrop2, Position.TopLeft, Position.TopLeft, false, true);
             var inputBoxText = new UIText("NewCharInputBoxText", new Coordinate(20, 20), "", new[] { ColorScale.Black, ColorScale.GetFromGlobal("__unblinker") }, inputBox, Position.TopLeft, Position.TopLeft);
             var inputBoxLabel = new UIText("InputBoxLabel", new Coordinate(12, -2), "Name", ColorScale.Black, inputBox, Position.BottomLeft, Position.TopLeft);
 
-            var charDesignPanel = new UIPanel("CharDesignPanel", new Coordinate(-50, 50), new Coordinate(200, 125), backdrop2, Position.TopRight, Position.TopRight);
-            var charBodyDisplay = new UIElement("CharBodyDisplay", "null", new Coordinate(), ColorScale.White, charDesignPanel, Position.Center, Position.Center);
-            var charClothDisplay = new UIElement("CharClothDisplay", "null", new Coordinate(), ColorScale.White, charDesignPanel, Position.Center, Position.Center);
-            var charHairDisplay = new UIElement("CharHairDisplay", "null", new Coordinate(), ColorScale.White, charDesignPanel, Position.Center, Position.Center);
+            var newCharDisplay = new UIElement("CharBodyDisplay", "null", new Coordinate(-50, 50), ColorScale.White, backdrop2, Position.TopRight, Position.TopRight);
+            var setName = new UIText("SetName", new Coordinate(), "Set Name", ColorScale.Black, newCharDisplay, Position.CenterBottom, Position.CenterTop);
+            var charIndex = new UIText("CharIndex", new Coordinate(0, 2), "Index", ColorScale.Black, newCharDisplay, Position.CenterTop, Position.CenterBottom);
 
-            var leftHair = new UIClickable("HairLeft", "UI/button/RedBulb", new Vector2(), ColorScale.White, charDesignPanel, Position.Center);
-            var leftBody = new UIClickable("BodyLeft", "UI/button/GreenBulb", new Vector2(0, 0.33f), ColorScale.White, charDesignPanel, Position.Center);
-            var leftCloth = new UIClickable("ClothLeft", "UI/button/BlueBulb", new Vector2(0, 0.67f), ColorScale.White, charDesignPanel, Position.Center);
-            var leftColor = new UIClickable("ColorLeft", "UI/button/BlackBulb", new Vector2(0, 1), ColorScale.White, charDesignPanel, Position.Center);
+            var leftCharShift = new UIClickable("LeftChar", "UI/button/RedBulb", new Coordinate(-50, 0), ColorScale.White, charIndex, Position.CenterRight, Position.Center);
+            var leftSetShift = new UIClickable("LeftSet", "UI/button/BlackBulb", new Coordinate(-50, 0), ColorScale.White, setName, Position.CenterRight, Position.Center);
+            var rightCharShift = new UIClickable("RightChar", "UI/button/RedBulb", new Coordinate(50, 0), ColorScale.White, charIndex, Position.CenterLeft, Position.Center);
+            var rightSetShift = new UIClickable("RightSet", "UI/button/BlackBulb", new Coordinate(50, 0), ColorScale.White, setName, Position.CenterLeft, Position.Center);
 
-            var rightHair = new UIClickable("HairRight", "UI/button/RedBulb", new Vector2(1, 0), ColorScale.White, charDesignPanel, Position.Center);
-            var rightBody = new UIClickable("BodyRight", "UI/button/GreenBulb", new Vector2(1, 0.33f), ColorScale.White, charDesignPanel, Position.Center);
-            var rightCloth = new UIClickable("ClothRight", "UI/button/BlueBulb", new Vector2(1, 0.67f), ColorScale.White, charDesignPanel, Position.Center);
-            var rightColor = new UIClickable("ColorRight", "UI/button/BlackBulb", new Vector2(1, 1), ColorScale.White, charDesignPanel, Position.Center);
-
-            var leftArrow1 = new UIElement("Left1", "UI/icon/Left", new Coordinate(), ColorScale.Ghost, leftHair, Position.Center, Position.Center);
-            var leftArrow2 = new UIElement("Left2", "UI/icon/Left", new Coordinate(), ColorScale.Ghost, leftBody, Position.Center, Position.Center);
-            var leftArrow3 = new UIElement("Left3", "UI/icon/Left", new Coordinate(), ColorScale.Ghost, leftCloth, Position.Center, Position.Center);
-            var leftArrow4 = new UIElement("Left4", "UI/icon/Left", new Coordinate(), ColorScale.Ghost, leftColor, Position.Center, Position.Center);
-            
-            var rightArrow1 = new UIElement("Right1", "UI/icon/Right", new Coordinate(), ColorScale.Ghost, rightHair, Position.Center, Position.Center);
-            var rightArrow2 = new UIElement("Right2", "UI/icon/Right", new Coordinate(), ColorScale.Ghost, rightBody, Position.Center, Position.Center);
-            var rightArrow3 = new UIElement("Right3", "UI/icon/Right", new Coordinate(), ColorScale.Ghost, rightCloth, Position.Center, Position.Center);
-            var rightArrow4 = new UIElement("Right4", "UI/icon/Right", new Coordinate(), ColorScale.Ghost, rightColor, Position.Center, Position.Center);
+            var leftCharArrow = new UIElement("LeftCharArrow", "UI/icon/Left", new Coordinate(), ColorScale.Ghost, leftCharShift, Position.Center, Position.Center);
+            var leftSetArrow = new UIElement("LeftSetArrow", "UI/icon/Left", new Coordinate(), ColorScale.Ghost, leftSetShift, Position.Center, Position.Center);
+            var rightCharArrow = new UIElement("RightCharArrow", "UI/icon/Right", new Coordinate(), ColorScale.Ghost, rightCharShift, Position.Center, Position.Center);
+            var rightSetArrow = new UIElement("RightSetArrow", "UI/icon/Right", new Coordinate(), ColorScale.Ghost, rightSetShift, Position.Center, Position.Center);
             
             cancelButton.RegisterCallback(CancelNewChar);
             confirmButton.RegisterCallback(ConfirmNewChar);
             inputBox.RegisterCallback(PrepForTextEntry);
-            RegisterAll(ChangeCharacterTex, leftHair, leftBody, leftCloth, leftColor, rightBody, rightCloth, rightColor, rightHair);
+            RegisterAll(ChangeCharacterTex, rightCharShift, leftCharShift);
+            RegisterAll(ChangeCharacterSet, rightSetShift, leftSetShift);
             SetExtrasAll("UI/button/SmallButtonDown", "UI/button/SmallButtonOver", null, null, confirmButton, cancelButton);
-            SetExtrasAll("UI/button/RedBulbDown", "UI/button/RedBulbOver", null, null, leftHair, rightHair);
-            SetExtrasAll("UI/button/GreenBulbDown", "UI/button/GreenBulbOver", null, null, leftBody, rightBody);
-            SetExtrasAll("UI/button/BlueBulbDown", "UI/button/BlueBulbOver", null, null, leftCloth, rightCloth);
-            SetExtrasAll("UI/button/BlackBulbDown", "UI/button/BlackBulbOver", null, null, leftColor, rightColor);
-            inputBox.SetExtraStates("", "", ColorScale.White);
+            SetExtrasAll("UI/button/RedBulbDown", "UI/button/RedBulbOver", null, null, leftCharShift, rightCharShift);
+            SetExtrasAll("UI/button/BlackBulbDown", "UI/button/BlackBulbOver", null, null, leftSetShift, rightSetShift);
             inputBoxText.SetRules(TextureLibrary.DoubleScaleRuleSet);
-            SetRulesAll(TextureLibrary.QuadScaleRuleSet, charBodyDisplay, charHairDisplay, charClothDisplay);
+            newCharDisplay.SetRules(TextureLibrary.x5ScaleRuleSet);
 
-            charDesignPanel.AddElements(charBodyDisplay, charClothDisplay, charHairDisplay, leftBody, leftCloth, leftColor, leftHair, rightColor, rightBody, rightCloth, rightHair,
-                leftArrow1, leftArrow2, leftArrow3, leftArrow4, rightArrow1, rightArrow2, rightArrow3, rightArrow4);
-            _newCharUI.AddElements(backdrop2, cancelButton, cancelButtonText, confirmButton, confirmButtonText, charDesignPanel, inputBox, inputBoxText, inputBoxLabel);
+            _newCharUI.AddElements(backdrop2, cancelButton, cancelButtonText, confirmButton, confirmButtonText, inputBox, inputBoxText, inputBoxLabel);
+            _newCharUI.AddElements(newCharDisplay, setName, charIndex, leftSetShift, leftCharShift, rightSetShift, rightCharShift, leftCharArrow, leftSetArrow, rightCharArrow, rightSetArrow);
         }
 
         public override void Enter(Point point)
@@ -476,15 +428,12 @@ namespace ExNihilo.Menus
 
         private void ResetNewChar(GraphicsDevice graphics)
         {
-            _body = _hair = _cloth = _color = 0;
-            var sheet = TextureLibrary.Lookup("Char/base/" + (_body + 1));
-            var rect = new Rectangle(0, sheet.Height / 2, sheet.Width, sheet.Height / 4);
-            var body = new AnimatableTexture(TextureUtilities.GetSubTexture(graphics, sheet, rect), 4, 4);
-            var cloth = new AnimatableTexture(TextureUtilities.GetSubTexture(graphics, TextureLibrary.Lookup("Char/cloth/" + (_cloth + 1)), rect), 4, 4);
-            var hair = new AnimatableTexture(TextureUtilities.GetSubTexture(graphics, TextureLibrary.Lookup("Char/hair/" + (_hair + 1) + "-" + (_color + 1)), rect), 4, 4);
-            _newCharUI.GetElement("CharBodyDisplay")?.ChangeTexture(body);
-            _newCharUI.GetElement("CharClothDisplay")?.ChangeTexture(cloth);
-            _newCharUI.GetElement("CharHairDisplay")?.ChangeTexture(hair);
+            _currentSetIndex = TextureLibrary.GetCharSetIndexByName("human");
+            _currentCharIndex = 0;
+            var c = new EntityTexture(graphics, TextureLibrary.CharLookup(_currentSetIndex, _currentCharIndex));
+            _newCharUI.GetElement("CharBodyDisplay")?.ChangeTexture(c.GetTexture(EntityTexture.State.DownMoving));
+            (_newCharUI.GetElement("SetName") as UIText)?.SetText("Human", ColorScale.Black);
+            (_newCharUI.GetElement("CharIndex") as UIText)?.SetText("1", ColorScale.Black);
         }
 
         public override void LoadContent(GraphicsDevice graphics, ContentManager content)
@@ -627,7 +576,7 @@ namespace ExNihilo.Menus
                 }
                 else
                 {
-                    _chars[i] = new PlayerEntityContainer(Container.GraphicsDevice, c.Name, c.TextureSet[0], c.TextureSet[1], c.TextureSet[2], c.TextureSet[3], c.Inventory);
+                    _chars[i] = new PlayerEntityContainer(Container.GraphicsDevice, c.Name, c.CharSet, c.CharIndex, c.Inventory);
                     var panel = _panelUI.GetElement("CharPanel" + (i + 1)) as UIPanel;
                     panel?.Enable();
                     panel?.GetElement("Portrait" + (i + 1))?.ChangeTexture(_chars[i].Entity.GetTexture(EntityTexture.State.Down));

@@ -87,7 +87,7 @@ namespace ExNihilo.Systems.Game
         private static readonly List<Particle> _particles = new List<Particle>();
         private static readonly List<Particle> _recycleBin = new List<Particle>();
         private static readonly Random _rand = new Random();
-        private static readonly ScaleRuleSet _rules = TextureLibrary.ReducedScaleRuleSet;
+        private static readonly ScaleRuleSet _rules = TextureLibrary.ReducedDefaultScaleRuleSet;
         private static bool _off, _usingDefaultColor=true;
         private static float _currentScale;
         private static int _max;

@@ -183,13 +183,13 @@ namespace ExNihilo.Util.Graphics
             bmp.Save(filename, ImageFormat.Png);
         }
 
-        public static Texture2D GetPlayerTexture(GraphicsDevice graphics, int[] charSet)
+        /*public static Texture2D GetPlayerTexture(GraphicsDevice graphics, int[] charSet)
         {
             var bodySheet = TextureLibrary.Lookup("Char/base/" + (charSet[0] + 1));
             var hairSheet = TextureLibrary.Lookup("Char/hair/" + (charSet[1] + 1) + "-" + (charSet[3] + 1));
             var clothSheet = TextureLibrary.Lookup("Char/cloth/" + (charSet[2] + 1));
             return CombineTextures(graphics, bodySheet, clothSheet, hairSheet);
-        }
+        }*/
 
         public static Texture2D GetSilhouette(GraphicsDevice graphics, Texture2D original, Color color)
         {

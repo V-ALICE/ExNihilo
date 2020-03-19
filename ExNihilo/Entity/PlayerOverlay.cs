@@ -12,7 +12,7 @@ namespace ExNihilo.Entity
 {
     public class PlayerOverlay : IUI
     {
-        private readonly ScaleRuleSet _rules = TextureLibrary.HalfScaleRuleSet;
+        private readonly ScaleRuleSet _rules = TextureLibrary.DefaultScaleRuleSet;
         private EntityContainer _entity;
         public readonly long ID;
         private readonly bool _useCustomPos;
@@ -46,12 +46,11 @@ namespace ExNihilo.Entity
             if (!_useCustomPos) _entity.Texture.Draw(spriteBatch, PlayerCenterScreen, ColorScale.White, Scale);
         }
 
-        public void Draw(SpriteBatch spriteBatch, Vector2 worldPos, float curScale, float drawScale)
+        public void Draw(SpriteBatch spriteBatch, Vector2 pos, float drawScale)
         {
             if (_useCustomPos)
             {
                 //customPos will be the worldPos of the world that makes this overlay centered
-                var pos = worldPos + curScale * PlayerCustomWorldPos;
                 _entity.Texture.Draw(spriteBatch, pos, ColorScale.White, drawScale);
             }
             else _entity.Texture.Draw(spriteBatch, PlayerCenterScreen, ColorScale.White, Scale);

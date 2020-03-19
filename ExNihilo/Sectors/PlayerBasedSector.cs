@@ -183,9 +183,9 @@ namespace ExNihilo.Sectors
 
         public virtual void ClearPlayers() { World.ClearPlayers(); }
         public virtual void ClearPlayers(long id) { World.RemovePlayer(id); }
-        public virtual void UpdatePlayers(long id, string name, int[] charSet)
+        public virtual void UpdatePlayers(long id, string name, string set, int index)
         {
-            World.AddPlayer(id, name, charSet);
+            World.AddPlayer(id, name, set, index);
         }
 
         public StandardUpdate GetStandardUpdate()

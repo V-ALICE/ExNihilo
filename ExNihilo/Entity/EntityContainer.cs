@@ -35,21 +35,20 @@ namespace ExNihilo.Entity
         [Serializable]
         public class PackedPlayerEntityContainer
         {
-            public int[] TextureSet;
-            public string Name;
+            public int CharIndex;
+            public string Name, CharSet;
             public Inventory Inventory;
         }
 
-        public readonly int[] TextureSet;
+        public readonly string CharSet;
+        public readonly int CharIndex;
         public readonly Inventory Inventory;
 
-        public PlayerEntityContainer(GraphicsDevice graphics, string name, int body, int hair, int cloth, int color, Inventory inv=null) : base(name)
+        public PlayerEntityContainer(GraphicsDevice graphics, string name, string texSet, int texIndex, Inventory inv=null) : base(name)
         {
-            var bodySheet = TextureLibrary.Lookup("Char/base/" + (body + 1));
-            var hairSheet = TextureLibrary.Lookup("Char/hair/" + (hair + 1) + "-" + (color + 1));
-            var clothSheet = TextureLibrary.Lookup("Char/cloth/" + (cloth + 1));
-            Entity = new EntityTexture(graphics, TextureUtilities.CombineTextures(graphics, bodySheet, clothSheet, hairSheet), 1);
-            TextureSet = new[] {body, hair, cloth, color};
+            Entity = new EntityTexture(graphics, TextureLibrary.CharLookup(texSet, texIndex), 1);
+            CharSet = texSet;
+            CharIndex = texIndex;
             Inventory = inv ?? new Inventory();
         }
 
@@ -60,7 +59,7 @@ namespace ExNihilo.Entity
 
         public PackedPlayerEntityContainer GetPacked()
         {
-            return new PackedPlayerEntityContainer {Name = Name, TextureSet = TextureSet, Inventory = Inventory};
+            return new PackedPlayerEntityContainer {Name = Name, CharSet = CharSet, CharIndex = CharIndex, Inventory = Inventory};
         }
     }
 }

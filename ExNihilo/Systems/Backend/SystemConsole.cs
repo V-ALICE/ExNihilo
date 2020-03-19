@@ -197,7 +197,7 @@ namespace ExNihilo.Systems.Backend
         public static void LoadContent(GraphicsDevice graphics, ContentManager content)
         {
             _currentScale = 1;
-            _rules = TextureLibrary.ReducedScaleRuleSet;
+            _rules = TextureLibrary.ReducedDefaultScaleRuleSet;
         }
 
         public static void OnResize(GraphicsDevice graphics, Coordinate gameWindow)

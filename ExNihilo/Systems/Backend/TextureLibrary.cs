@@ -12,13 +12,14 @@ namespace ExNihilo.Systems.Backend
 {
     public static class TextureLibrary
     {
-        public static ScaleRuleSet DefaultScaleRuleSet, ReducedScaleRuleSet, HalfScaleRuleSet, QuarterScaleRuleSet, x1d25ScaleRuleSet, x1d5ScaleRuleSet, DoubleScaleRuleSet, QuadScaleRuleSet;
+        public static ScaleRuleSet DefaultScaleRuleSet, ReducedDefaultScaleRuleSet, HalfScaleRuleSet, QuarterScaleRuleSet, 
+                                   ThreeQuarterScaleRuleSet, x1d25ScaleRuleSet, x1d5ScaleRuleSet, DoubleScaleRuleSet, 
+                                   QuadScaleRuleSet, x5ScaleRuleSet;
         private static Dictionary<string, Dictionary<string, Texture2D>> _UILookUp;
         private static Dictionary<string, Dictionary<string, Texture2D>> _textureLookUp;
         private static Dictionary<string, Dictionary<string, Texture2D>> _iconLookUp;
-        private static Dictionary<string, Dictionary<string, Texture2D>> _characterLookUp;
+        private static List<Tuple<string, List<Texture2D>>> _characterLookUp;
         private static Texture2D _null;
-        //private static Dictionary<string, byte[]> _UIAlphaLookUp;
 
         public static Texture2D Lookup(string fullPath)
         {
@@ -33,8 +34,6 @@ namespace ExNihilo.Systems.Backend
                             return _UILookUp[tmp[1]][tmp[2]];
                         case "Icon":
                             return _iconLookUp[tmp[1]][tmp[2]];
-                        case "Char":
-                            return _characterLookUp[tmp[1]][tmp[2]];
                         default:
                             return _textureLookUp[tmp[1]][tmp[2]];
                     }
@@ -49,6 +48,56 @@ namespace ExNihilo.Systems.Backend
             return _null;
         }
 
+        public static Texture2D CharLookup(string name, int index)
+        {
+            if (name == "null") return _null;
+            var set = _characterLookUp.FirstOrDefault(g => g.Item1 == name);
+            if (set != null && set.Item2.Count > index) return set.Item2[index];
+            SystemConsole.ForceMessage("<error>", "No such char with name " + name + " and charIndex " + index, Color.DarkRed, Color.White);
+            return _null;
+        }
+        public static Texture2D CharLookup(int nameIndex, int charIndex)
+        {
+            if (nameIndex == -1) return _null;
+            try
+            {
+                return _characterLookUp[nameIndex].Item2[charIndex];
+            }
+            catch (IndexOutOfRangeException)
+            {
+                SystemConsole.ForceMessage("<error>", "No such char with name_index " + nameIndex + " and charIndex " + charIndex, Color.DarkRed, Color.White);
+                return _null;
+            }
+        }
+        public static string GetCharSetByIndex(int index)
+        {
+            try
+            {
+                return _characterLookUp[index].Item1;
+            }
+            catch (IndexOutOfRangeException)
+            {
+                SystemConsole.ForceMessage("<error>", "No such set with name_index " + index, Color.DarkRed, Color.White);
+                return "null";
+            }
+        }
+        public static int GetCharSetIndexByName(string name)
+        {
+            for (int i=0;i<_characterLookUp.Count;i++)
+            {
+                if (_characterLookUp[i].Item1 == name) return i;
+            }
+            SystemConsole.ForceMessage("<error>", "No such set with name " + name, Color.DarkRed, Color.White);
+            return -1;
+        }
+        public static void CorrectCharIndicies(ref int set, ref int index)
+        {
+            if (set < 0) set = _characterLookUp.Count - 1;
+            else if (set >= _characterLookUp.Count) set = 0;
+            if (index < 0) index = _characterLookUp[set].Item2.Count - 1;
+            else if (index >= _characterLookUp[set].Item2.Count) index = 0;
+        }
+
         public static void LoadRuleSets()
         {
             // 700 x 500 base only works for fullscreen
@@ -58,6 +107,14 @@ namespace ExNihilo.Systems.Backend
                 new ScaleRule(2, 2100, 1500),
                 new ScaleRule(3, 2800, 2000),
                 new ScaleRule(4, ScaleRule.MAX_X, ScaleRule.MAX_Y)
+            );
+
+            ThreeQuarterScaleRuleSet = new ScaleRuleSet
+            (
+                new ScaleRule(0.75f, 1400, 1000),
+                new ScaleRule(1.5f, 2100, 1500),
+                new ScaleRule(2.25f, 2800, 2000),
+                new ScaleRule(3f, ScaleRule.MAX_X, ScaleRule.MAX_Y)
             );
 
             x1d25ScaleRuleSet = new ScaleRuleSet
@@ -76,7 +133,7 @@ namespace ExNihilo.Systems.Backend
                 new ScaleRule(6f, ScaleRule.MAX_X, ScaleRule.MAX_Y)
             );
 
-            ReducedScaleRuleSet = new ScaleRuleSet
+            ReducedDefaultScaleRuleSet = new ScaleRuleSet
             (
                 new ScaleRule(1, 2100, 1500),
                 new ScaleRule(2, ScaleRule.MAX_X, ScaleRule.MAX_Y)
@@ -114,6 +171,13 @@ namespace ExNihilo.Systems.Backend
                 new ScaleRule(16, ScaleRule.MAX_X, ScaleRule.MAX_Y)
             );
 
+            x5ScaleRuleSet = new ScaleRuleSet
+            (
+                new ScaleRule(5, 1400, 1000),
+                new ScaleRule(10, 2100, 1500),
+                new ScaleRule(15, 2800, 2000),
+                new ScaleRule(20, ScaleRule.MAX_X, ScaleRule.MAX_Y)
+            );
         }
 
         private static void LoadLibrary(GraphicsDevice graphics, ContentManager content, Dictionary<string, Dictionary<string, Texture2D>> d, params string[] infoFiles)
@@ -183,24 +247,36 @@ namespace ExNihilo.Systems.Backend
             LoadLibrary(graphics, content, _iconLookUp, infoFiles);
         }
 
-        public static void LoadCharacterLibrary(GraphicsDevice graphics, ContentManager content, params string[] infoFiles)
+        public static void LoadCharacterLibrary(GraphicsDevice graphics, ContentManager content, int width, int height)
         {
             if (_null is null) _null = new Texture2D(graphics, 1, 1);
-            _characterLookUp = new Dictionary<string, Dictionary<string, Texture2D>>();
-            LoadLibrary(graphics, content, _characterLookUp, infoFiles);
 
-            //dumb but probably beats having to make 400 extra lines in the input
-            var colorSets = _characterLookUp["hair"];
-            _characterLookUp["hair"] = new Dictionary<string, Texture2D>();
-            foreach (var c in colorSets)
+            _characterLookUp = new List<Tuple<string, List<Texture2D>>>();
+            var fileSet = Directory.GetFiles(Environment.CurrentDirectory + "/Content/CharSets/");
+            foreach (var file in fileSet)
             {
-                var sheet = c.Value;
-                for (int i = 0; i < 10; i++)
+                if (!file.EndsWith(".png")) continue;
+
+                var setName = Path.GetFileName(file);
+                setName = setName.Substring(0, setName.Length - 4);
+                var list = new List<Texture2D>();
+                _characterLookUp.Add(Tuple.Create(setName, list));
+
+                var stream = new FileStream(file, FileMode.Open);
+                var tex = Texture2D.FromStream(graphics, stream);
+                stream.Close();
+
+                for (int y = 0; y <= tex.Height - height; y += height)
                 {
-                    var hairSheet = TextureUtilities.GetSubTexture(graphics, sheet, new Rectangle(i * 96, 0, 96, 144));
-                    var extendedHairSheet = TextureUtilities.Extend3FramesTo4(graphics, hairSheet);
-                    _characterLookUp["hair"].Add(c.Key + "-" + (i+1), extendedHairSheet);
+                    for (int x = 0; x <= tex.Width - width; x += width)
+                    {
+                        var sub = TextureUtilities.GetSubTexture(graphics, tex, new Rectangle(x, y, width, height));
+                        var expandedSub = TextureUtilities.Extend3FramesTo4(graphics, sub);
+                        list.Add(expandedSub);
+                        sub.Dispose();
+                    }
                 }
+                tex.Dispose();
             }
         }
     }

@@ -117,9 +117,9 @@ namespace ExNihilo.Menus
             var charPortrait2 = new UIElement("CharPortrait2", "null", new Coordinate(0, 30), ColorScale.White, backdrop, PositionType.CenterTop, PositionType.CenterTop);
             var charPortrait1 = new UIElement("CharPortrait1", "null", new Coordinate(-20, 15), ColorScale.White, charPortrait2, PositionType.TopRight, PositionType.TopLeft);
             var charPortrait3 = new UIElement("CharPortrait3", "null", new Coordinate(20, 15), ColorScale.White, charPortrait2, PositionType.TopLeft, PositionType.TopRight);
-            var charName1 = new UIText("CharName1", new Coordinate(), "Open Slot", ColorScale.Black, charPortrait1, PositionType.CenterTop, PositionType.CenterBottom);
-            var charName2 = new UIText("CharName2", new Coordinate(), "Open Slot", ColorScale.Black, charPortrait2, PositionType.CenterTop, PositionType.CenterBottom);
-            var charName3 = new UIText("CharName3", new Coordinate(), "Open Slot", ColorScale.Black, charPortrait3, PositionType.CenterTop, PositionType.CenterBottom);
+            var charName1 = new UIText("CharName1", new Coordinate(0, 4), "Open Slot", ColorScale.Black, charPortrait1, PositionType.CenterTop, PositionType.CenterBottom);
+            var charName2 = new UIText("CharName2", new Coordinate(0, 4), "Open Slot", ColorScale.Black, charPortrait2, PositionType.CenterTop, PositionType.CenterBottom);
+            var charName3 = new UIText("CharName3", new Coordinate(0, 4), "Open Slot", ColorScale.Black, charPortrait3, PositionType.CenterTop, PositionType.CenterBottom);
 
             clientButton.Disable(ColorScale.Grey);
             disconnectButton.Disable(ColorScale.Grey);
@@ -132,7 +132,7 @@ namespace ExNihilo.Menus
             ipBox.SetExtraStates("", "", ColorScale.White);
             ipText.SetRules(TextureLibrary.DoubleScaleRuleSet);
             SetExtrasAll("UI/button/SmallButtonDown", "UI/button/SmallButtonOver", null, null, clientButton, hostButton, disconnectButton);
-            SetRulesAll(TextureLibrary.QuadScaleRuleSet, charPortrait1, charPortrait2, charPortrait3);
+            SetRulesAll(TextureLibrary.x5ScaleRuleSet, charPortrait1, charPortrait2, charPortrait3);
 
             _panelUI.AddElements(backdrop, exitButton, exitButtonX, ipBox, ipText, ipLabel, clientButton, clientText, hostButton, hostText, disconnectButton, disconnectText, charPortrait1, charPortrait2, charPortrait3, charName1, charName2, charName3);
             _note = new NoteMenu(container, "The void teems with adventurers.\nWould you like to set sail?", NoteAction);
@@ -206,7 +206,7 @@ namespace ExNihilo.Menus
         {
             _panelUI.LoadContent(graphics, content);
             _note.LoadContent(graphics, content);
-            var tex = new EntityTexture(graphics, TextureUtilities.GetPlayerTexture(graphics, new[] {0, 0, 0, 0}), 1);
+            var tex = new EntityTexture(graphics, TextureLibrary.CharLookup("human", 0));
             _defaultCharacterModel = TextureUtilities.GetSilhouette(graphics, tex.GetTexture(EntityTexture.State.Down), Color.Black);
             _panelUI.GetElement("CharPortrait1")?.ChangeTexture(_defaultCharacterModel);
             _panelUI.GetElement("CharPortrait2")?.ChangeTexture(_defaultCharacterModel);

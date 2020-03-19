@@ -27,7 +27,8 @@ namespace ExNihilo.Systems.Backend.Network
             public byte MiniID;
             public string Name;
             public Color Color;
-            public int[] charSet;
+            public string SetName;
+            public int SetIndex;
         }
         private static readonly Dictionary<long, GameAssociation> _lookup = new Dictionary<long, GameAssociation>();
 
@@ -89,7 +90,7 @@ namespace ExNihilo.Systems.Backend.Network
                     ForwardMessage(_gameRef.GetCurrentIntroduction());
                     foreach (var p in _lookup.Values)
                     {
-                        ForwardMessage(new PlayerIntroduction(p.UniqueID, p.Name, p.MiniID, p.Color.R, p.Color.G, p.Color.B, p.charSet));
+                        ForwardMessage(new PlayerIntroduction(p.UniqueID, p.Name, p.MiniID, p.Color.R, p.Color.G, p.Color.B, p.SetName, p.SetIndex));
                     }
                     _outer.CheckNetwork(false);
                     _void.CheckNetwork(false);
@@ -167,20 +168,21 @@ namespace ExNihilo.Systems.Backend.Network
             {
                 obj = _lookup[data.SenderUniqueID];
                 obj.Name = data.Name;
-                obj.charSet = data.CharSet;
+                obj.SetName = data.SetName;
+                obj.SetIndex = data.SetIndex;
                 obj.MiniID = data.SubID;
                 obj.Color = new Color(data.R, data.G, data.B);
             }
             else
             {
-                obj = new GameAssociation { UniqueID = data.SenderUniqueID, Name = data.Name, charSet = data.CharSet, MiniID = data.SubID, Color = new Color(data.R, data.G, data.B) };
+                obj = new GameAssociation { UniqueID = data.SenderUniqueID, Name = data.Name, SetName = data.SetName, SetIndex = data.SetIndex, MiniID = data.SubID, Color = new Color(data.R, data.G, data.B) };
                 _lookup.Add(data.SenderUniqueID, obj);
             }
 
             //If hosting make sure there are no name clashes
             if (NetworkManager.Hosting) ReconfigureMiniIDs();
             //Use the incoming data to update/add the player in game
-            _outer.UpdatePlayers(obj.UniqueID, obj.AssignedName, obj.charSet);
+            _outer.UpdatePlayers(obj.UniqueID, obj.AssignedName, obj.SetName, obj.SetIndex);
             _outer.CheckNetwork(false);
 
             //If hosting, inform all clients of all players to keep everyone on the same page
@@ -189,7 +191,7 @@ namespace ExNihilo.Systems.Backend.Network
                 ForwardMessage(_gameRef.GetCurrentIntroduction());
                 foreach (var p in _lookup.Values)
                 {
-                    ForwardMessage(new PlayerIntroduction(p.UniqueID, p.Name, p.MiniID, p.Color.R, p.Color.G, p.Color.B, p.charSet));
+                    ForwardMessage(new PlayerIntroduction(p.UniqueID, p.Name, p.MiniID, p.Color.R, p.Color.G, p.Color.B, p.SetName, p.SetIndex));
                 }
             }
         }

@@ -20,7 +20,7 @@ namespace ExNihilo.Entity
 
         public AnimatableTexture CurrentTexture { get; private set; }
 
-        public EntityTexture(GraphicsDevice graphics, Texture2D sheet, int staticColumnZeroIndex)
+        public EntityTexture(GraphicsDevice graphics, Texture2D sheet, int staticColumnZeroIndex=1)
         {
             _previousPush = new Coordinate();
             CurrentState = State.Down;
@@ -29,35 +29,35 @@ namespace ExNihilo.Entity
             _textureStates = new Dictionary<State, AnimatableTexture>
             {
                 {
-                    State.Up,
+                    State.Down,
                     TextureUtilities.GetSubTexture(graphics, sheet, new Rectangle(staticColumnZeroIndex * columnWidth, 0, columnWidth, rowHeight))
                 },
                 {
-                    State.Right,
+                    State.Left,
                     TextureUtilities.GetSubTexture(graphics, sheet, new Rectangle(staticColumnZeroIndex * columnWidth, rowHeight, columnWidth, rowHeight))
                 },
                 {
-                    State.Down,
+                    State.Right,
                     TextureUtilities.GetSubTexture(graphics, sheet, new Rectangle(staticColumnZeroIndex * columnWidth, 2 * rowHeight, columnWidth, rowHeight))
                 },
                 {
-                    State.Left,
+                    State.Up,
                     TextureUtilities.GetSubTexture(graphics, sheet, new Rectangle(staticColumnZeroIndex * columnWidth, 3 * rowHeight, columnWidth, rowHeight))
                 },
                 {
-                    State.UpMoving,
+                    State.DownMoving,
                     new AnimatableTexture(TextureUtilities.GetSubTexture(graphics, sheet, new Rectangle(0, 0, sheet.Width, rowHeight)), 4, 4)
                 },
                 {
-                    State.RightMoving,
+                    State.LeftMoving,
                     new AnimatableTexture(TextureUtilities.GetSubTexture(graphics, sheet, new Rectangle(0, rowHeight, sheet.Width, rowHeight)), 4, 4)
                 },
                 {
-                    State.DownMoving,
+                    State.RightMoving,
                     new AnimatableTexture(TextureUtilities.GetSubTexture(graphics, sheet, new Rectangle(0, 2 * rowHeight, sheet.Width, rowHeight)), 4, 4)
                 },
                 {
-                    State.LeftMoving,
+                    State.UpMoving,
                     new AnimatableTexture(TextureUtilities.GetSubTexture(graphics, sheet, new Rectangle(0, 3 * rowHeight, sheet.Width, rowHeight)), 4, 4)
                 }
             };

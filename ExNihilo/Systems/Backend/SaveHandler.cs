@@ -16,7 +16,7 @@ namespace ExNihilo.Systems.Backend
     public class PackedGame
     {
         // Update this whenever the save contents changes YYMMDDHH
-        public const string _version = "20030822";
+        public const string _version = "20031901";
 
         //configuration
         private readonly DateTime _lastSaveDate;
@@ -69,7 +69,7 @@ namespace ExNihilo.Systems.Backend
             _lastSaveDate = DateTime.Now;
             FormatTitleCard();
             SavedCharacters = new PlayerEntityContainer.PackedPlayerEntityContainer[CharacterMenu.MAX_CHARACTERS];
-            SavedCharacters[0] = new PlayerEntityContainer(game.GraphicsDevice, "Alice", 0, 0, 0, 0).GetPacked();
+            SavedCharacters[0] = new PlayerEntityContainer(game.GraphicsDevice, "Alice", "human", 0).GetPacked();
             CurrentPlayer = 0;
             InVoid = false;
             Floor = 1;

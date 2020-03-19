@@ -46,7 +46,7 @@ namespace ExNihilo.Sectors
             if (newSector == GameContainer.SectorID.Loading)
             {
                 //Assumed to be entering void
-                World.Reset(Player, new Coordinate(10, 10), new Coordinate(3, 10));
+                World.Reset(Player);
                 AudioManager.PlaySong("Void", true);
             }
         }
@@ -120,7 +120,7 @@ namespace ExNihilo.Sectors
             _characterMenu.Unpack(game);
             _storageMenu.Unpack(game);
             _multiplayerMenu.Unpack(game);
-            World.Reset(Player, new Coordinate(10, 10), new Coordinate(3, 10));
+            World.Reset(Player);
             
         }
     }

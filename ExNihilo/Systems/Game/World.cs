@@ -89,15 +89,16 @@ namespace ExNihilo.Systems.Game
             if (PlayerOverlay is null) PlayerOverlay = new PlayerOverlay(entity, true);
             else PlayerOverlay.ForceEntityRef(entity);
         }
-        public virtual void Reset(EntityContainer entity, Coordinate hitBox, Coordinate hitBoxOffset)
+        public virtual void Reset(EntityContainer entity)
         {
             ResetWorldPos = true; //Screen size is required to calculate this which isn't available here
             CurrentWorldPosition = new Vector2();
             UniversalTime.ResetTimer(TimerID);
 
             SwapEntity(entity);
-            PlayerCustomHitBox = hitBox.Copy();
-            PlayerCustomHitBoxOffset = hitBoxOffset.Copy();
+            var size = new Coordinate(entity.Texture.Width, entity.Texture.Height);
+            PlayerCustomHitBox = new Coordinate(0.6f * size.X, 0.6f * size.Y / 2);
+            PlayerCustomHitBoxOffset = new Coordinate(0.2f * size.X, 0.2f * size.Y + size.Y / 2f);
         }
 
         public virtual void LoadContent(GraphicsDevice graphics, ContentManager content)
@@ -118,7 +119,7 @@ namespace ExNihilo.Systems.Game
                 {
                     ResetWorldPos = false;
                     PlayerOverlay.OnResize(graphics, gameWindow);
-                    CurrentWorldPosition = PlayerOverlay.PlayerCenterScreen - new Vector2(CurrentWorldScale*112, CurrentWorldScale*240);
+                    CurrentWorldPosition = PlayerOverlay.PlayerCenterScreen - new Vector2(CurrentWorldScale*104, CurrentWorldScale*232);
                 }
                 else
                 {
@@ -139,16 +140,40 @@ namespace ExNihilo.Systems.Game
             spriteBatch.Draw(WorldTexture, MathD.Flatten(CurrentWorldPosition), null, Color.White, 0, Vector2.Zero, CurrentWorldScale, SpriteEffects.None, 0);
         }
 
+        private void DrawPlayersInOrder(SpriteBatch spriteBatch)
+        {
+            var positions = new List<Tuple<int, Vector2>> {Tuple.Create(-1, (Vector2) PlayerOverlay.PlayerCenterScreen)};
+            for (int i = 0; i < OtherPlayerOverlays.Count; i++)
+            {
+                var pos = MathD.Flatten(CurrentWorldPosition) + CurrentWorldScale * OtherPlayerOverlays[i].PlayerCustomWorldPos;
+                for (int j = 0; j <= positions.Count; j++)
+                {
+                    if (j == positions.Count)
+                    {
+                        positions.Add(Tuple.Create(i, pos));
+                        break;
+                    }
+                    if (pos.Y < positions[j].Item2.Y)
+                    {
+                        positions.Insert(j, Tuple.Create(i, pos));
+                        break;
+                    }
+                }
+            }
+
+            foreach (var item in positions)
+            {
+                if (item.Item1 == -1) PlayerOverlay.Draw(spriteBatch);
+                else OtherPlayerOverlays[item.Item1].Draw(spriteBatch, item.Item2, PlayerOverlay.Scale);
+            }
+        }
+
         public virtual void DrawOverlays(SpriteBatch spriteBatch)
         {
             Map.DrawBoxes(spriteBatch, MathD.Flatten(CurrentWorldPosition), TileSize, CurrentWorldScale);
             if (PlayerOverlay is null) return;
             
-            foreach (var player in OtherPlayerOverlays)
-            {
-                player.Draw(spriteBatch, MathD.Flatten(CurrentWorldPosition), CurrentWorldScale, PlayerOverlay.Scale);
-            }
-            PlayerOverlay.Draw(spriteBatch);
+            DrawPlayersInOrder(spriteBatch);
 
             foreach (var (tex, pos) in Overlays)
             {
@@ -205,7 +230,7 @@ namespace ExNihilo.Systems.Game
         public Interactive CheckForInteraction()
         {
             var offset = PlayerOverlay.PlayerCenterScreen + TextureUtilities.GetOffset(TextureUtilities.PositionType.Center, PlayerOverlay.GetCurrentPixelSize()) - CurrentWorldPosition;
-            return Map.GetInteractive((int) (CurrentWorldScale * TileSize), offset, 0.5f, 1f, 0.5f, 0.5f);
+            return Map.GetInteractive((int) (CurrentWorldScale * TileSize), offset, 0.25f, 1.5f, 0.75f, 0.75f);
         }
 
         public void ClearPlayers()
@@ -221,9 +246,9 @@ namespace ExNihilo.Systems.Game
         {
             OtherPlayerOverlays.Add(player);
         }
-        public void AddPlayer(long id, string name, int[] charSet)
+        public void AddPlayer(long id, string name, string set, int index)
         {
-            var tex = TextureUtilities.GetPlayerTexture(GameContainer.Graphics, charSet);
+            var tex = TextureLibrary.CharLookup(set, index);
             var instance = OtherPlayerOverlays.FirstOrDefault(p => p.ID == id);
             if (instance is null)
             {

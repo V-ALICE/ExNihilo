@@ -90,7 +90,7 @@ namespace ExNihilo.Sectors
         public void Descend(int seed, int itemSeed, int floor, List<PlayerOverlay> refList)
         {
             ActiveLevel.ChangeSeed(seed);
-            ActiveLevel.Reset(Player, new Coordinate(10, 10), new Coordinate(3, 10));
+            ActiveLevel.Reset(Player);
             if (!VoidIsActive)
             {
                 ActiveLevel.ClearPlayers();

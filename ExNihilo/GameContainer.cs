@@ -240,7 +240,7 @@ namespace ExNihilo
             SpriteBatch = new SpriteBatch(GraphicsDevice);
             TextureLibrary.LoadUILibrary(GraphicsDevice, Content, "LOGO.info", "UI.info");
             TextureLibrary.LoadIconLibrary(GraphicsDevice, Content, "ICON.info");
-            TextureLibrary.LoadCharacterLibrary(GraphicsDevice, Content, "CHAR.info");
+            TextureLibrary.LoadCharacterLibrary(GraphicsDevice, Content, 78, 144); //TODO: make this variable somehow
             TextureLibrary.LoadTextureLibrary(GraphicsDevice, Content, "BACK.info");
             ItemLoader.LoadItems(GraphicsDevice, "MAT.info");
 
@@ -429,7 +429,8 @@ namespace ExNihilo
         public PlayerIntroduction GetCurrentIntroduction()
         {
             if (Player is null) return null;
-            return new PlayerIntroduction(NetworkManager.MyUniqueID, Player.Name, NetworkLinker.MyMiniID, SystemConsole.MyColor.R, SystemConsole.MyColor.G, SystemConsole.MyColor.B, Player.TextureSet);
+            return new PlayerIntroduction(NetworkManager.MyUniqueID, Player.Name, NetworkLinker.MyMiniID,
+                SystemConsole.MyColor.R, SystemConsole.MyColor.G, SystemConsole.MyColor.B, Player.CharSet, Player.CharIndex);
         }
 
         public void StartNewHost(int port=14444)

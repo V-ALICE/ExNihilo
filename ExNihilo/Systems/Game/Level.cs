@@ -131,9 +131,9 @@ namespace ExNihilo.Systems.Game
             Map = null;
             WorldTexture = null;
         }
-        public override void Reset(EntityContainer entity, Coordinate hitBox, Coordinate hitBoxOffset)
+        public override void Reset(EntityContainer entity)
         {
-            base.Reset(entity, hitBox, hitBoxOffset);
+            base.Reset(entity);
             _subLevelTextures.Clear();
             _subLevelMaps.Clear();
             //_mobSet.Clear();
