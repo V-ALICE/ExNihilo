@@ -25,6 +25,17 @@ namespace ExNihilo.Systems
         private static Dictionary<string, Action<string>> _paramSet;
         private static string _basicHelpString, _elevatedHelpString;
         private static Dictionary<string, string> _helpInfo;
+        private static string[] _giveOptions =
+        {
+            "gold", "exp",
+            EquipItem.SlotType.WEAP.ToString().ToLower(),
+            EquipItem.SlotType.HEAD.ToString().ToLower(),
+            EquipItem.SlotType.CHEST.ToString().ToLower(),
+            EquipItem.SlotType.HANDS.ToString().ToLower(),
+            EquipItem.SlotType.LEGS.ToString().ToLower(),
+            EquipItem.SlotType.FEET.ToString().ToLower(),
+            EquipItem.SlotType.ACC.ToString().ToLower()
+        };
 
         //Called whenever a command-form message is issued
         public static void Handle(string com)
@@ -48,6 +59,79 @@ namespace ExNihilo.Systems
             {
                 SystemConsole.ForceMessage("<error>", "No such command \"" + baseCommand + "\". Use /help to see available commands", Color.DarkRed, Color.White);
             }
+        }
+        //Called when tab is pressed
+        public static string GetSuggestion(string input)
+        {
+            string GetOption(string start, params Dictionary<string, Action<string>>[] sets)
+            {
+                var option = "";
+                foreach (var s in sets)
+                {
+                    if (s is null) continue;
+                    foreach (var com in s)
+                    {
+                        if (com.Key.StartsWith(start))
+                        {
+                            if (option.Length != 0) return ""; //Multiple matches
+                            option = com.Key;
+                        }
+                    }
+                }
+                return option;
+            }
+
+            string GetOptionSimple(string start, params string[] opts)
+            {
+                var option = "";
+                foreach (var com in opts)
+                {
+                    if (com.StartsWith(start))
+                    {
+                        if (option.Length != 0) return ""; //Multiple matches
+                        option = com;
+                    }
+                }
+                return option;
+            }
+
+            if (input.Length == 0 || input[0] != '/') return input;
+
+            var set = input.Substring(1).Split(' ');
+            if (set[0] == "set")
+            {
+                if (set.Length != 2) return input;
+                
+                //tab complete set param
+                var option = GetOption(set[1], _paramSet);
+                if (option.Length != 0) return "/set " + option;
+            }
+            else if (set[0] == "help")
+            {
+                if (set.Length != 2) return input;
+
+                //tab complete help command
+                var option = GetOption(set[1], _basicCommands, _elevatedMode ? _elevatedCommands : null);
+                if (option.Length != 0) return "/help " + option;
+            }
+            else if (set[0] == "give")
+            {
+                if (set.Length != 2) return input;
+
+                //tab complete give option
+                var option = GetOptionSimple(set[1], _giveOptions);
+                if (option.Length != 0) return "/give " + option;
+            }
+            else
+            {
+                if (set.Length != 1) return input;
+                
+                //tab complete command
+                var option = GetOption(set[0], _basicCommands, _elevatedMode ? _elevatedCommands : null);
+                if (option.Length != 0) return "/" + option;
+            }
+
+            return input;
         }
 
         //Initial setup

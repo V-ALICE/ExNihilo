@@ -42,4 +42,16 @@ namespace ExNihilo.Input.Commands.Types
         }
     }
 
+    public class SuggestCompletion : SuperCommand
+    {
+        public SuggestCompletion(GameContainer game) : base(game)
+        {
+        }
+
+        public override void Activate()
+        {
+            SystemConsole.RequestSuggestion();
+        }
+    }
+
 }

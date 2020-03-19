@@ -307,6 +307,11 @@ namespace ExNihilo.Systems.Backend
             _activeText = "";
         }
 
+        public static void RequestSuggestion()
+        {
+            _activeText = Asura.GetSuggestion(_activeText);
+        }
+
         private static List<Tuple<string, string, ColorScale, ColorScale>> queue = new List<Tuple<string, string, ColorScale, ColorScale>>();
         public static void ForceMessage(string starter, string message, ColorScale startColor, ColorScale messageColor)
         {

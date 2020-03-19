@@ -29,6 +29,7 @@ namespace ExNihilo.Input.Commands
             _bucket.Add(new KeyBlock(new PushConsole(game), false, Keys.Enter));
             _bucket.Add(new KeyBlock(new RememberLastMessage(game), false, Keys.Up));
             _bucket.Add(new KeyBlock(new ForgetCurrentMessage(game), false, Keys.Down));
+            _bucket.Add(new KeyBlock(new SuggestCompletion(game), false, Keys.Tab));
         }
 
         public void InitializeSuper(GameContainer game)
