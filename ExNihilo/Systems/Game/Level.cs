@@ -29,8 +29,8 @@ namespace ExNihilo.Systems.Game
         private int _seed, _parallax, _curLevel;
         private MapGenerator.Type _genType;
 
-        private TileTextureMap[] _wallTextureMapSet, _floorTextureMapSet, _otherTextureMapSet;
-        private string _wallTextureMapFile, _floorTextureMapFile, _otherTextureMapFile;
+        private TileTextureMap[] _textureMapSet;
+        private string _textureMapFile;
 
         public Level() : base(0)
         {
@@ -45,10 +45,8 @@ namespace ExNihilo.Systems.Game
             (InteractionMap, Texture2D) DoAll()
             {
                 var m = MapGenerator.Get(_seed, level, _genType, out var rand);
-                var wall = _wallTextureMapSet[rand.Next(_wallTextureMapSet.Length)];
-                var floor = _floorTextureMapSet is null ? wall : _floorTextureMapSet[rand.Next(_floorTextureMapSet.Length)];
-                var other = _otherTextureMapSet is null ? wall : _otherTextureMapSet[rand.Next(_otherTextureMapSet.Length)];
-                var t = MapStitcher.StitchMap(g.GraphicsDevice, m, level, rand, itemRand, wall, floor, other, stairs);
+                var set = _textureMapSet[rand.Next(_textureMapSet.Length)];
+                var t = MapStitcher.StitchMap(g.GraphicsDevice, m, level, rand, itemRand, set, stairs);
                 return (m, t);
             }
             
@@ -138,7 +136,7 @@ namespace ExNihilo.Systems.Game
 
         private void SetPlayerAnyTile(Random rand)
         {
-            CurrentWorldPosition = PlayerOverlay.PlayerCenterScreen - CurrentWorldScale * TileSize * Map.GetAnyFloor(rand) + PlayerOverlay.Scale * PlayerCustomHitBoxOffset;
+            CurrentWorldPosition = PlayerOverlay.PlayerCenterScreen - CurrentWorldScale * TileSize * Map.GetAnyFreeFloor(rand) + PlayerOverlay.Scale * PlayerCustomHitBoxOffset;
         }
         public override void OnResize(GraphicsDevice graphics, Coordinate gameWindow)
         {
@@ -208,16 +206,11 @@ namespace ExNihilo.Systems.Game
             _subLevelTextures.Clear();
         }
 
-        public void ChangeTexturePack(string[] files)
+        public void ChangeTexturePack(string file)
         {
-            _wallTextureMapFile = files[0];
-            _floorTextureMapFile = files.Length > 1 ? files[1] : "";
-            _otherTextureMapFile = files.Length > 2 ? files[2] : "";
-
-            _wallTextureMapSet = TileTextureMap.GetTileTextureMap(GameContainer.Graphics, _wallTextureMapFile);
-            TileSize = _wallTextureMapSet[0].TileSize;
-            _floorTextureMapSet = _floorTextureMapFile.Length > 0 ? TileTextureMap.GetTileTextureMap(GameContainer.Graphics, _floorTextureMapFile) : null;
-            _otherTextureMapSet = _otherTextureMapFile.Length > 0 ? TileTextureMap.GetTileTextureMap(GameContainer.Graphics, _otherTextureMapFile) : null;
+            _textureMapFile = file;
+            _textureMapSet = TileTextureMap.GetTileTextureMap(GameContainer.Graphics, _textureMapFile);
+            TileSize = _textureMapSet[0].TileSize;
         }
 
         public void ChangeSeed(int seed)
@@ -246,7 +239,7 @@ namespace ExNihilo.Systems.Game
             game.Seed = _seed;
             game.GenType = _genType;
             game.Parallax = _parallax;
-            game.TexturePack = new[] {_wallTextureMapFile, _floorTextureMapFile, _otherTextureMapFile};
+            game.TexturePack = _textureMapFile;
         }
 
         public void Unpack(PackedGame game)
@@ -255,14 +248,10 @@ namespace ExNihilo.Systems.Game
             _seed = game.Seed;
             _genType = game.GenType;
             _parallax = game.Parallax;
-            _wallTextureMapFile = game.TexturePack[0];
-            _floorTextureMapFile = game.TexturePack[1];
-            _otherTextureMapFile = game.TexturePack[2];
 
-            _wallTextureMapSet = TileTextureMap.GetTileTextureMap(GameContainer.Graphics, _wallTextureMapFile);
-            TileSize = _wallTextureMapSet[0].TileSize;
-            if (_floorTextureMapFile.Length > 0) _floorTextureMapSet = TileTextureMap.GetTileTextureMap(GameContainer.Graphics, _floorTextureMapFile);
-            if (_otherTextureMapFile.Length > 0) _otherTextureMapSet = TileTextureMap.GetTileTextureMap(GameContainer.Graphics, _otherTextureMapFile);
+            _textureMapFile = game.TexturePack;
+            _textureMapSet = TileTextureMap.GetTileTextureMap(GameContainer.Graphics, _textureMapFile);
+            TileSize = _textureMapSet[0].TileSize;
         }
     }
 }

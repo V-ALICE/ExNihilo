@@ -292,26 +292,22 @@ namespace ExNihilo.Systems
             //Set texture pack
             void SetTexturePack(string args)
             {
-                var set = args.Split(' ');
-                if (set.Length > 0 && set.Length < 4)
+                var file = Environment.CurrentDirectory + "/Content/TexturePacks/" + args;
+                if (!File.Exists(file))
                 {
-                    foreach (var file in set)
-                    {
-                        if (!File.Exists(file))
-                        {
-                            SystemConsole.ForceMessage("<error>", "\"" + file + "\" is not a valid file", Color.DarkRed, Color.White);
-                            return;
-                        }
-                    }
-                    if (_game.VoidIsActive)
-                    {
-                        SystemConsole.ForceMessage("<warning>", "Texture pack change will apply next time the floor swaps", Color.DarkOrange, Color.White);
-                    }
-                    SystemConsole.ForceMessage("<Asura>", "Setting texture pack to " + args, Color.Purple, Color.White);
-                    _theVoid.SetTexturePack(set);
+                    SystemConsole.ForceMessage("<error>", "\"" + args + "\" is not a valid file", Color.DarkRed, Color.White);
+                    return;
                 }
-                else SystemConsole.ForceMessage("<error>", "Can only set texture pack using 1 to 3 files", Color.DarkRed, Color.White);
+
+                if (_game.VoidIsActive)
+                {
+                    SystemConsole.ForceMessage("<warning>", "Texture pack change will apply next time the floor swaps", Color.DarkOrange, Color.White);
+                }
+
+                SystemConsole.ForceMessage("<Asura>", "Setting texture pack to " + args, Color.Purple, Color.White);
+                _theVoid.SetTexturePack(args);
             }
+
             _paramSet.Add("textures", SetTexturePack);
         }
         private static void SetupHelpInfo()

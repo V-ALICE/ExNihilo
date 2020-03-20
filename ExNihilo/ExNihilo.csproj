@@ -199,10 +199,10 @@
     <Content Include="Content\CharSets\wolf.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="Content\TexturePacks\DawnLikeComplete.tmf">
+    <Content Include="Content\TexturePacks\DawnLike.tmf">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <Content Include="Content\TexturePacks\GrassyComplete.tmf">
+    <Content Include="Content\TexturePacks\Grassy.tmf">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
     <MonoGameContentReference Include="Content\Content.mgcb" />
@@ -227,6 +227,12 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Include="Content\Items\BasicItems.imf">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Content\TexturePacks\TimeFantasy.tmf">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Content\TexturePacks\OldVersion.tmf">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <None Include="packages.config" />

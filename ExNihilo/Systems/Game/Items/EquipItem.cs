@@ -18,18 +18,20 @@ namespace ExNihilo.Systems.Game.Items
         public readonly StatOffset Stats;
         public readonly EquipItem.SlotType Type;
 
-        public EquipInstance(int id, EquipItem item, int level, int quality, string fullName, StatOffset stats, ColorScale icon) : base(item, level, quality, id)
+        public EquipInstance(int id, EquipItem item, int level, int quality, string fullName, StatOffset stats, string colorName, ColorScale icon) : base(item, level, quality, id)
         {
             Stats = stats;
             Name = fullName;
-            IconColor = icon;
-            if (item.IconColorLookup.Length == 0)
+            ColorName = colorName;
+            if (colorName.Length == 0)
             {
+                IconColor = icon;
                 r = icon.Get().R;
                 g = icon.Get().G;
                 b = icon.Get().B;
                 a = icon.Get().A;
             }
+            else IconColor = ColorScale.GetFromGlobal(colorName);
 
             Type = item.Slot;
         }
@@ -78,8 +80,7 @@ namespace ExNihilo.Systems.Game.Items
 
     public class EquipItem : Item
     {
-        private static readonly Dictionary<string, List<Tuple<string, ColorScale>>> MaterialSets = new Dictionary<string, List<Tuple<string, ColorScale>>>();
-        private static readonly Dictionary<string, List<Tuple<string, ColorScale>>> SuperMaterialSets = new Dictionary<string, List<Tuple<string, ColorScale>>>();
+        private static readonly Dictionary<string, List<Tuple<string, string, ColorScale>>> MaterialSets = new Dictionary<string, List<Tuple<string, string, ColorScale>>>();
         public static void SetUpMaterials(string file)
         {
             var fileName = Environment.CurrentDirectory + "/Content/Resources/" + file;
@@ -87,7 +88,6 @@ namespace ExNihilo.Systems.Game.Items
             var lines = File.ReadAllLines(fileName);
 
             var category = "";
-            var super = false;
             foreach (var line in lines)
             {
                 if (line.Length == 0) continue;
@@ -97,24 +97,22 @@ namespace ExNihilo.Systems.Game.Items
                     if (set.Length == 1)
                     {
                         //Changing category
-                        if (line == "SUPER") super = true;
-                        else
-                        {
-                            category = line;
-                            super = false;
-                            MaterialSets.Add(category, new List<Tuple<string, ColorScale>>());
-                            SuperMaterialSets.Add(category, new List<Tuple<string, ColorScale>>());
-                        }
+                        category = line;
+                        MaterialSets.Add(category, new List<Tuple<string, string, ColorScale>>());
                     }
                     else
                     {
                         //Type for current category (can be rgb255 or a name)
                         ColorScale color;
-                        if (set.Length == 2) color = ColorScale.GetFromGlobal(set[1]);
+                        string colorName = "";
+                        if (set.Length == 2)
+                        {
+                            colorName = set[1];
+                            color = ColorScale.GetFromGlobal(set[1]);
+                        }
                         else color = new Color(int.Parse(set[1]), int.Parse(set[2]), int.Parse(set[3]));
 
-                        if (super) SuperMaterialSets[category].Add(Tuple.Create(set[0], color));
-                        else MaterialSets[category].Add(Tuple.Create(set[0], color));
+                        MaterialSets[category].Add(Tuple.Create(set[0], colorName, color));
                     }
                 }
                 catch (Exception)
@@ -180,8 +178,7 @@ namespace ExNihilo.Systems.Game.Items
                             tokens[2] = 0;
                             break;
                         case "COLOR":
-                            if (set.Length == 2) IconColorLookup = set[1];
-                            else IconColor = new Color(int.Parse(set[1]), int.Parse(set[2]), int.Parse(set[3]));
+                            IconColor = new Color(int.Parse(set[1]), int.Parse(set[2]), int.Parse(set[3]));
                             tokens[4] = 0;
                             break;
                         case "NEW":
@@ -239,17 +236,19 @@ namespace ExNihilo.Systems.Game.Items
             //Figure out item's name
             var matName = "";
             var color = item.IconColor;
+            var colorName = "";
             if (item._materials.Count > 0)
             {
-                var matSet = quality > 6 ? SuperMaterialSets[item._materials[rand.Next(item._materials.Count)]] : MaterialSets[item._materials[rand.Next(item._materials.Count)]];
+                var matSet = MaterialSets[item._materials[rand.Next(item._materials.Count)]];
                 var material = matSet[rand.Next(matSet.Count)];
                 matName = material.Item1 + " ";
-                color = material.Item2;
+                colorName = material.Item2;
+                color = material.Item3;
             }
             var trueName = matName + item.Name;
 
             //Return generated instance of input item
-            return new EquipInstance(rand.Next(), item, level, quality, trueName, stats, color);
+            return new EquipInstance(rand.Next(), item, level, quality, trueName, stats, colorName, color);
         }
     }
 

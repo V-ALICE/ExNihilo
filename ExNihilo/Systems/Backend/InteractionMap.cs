@@ -137,7 +137,7 @@ namespace ExNihilo.Systems.Backend
                 if (list.Count > 0) return new Coordinate(row, list[rand.Next(list.Count)]);
             }
         }
-        public Coordinate GetAnyFloor(Random rand)
+        /*public Coordinate GetAnyFloor(Random rand)
         {
             var list = new List<int>();
             while (true)
@@ -151,7 +151,7 @@ namespace ExNihilo.Systems.Backend
 
                 if (list.Count > 0) return new Coordinate(row, list[rand.Next(list.Count)]);
             }
-        }
+        }*/
 
         public void AddInteractive(Interactive obj, int x, int y, int width, int height)
         {

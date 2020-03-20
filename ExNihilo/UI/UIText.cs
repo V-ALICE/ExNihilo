@@ -50,12 +50,7 @@ namespace ExNihilo.UI
 
         public void SetText(string smartText, params ColorScale[] colors)
         {
-            SetText(smartText, -1, colors);
-        }
-
-        public void SetText(string smartText, int lineLength, params ColorScale[] colors)
-        {
-            Text = lineLength == -1 ? smartText : TextDrawer.GetSmartSplit(smartText, lineLength);
+            Text = smartText;
             if (colors.Length > 0) Colors = colors;
             UnscaledSize = TextDrawer.GetSmartTextSize(Text);
             CurrentPixelSize = new Coordinate((int)(CurrentScale * UnscaledSize.X), (int)(CurrentScale * UnscaledSize.Y));

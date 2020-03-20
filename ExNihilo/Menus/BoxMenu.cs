@@ -115,7 +115,7 @@ namespace ExNihilo.Menus
         private Point _lastMousePosition;
         private bool _mouseDown;
         private int _lastTextSlot = -1, _iconRefSize, _boxRefIndex;
-        private const int _descCharLen = 30;
+        private const int _descCharLen = 31;
 
         private BoxMenu(GameContainer container) : base(container, null)
         {
@@ -255,7 +255,7 @@ namespace ExNihilo.Menus
                         if (_lastTextSlot == i) return;
                         if (item is null) break;
 
-                        _descText.SetText(item.GetSmartDesc(), _descCharLen, item.GetSmartColors(ColorScale.Black));
+                        _descText.SetText(TextDrawer.GetSmartSplit(item.GetSmartDesc(), _descCharLen), item.GetSmartColors(ColorScale.Black));
                         _lastTextSlot = i;
                         return;
                     }
@@ -275,11 +275,11 @@ namespace ExNihilo.Menus
                         if (item is EquipInstance e)
                         {
                             var other = _playerRef.Inventory.Equipment[(int)e.Type];
-                            _descText.SetText(e.GetSmartDesc(other), _descCharLen, e.GetSmartColors(ColorScale.Black));
+                            _descText.SetText(TextDrawer.GetSmartSplit(e.GetSmartDesc(other), _descCharLen), e.GetSmartColors(ColorScale.Black));
                         }
                         else
                         {
-                            _descText.SetText(item.GetSmartDesc(), _descCharLen, item.GetSmartColors(ColorScale.Black));
+                            _descText.SetText(TextDrawer.GetSmartSplit(item.GetSmartDesc(), _descCharLen), item.GetSmartColors(ColorScale.Black));
                         }
 
                         _lastTextSlot = 7 + i;
@@ -288,7 +288,7 @@ namespace ExNihilo.Menus
                 }
             }
 
-            _descText.SetText("", _descCharLen, ColorScale.Black);
+            _descText.SetText("", ColorScale.Black);
             _lastTextSlot = -1;
         }
         public override bool OnMoveMouse(Point point)

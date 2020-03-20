@@ -55,10 +55,10 @@ namespace ExNihilo.Input.Commands
             if (_bucket.Count > 0) return;
 
             _bucket.Add(new KeyBlock(new InteractWithWorld(game), false, Keys.E, Buttons.A));
-            _bucket.Add(new KeyBlock(new TurnUp(game), new UnTurnUp(game), false, Keys.Up, Keys.W, Buttons.DPadUp, Buttons.LeftThumbstickUp));
-            _bucket.Add(new KeyBlock(new TurnDown(game), new UnTurnDown(game), false, Keys.Down, Keys.S, Buttons.DPadDown, Buttons.LeftThumbstickDown));
-            _bucket.Add(new KeyBlock(new TurnLeft(game), new UnTurnLeft(game), false, Keys.Left, Keys.A, Buttons.DPadLeft, Buttons.LeftThumbstickLeft));
-            _bucket.Add(new KeyBlock(new TurnRight(game), new UnTurnRight(game), false, Keys.Right, Keys.D, Buttons.DPadRight, Buttons.LeftThumbstickRight));
+            _bucket.Add(new KeyBlock(new TurnUp(game), new UnTurnUp(game), false, Keys.W, Buttons.DPadUp, Buttons.LeftThumbstickUp));
+            _bucket.Add(new KeyBlock(new TurnDown(game), new UnTurnDown(game), false, Keys.S, Buttons.DPadDown, Buttons.LeftThumbstickDown));
+            _bucket.Add(new KeyBlock(new TurnLeft(game), new UnTurnLeft(game), false, Keys.A, Buttons.DPadLeft, Buttons.LeftThumbstickLeft));
+            _bucket.Add(new KeyBlock(new TurnRight(game), new UnTurnRight(game), false, Keys.D, Buttons.DPadRight, Buttons.LeftThumbstickRight));
             _bucket.Add(new KeyBlock(new DoubleSpeed(game), new UnDoubleSpeed(game), false, Keys.LeftShift, Buttons.X, Buttons.Y));
         }
 

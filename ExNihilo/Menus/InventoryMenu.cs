@@ -99,7 +99,7 @@ namespace ExNihilo.Menus
         private bool _mouseDown;
         private int _lastTextSlot=-1, _iconRefSize;
 
-        private const int _descCharLen = 30;
+        private const int _descCharLen = 31; //TODO: if the 31st char is space this fails
         //Text box is 9 rows of 30 characters
 
         public InventoryMenu(GameContainer container, Action onExit) : base(container, onExit)
@@ -119,7 +119,7 @@ namespace ExNihilo.Menus
             var equipmentSet = new UIElement("EquipmentSet", "UI/field/SevenElementSet", new Coordinate(0, -5), ColorScale.White, inventorySet, Position.CenterBottom, Position.CenterTop);
             _descText = new UIText("DescriptionBox", new Coordinate(14, 14), "", _descCharLen, new ColorScale[0], textBox, Position.TopLeft, Position.TopLeft);
 
-            _portrait = new UIElement("Portrait", "null", new Coordinate(63, 66), ColorScale.White, _statBars, Position.Center, Position.TopLeft);
+            _portrait = new UIElement("Portrait", "null", new Coordinate(64, 60), ColorScale.White, _statBars, Position.Center, Position.TopLeft);
 
             var hpPipSet = new UIPanel("HPPipSet", new Coordinate(168, 12), new Coordinate(160, 24), _statBars, Position.TopLeft, Position.TopLeft);
             var mpPipSet = new UIPanel("MPPipSet", new Coordinate(168, 52), new Coordinate(160, 24), _statBars, Position.TopLeft, Position.TopLeft);
@@ -232,15 +232,16 @@ namespace ExNihilo.Menus
             if (_playerRef.Inventory.CanRestoreTrashedItem()) (_panelUI.GetElement("UndoButton") as UIClickable)?.Enable();
             else (_panelUI.GetElement("UndoButton") as UIClickable)?.Disable(ColorScale.Ghost);
 
+            CheckForHighlight(_lastMousePosition);
             _playerRef.Inventory.Dirty = false;
             _lastTextSlot = -1;
         }
         public override void Enter(Point point)
         {
             base.Enter(point);
+            _lastMousePosition = new Point(-1, -1);
             UpdateDisplay();
-            _lastMousePosition = new Point(-1 ,-1);
-            OnMoveMouse(point);
+            //OnMoveMouse(point);
             _lastTextSlot = -1;
             //_descText.SetText("", ColorScale.Black);
         }
@@ -302,18 +303,20 @@ namespace ExNihilo.Menus
 
             if (point.Y < _equips[0].OriginPosition.Y)
             {
+                //On character maybe
                 var rect = new Rectangle(_statBars.OriginPosition.X, _statBars.OriginPosition.Y, _statBars.CurrentPixelSize.X, _statBars.CurrentPixelSize.Y);
                 if (rect.Contains(point))
                 {
                     if (_lastTextSlot == 99) return;
 
-                    _descText.SetText(_playerRef.ToString(), _descCharLen, ColorScale.Black);
+                    _descText.SetText(TextDrawer.GetSmartSplit(_playerRef.ToString(), _descCharLen), ColorScale.Black);
                     _lastTextSlot = 99;
                     return;
                 }
             }
             else if (point.Y < _items[0].OriginPosition.Y)
             {
+                //On equipment maybe
                 for (int i = 0; i < _equips.Length; i++)
                 {
                     var rect = new Rectangle(_equips[i].OriginPosition.X, _equips[i].OriginPosition.Y, _equips[i].CurrentPixelSize.X, _equips[i].CurrentPixelSize.Y);
@@ -323,7 +326,7 @@ namespace ExNihilo.Menus
                         if (_lastTextSlot == i) return;
                         if (item is null) break;
 
-                        _descText.SetText(item.GetSmartDesc(), _descCharLen, item.GetSmartColors(ColorScale.Black));
+                        _descText.SetText(TextDrawer.GetSmartSplit(item.GetSmartDesc(), _descCharLen), item.GetSmartColors(ColorScale.Black));
                         _lastTextSlot = i;
                         return;
                     }
@@ -331,6 +334,7 @@ namespace ExNihilo.Menus
             }
             else
             {
+                //On inventory maybe
                 for (int i = 0; i < _items.Length; i++)
                 {
                     var rect = new Rectangle(_items[i].OriginPosition.X, _items[i].OriginPosition.Y, _items[i].CurrentPixelSize.X, _items[i].CurrentPixelSize.Y);
@@ -343,11 +347,11 @@ namespace ExNihilo.Menus
                         if (item is EquipInstance e)
                         {
                             var other = _playerRef.Inventory.Equipment[(int) e.Type];
-                            _descText.SetText(e.GetSmartDesc(other), _descCharLen, e.GetSmartColors(ColorScale.Black));
+                            _descText.SetText(TextDrawer.GetSmartSplit(e.GetSmartDesc(other), _descCharLen), e.GetSmartColors(ColorScale.Black));
                         }
                         else
                         {
-                            _descText.SetText(item.GetSmartDesc(), _descCharLen, item.GetSmartColors(ColorScale.Black));
+                            _descText.SetText(TextDrawer.GetSmartSplit(item.GetSmartDesc(), _descCharLen), item.GetSmartColors(ColorScale.Black));
                         }
 
                         _lastTextSlot = 7 + i;
@@ -356,7 +360,7 @@ namespace ExNihilo.Menus
                 }
             }
 
-            _descText.SetText("", _descCharLen, ColorScale.Black);
+            _descText.SetText("", ColorScale.Black);
             _lastTextSlot = -1;
         }
 

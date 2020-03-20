@@ -226,6 +226,7 @@ namespace ExNihilo.Util.Graphics
 
         public static int GetSmartTextLength(string smartText)
         {
+            smartText = smartText.TrimEnd(' ', '\n');
             int len = 0, maxLen = 0;
             for (var i = 0; i < smartText.Length; i++)
             {

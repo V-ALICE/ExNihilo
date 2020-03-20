@@ -20,7 +20,7 @@ namespace ExNihilo.Systems.Bases
         protected int r, g, b, a;
         [NonSerialized] protected ColorScale IconColor;
 
-       //These must have 11 elements. Note last element represents perfection
+       //This must have 11 elements. Note last element represents perfection
         public static readonly string[] ModifierSet =
         {
             //Colors: Fine = green, Grand = blue, Legendary = yellow/orange, Mythical = purple, Absolute = rainbow
@@ -90,13 +90,13 @@ namespace ExNihilo.Systems.Bases
             a = item.IconColor.A;
             Quality = quality;
 
-            if (Quality < 3) QualityColor = Color.DarkRed;
-            else if (Quality == 6) QualityColor = Color.DarkGreen;
-            else if (Quality == 7) QualityColor = Color.Blue;
-            else if (Quality == 8) QualityColor = Color.DarkOrange;
-            else if (Quality == 9) QualityColor = Color.BlueViolet;
+            if (Quality < 3) QualityColor = ColorScale.VioletRed;
+            else if (Quality == 6) QualityColor = ColorScale.Green;
+            else if (Quality == 7) QualityColor = ColorScale.BlueViolet;
+            else if (Quality == 8) QualityColor = ColorScale.OrangeYellow;
+            else if (Quality == 9) QualityColor = ColorScale.Violet;
             else if (Quality == 10) QualityColor = ColorScale.GetFromGlobal("Rainbow");
-            else QualityColor = Color.Black;
+            else QualityColor = ColorScale.Black;
         }
     }
 

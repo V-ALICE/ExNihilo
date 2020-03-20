@@ -16,7 +16,7 @@ namespace ExNihilo.Systems.Backend
     public class PackedGame
     {
         // Update this whenever the save contents changes YYMMDDHH
-        public const string _version = "20031901";
+        public const string _version = "20031923";
 
         //configuration
         private readonly DateTime _lastSaveDate;
@@ -32,7 +32,7 @@ namespace ExNihilo.Systems.Backend
         public int CurrentPlayer;
         public int Floor, Parallax, Seed;
         public MapGenerator.Type GenType;
-        public string[] TexturePack;
+        public string TexturePack;
 
         private void FormatTitleCard()
         {
@@ -76,7 +76,7 @@ namespace ExNihilo.Systems.Backend
             Parallax = 2;
             Seed = 123;
             GenType = MapGenerator.Type.Standard2;
-            TexturePack = new[] {"DawnLikeComplete.tmf", "", ""};
+            TexturePack = "DawnLike.tmf";
         }
 
     }
