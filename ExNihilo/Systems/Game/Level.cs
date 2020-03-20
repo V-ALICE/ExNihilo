@@ -131,13 +131,6 @@ namespace ExNihilo.Systems.Game
             Map = null;
             WorldTexture = null;
         }
-        public override void Reset(EntityContainer entity)
-        {
-            base.Reset(entity);
-            _subLevelTextures.Clear();
-            _subLevelMaps.Clear();
-            //_mobSet.Clear();
-        }
 
         public override void LoadContent(GraphicsDevice graphics, ContentManager content)
         {
@@ -145,8 +138,7 @@ namespace ExNihilo.Systems.Game
 
         private void SetPlayerAnyTile(Random rand)
         {
-            CurrentWorldPosition = PlayerOverlay.PlayerCenterScreen - CurrentWorldScale * TileSize * Map.GetAnyFloor(rand);
-            CurrentWorldPosition.Y += 0.5f * CurrentWorldScale * TileSize; //Keeps players out of the wall (for some reason)
+            CurrentWorldPosition = PlayerOverlay.PlayerCenterScreen - CurrentWorldScale * TileSize * Map.GetAnyFloor(rand) + PlayerOverlay.Scale * PlayerCustomHitBoxOffset;
         }
         public override void OnResize(GraphicsDevice graphics, Coordinate gameWindow)
         {
@@ -178,9 +170,9 @@ namespace ExNihilo.Systems.Game
                 var color = new Color(value / 2, value / 2, value / 2);
                 var scale = value * CurrentWorldScale;
                 var floor = _curLevel + 1 + i;
-                var offsetStrength = CurrentWorldScale * 20 * TileSize * (floor % 4 + 1);
-                var xOffset = Math.Sign(floor % 2 - 2 + floor % 3);
-                var yOffset = -Math.Sign(floor % 5 - 3 + floor % 2);
+                var offsetStrength = CurrentWorldScale * 20 * TileSize * (floor % 3 + 1);
+                var xOffset = Math.Sign(floor % 2 + floor % 5 - 4);
+                var yOffset = -Math.Sign(floor % 3 + floor % 6 - 4);
                 var offset = new Vector2(scale * xOffset * offsetStrength, scale * yOffset * offsetStrength);
 
                 spriteBatch.Draw(_subLevelTextures[i], pos + offset, null, color, 0, Vector2.Zero, scale, SpriteEffects.None, 0);

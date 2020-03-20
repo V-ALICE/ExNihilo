@@ -94,7 +94,7 @@ namespace ExNihilo.Systems.Game
             ResetWorldPos = true; //Screen size is required to calculate this which isn't available here
             CurrentWorldPosition = new Vector2();
             UniversalTime.ResetTimer(TimerID);
-
+            
             SwapEntity(entity);
             var size = new Coordinate(entity.Texture.Width, entity.Texture.Height);
             PlayerCustomHitBox = new Coordinate(0.6f * size.X, 0.6f * size.Y / 2);
