@@ -372,8 +372,8 @@ namespace ExNihilo.Menus
             var inputBoxText = new UIText("NewCharInputBoxText", new Coordinate(20, 20), "", new[] { ColorScale.Black, ColorScale.GetFromGlobal("__unblinker") }, inputBox, Position.TopLeft, Position.TopLeft);
             var inputBoxLabel = new UIText("InputBoxLabel", new Coordinate(12, -2), "Name", ColorScale.Black, inputBox, Position.BottomLeft, Position.TopLeft);
 
-            var newCharDisplay = new UIElement("CharBodyDisplay", "null", new Coordinate(-50, 50), ColorScale.White, backdrop2, Position.TopRight, Position.TopRight);
-            var setName = new UIText("SetName", new Coordinate(), "Set Name", ColorScale.Black, newCharDisplay, Position.CenterBottom, Position.CenterTop);
+            var newCharDisplay = new UIElement("CharBodyDisplay", "null", new Coordinate(-50, 60), ColorScale.White, backdrop2, Position.TopRight, Position.TopRight);
+            var setName = new UIText("SetName", new Coordinate(0, -2), "Set Name", ColorScale.Black, newCharDisplay, Position.CenterBottom, Position.CenterTop);
             var charIndex = new UIText("CharIndex", new Coordinate(0, 2), "Index", ColorScale.Black, newCharDisplay, Position.CenterTop, Position.CenterBottom);
 
             var leftCharShift = new UIClickable("LeftChar", "UI/button/RedBulb", new Coordinate(-50, 0), ColorScale.White, charIndex, Position.CenterRight, Position.Center);
