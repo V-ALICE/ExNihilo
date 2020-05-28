@@ -297,7 +297,7 @@ namespace ExNihilo.Systems
                 {
                     foreach (var file in set)
                     {
-                        if (!File.Exists(file))
+                        if (!File.Exists(Environment.CurrentDirectory + "/Content/TexturePacks/" + file))
                         {
                             SystemConsole.ForceMessage("<error>", "\"" + file + "\" is not a valid file", Color.DarkRed, Color.White);
                             return;
