@@ -202,6 +202,7 @@ namespace ExNihilo.Systems.Backend.Network
                 return false;
             }
 
+            MyUniqueID = 1;
             return true;
         }
 
@@ -218,6 +219,7 @@ namespace ExNihilo.Systems.Backend.Network
                 _client = new NetClient(config);
                 _client.Start();
                 _client.Connect(hostIP, port);
+                //MyUniqueID = -1;
             }
             catch (NetException e)
             {

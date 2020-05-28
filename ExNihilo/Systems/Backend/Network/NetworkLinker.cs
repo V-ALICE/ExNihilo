@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using ExNihilo.Sectors;
 using ExNihilo.Util.Graphics;
@@ -123,6 +124,7 @@ namespace ExNihilo.Systems.Backend.Network
             {
                 case NetworkMessageType.NewConnection: //These are taken care of in the manager
                 case NetworkMessageType.Heartbeat:
+                    SystemConsole.ForceMessage("<note>", DateTime.Now.ToShortTimeString(), ColorScale.GreenBlue, ColorScale.White);
                     return true;
                 case NetworkMessageType.BLANK: //This usually means something went wrong with an in-progress message and can be ignored
                     return true;

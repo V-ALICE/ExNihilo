@@ -151,10 +151,10 @@ namespace ExNihilo.Menus
         private void DeleteCharAction(bool accepted)
         {
             _warningMessage = null;
-            _charInJeopardy = -1;
             _type = CurrentMenu.Main;
-            _panelUI.OnMoveMouse(_lastMousePosition);
             if (accepted) DeleteChar();
+            _charInJeopardy = -1;
+            _panelUI.OnMoveMouse(_lastMousePosition);
         }
 
 /********************************************************************
